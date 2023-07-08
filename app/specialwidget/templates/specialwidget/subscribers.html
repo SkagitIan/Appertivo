@@ -1,0 +1,40 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/sidebar.html' %}
+
+<div id="main" class="col py-3">
+    <h4 class="display-4 text-white ms-4">Subscribers</h4>
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 75vw;max-width:21em; margin-top:20px;margin-bottom: 20px;">
+    <div  id="data-none" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+        <p class="lh-1"><small>These are people that have signed up to recieve future specials in their inbox.  They will automatically get sent your specials when you publish a new one.  </small></p>
+   
+            <div class="input-group mb-3 mx-auto">
+            <label class="input-group-text"><i class="fa-solid fa-sort"></i></label>
+            <select class="form-select">
+                
+                <option selected>Filter</option>
+                <option value="1">By Special</option>
+                <option value="2">Latest Signups</option>
+                <option value="3">All</option>
+            </select>
+            </div>
+            <ul class="list-group">
+            {% for s in subs %}
+            <li class="list-group-item d-flex justify-content-between">{{s.email }}<span><i class="fa-solid fa-trash-can ms-2"></i></span></li>
+            {% endfor %}
+        </ul>
+        <button class="btn btn-sm mt-3 bg-warning text-dark border border-dark fs-5" disabled><i class="fs-4 fa-brands fa-mailchimp py-2 me-2"></i>Link your Mailchimp Account</button>
+    </div>
+</div>
+
+
+</div>
+</div>
+{% endblock %}

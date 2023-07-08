@@ -1,0 +1,42 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/sidebar.html' %}
+
+
+  <div id="main" class="col py-3">
+
+
+<h4 class="display-4 text-white ms-4">Billing</h4>
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 75vw;max-width:21em; margin-top:20px;margin-bottom: 20px;">
+<div  id="" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+  <ul class="list-group">
+  {% for p in payments %}
+<li class="list-group-item justify-content-evenly"><span class="badge badge-pill badge-light text-dark border me-2 ">${{ p.amount_total }}</span>
+  <small><strong>{{ p.payment_status|title }}</strong>    |    {{p.date|date:"d M Y"}}</small>
+  </li>
+  {% endfor %}
+</ul>
+  <p>
+    {% if status == True %}
+    <a href="{% url 'inter' %}" class="btn btn-sm w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+    background-size: 8px 8px;" role="button">Make a Payment</a>
+    {% endif %}
+    </p>
+
+</div>
+</div>
+
+
+
+
+
+
+</div></div>
+{% endblock %}

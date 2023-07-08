@@ -1,0 +1,120 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/sidebar.html' %}
+
+
+  <div id="main" class="col py-3">
+
+
+{% for data in all_data %}
+{% if data.active == True %}
+<div class="d-flex align-items-center justify-content-center mx-auto px-0" style="width: 75vw;max-width:21em; margin-top:20px;margin-bottom: 20px;">
+<div  id="active-{{data.id}}" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+  <div class="col-10 border-5 border-start border-success mt-4" style="position:relative;">
+    <span class="badge rounded-pill bg-light border text-dark" style="position:absolute;top:-35px;left:-10px;"><small>${{ data.price }}</small></span>
+  </span><h4>{{data.title}}</h4>
+    <small>{{ data.description}}</small>
+  </div>
+<div class="col-2">
+  <i hx-get="{% url 'edit_special' data.id %}" hx-target="#active-{{data.id}}" class="fa-solid fa-pen me-2" style="position:absolute;top:10px;right:-2px;"></i>
+  <i hx-get="{% url 'deactivate_special' data.id %}" class="fa-solid fa-power-off text-danger" style="position:absolute;top:10px;right:32px;"></i>
+</div>
+  <div class="col-4 mt-4">
+    <div class="text-center text-dark bg-light border rounded p-1 shadow-sm" style="">
+      <small>Expires:  {{ data.expires|date:"M d" }}</small>
+    </div>
+  </div>
+  <div class="col-8 mt-4">
+    <ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center p-1 ps-2">
+       <small>Views</small>
+        <span class="badge bg-light rounded-pill border text-secondary">{{ data.view }}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center p-1 ps-2">
+       <small>Subscribers</small>
+        <span class="badge bg-light rounded-pill border text-secondary">{{ data.subs }}</span>
+      </li>
+     
+  </div>
+  <div class="col-12"> <button class="btn btn-sm w-100 border mt-3 p-1 text-white" style="background-color:#f08000; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+    background-size: 8px 8px;" data-bs-toggle="collapse" data-bs-target="#image-{{data.id}}" role="button">Preview</button></div>
+  <div class="col justify-content-center" style="margin-left:-10px;">
+    
+    <div class="collapse text-center" id="image-{{data.id}}">
+      {% include 'specialwidget/widget.html' %}
+    </div>
+  </div>
+
+
+</div>
+</div>
+
+{% endif %}
+{% endfor %}
+
+<hr style="color: white;">
+
+
+{% for data in all_data %}
+{% if data.active == False %}
+<div class="d-flex align-items-center justify-content-center mx-auto rounded shadow" style="width: 75vw;max-width:21em; margin-top:10px;">
+<div id="inactive-{{ data.id }}"class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+
+  <div class="col-10 border-5 border-start border-danger mt-4" style="position:relative;">
+    <span class="badge rounded-pill bg-light border text-dark" style="position:absolute;top:-35px;left:-10px;"><small>${{ data.price }}</small></span>
+  </span><h4>{{data.title}}</h4>
+    <small>{{ data.description}}</small>
+    
+  </div>
+<div class="col-2">
+  <i hx-get="{% url 'edit_special' data.id %}" hx-target="#inactive-{{data.id}}" class="fa-solid fa-recycle me-2 text-success" style="position:absolute;top:10px;right:-2px;"></i>
+  <i hx-delete="{% url 'delete_special' data.id %}" class="fa-solid fa-trash-can" style="position:absolute;top:10px;right:32px;"></i>
+</div>
+  <div class="col-4 mt-4">
+    <div class="text-center text-dark border rounded p-1 shadow-sm bg-light" style="">
+      <small>Expired:  {{ data.expires|date:"M d" }}</small>
+    </div>
+  </div>
+  <div class="col-8 mt-4">
+    <ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center p-1 ps-2">
+       <small>Views</small>
+        <span class="badge bg-light rounded-pill border text-secondary">{{ data.view }}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center p-1 ps-2">
+       <small>Subscribers</small>
+        <span class="badge bg-light rounded-pill border text-secondary">{{ data.subs }}</span>
+      </li>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-sm w-100 border mt-3 p-1 text-white" style="background-color:#f08000; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+    background-size: 8px 8px;" data-bs-toggle="collapse" data-bs-target="#image-{{data.id}}" role="button">Preview</button>
+    <div class="collapse text-center p-3" id="image-{{data.id}}" style="overflow: hidden;">
+      {% include 'specialwidget/widget.html' %}
+    </div>
+  </div>
+
+
+</div>
+</div>
+{% endif %}  
+  
+{% endfor %}
+
+
+
+
+
+
+
+</div>
+</div>
+</div>
+{% endblock %}

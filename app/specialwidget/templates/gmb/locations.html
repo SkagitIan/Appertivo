@@ -1,0 +1,6 @@
+<h5>Which Location do you want to link to this account?</h5>
+{% for l in locations %}<form hx-post="{% url 'gmb' %}">
+    <button class="btn btn-sm w-100 border mt-3"  hx-headers="{{ headers }}">{{ l.title }}</button>
+<input type="hidden" name="location_id" value="{{ l.name }}">
+</form>
+    {% endfor %}

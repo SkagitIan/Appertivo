@@ -1,0 +1,25 @@
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light" style="min-height:70px;border-bottom:2px solid #505285;>
+  <div class="container-fluid">
+    <a class="ms-3 navbar-brand" href="#"><img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675137082/A_irbxfs.png" width="55px;"></a>
+    <button class="navbar-toggler me-4" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav list-group mx-auto">
+        <li class="nav-item list-group-item mx-2">
+          <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Dashboard</a>
+        </li>
+        <li class="nav-item list-group-item mx-2">
+          <a class="nav-link" aria-current="page" data-bs-toggle="modal" data-bs-target="#addSpecialModal">Add Special</a>
+        </li>
+        <li class="nav-item list-group-item mx-2">
+          <a class="nav-link" href="{% url 'dashboard_settings' %}">Settings</a>
+        </li>
+        <li class="nav-item list-group-item mx-2">
+          <a class="nav-link" href="{% url 'dashboard_subscribers' %}">Subscribers</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

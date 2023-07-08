@@ -1,0 +1,11 @@
+
+<div class="" id="onboarding">
+    <form hx-post="{% url 'final_onboarding' %}">
+        {% csrf_token %}
+<input type="text" name="redirect_url" class="form-control" placeholder="URL">
+<small>What URL do people order from?</small><br/>
+<button class="btn btn-sm w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+        background-size: 8px 8px;" type="submit">Continue</button>
+</form>
+
+</div>

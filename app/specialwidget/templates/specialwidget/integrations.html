@@ -1,0 +1,45 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/sidebar.html' %}
+
+
+  <div id="main" class="col py-3">
+
+    <h4 class="display-4 text-white ms-4">Integration</h4>
+
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 75vw;max-width:21em;margin-top:20px;margin-bottom: 20px;">
+<div id="" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+  <form hx-get="{% url 'colorpicker' %}" hx-target="#colorform"class="bg-white border p-2 mx-auto rounded mb-3">
+    
+    <div id="colorform" class="row">
+      <div class="col-9">
+    <label for="exampleColorInput" class="form-label">Pick a color for your button and widget</label></div>
+    <div class="col-3 pt-2 text-center"><input type="color" class="form-control form-control-color" name="color" id="color" value="#f08000" title="Choose your color">
+    <button type="submit" class="btn btn-sm text-white mt-1 border" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+    background-size: 8px 8px;"><small>Save</small></button></div>
+</div>
+  </form>
+  <p>
+    <button class="text-white text-center rounded border-white shadow-0" onclick="openForm()" style="z-index: 10;font-size:1em;background-color:#b5aee4;"><i class="fas fa-utensils"></i></button>
+    The Appertivo widget won't work until you add this code to the footer of your website.  It should go right BEFORE the ending body tag. </p>
+  <textarea class="w-100 form-control form-control-sm p-3" style="height:135px;overflow:auto;" id="embedblock"><script src="http://127.0.0.1:8000/static/specialwidget/widget.js" memberid="{{membership.id}}" id="foodscriptone"></script><div id="fooddiv"></div></textarea>
+  <button class="btn btn-sm w-100 border mt-3 mb-2 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+  background-size: 8px 8px;" onclick="copyToClipboard()" role="button">Copy to Clipboard</button>
+  <small>Email us for help with this step: support@appertivo.com</small>
+</div>
+</div>
+
+
+
+
+
+
+</div></div>
+{% endblock %}

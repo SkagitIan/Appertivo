@@ -1,0 +1,48 @@
+{% extends "specialwidget/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center mx-auto rounded shadow" style="width: 21rem;margin-top:10px;">
+  <div id="inactive-{{ data.id }}"class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+
+{% get_providers as socialaccount_providers %}
+
+{% if socialaccount_providers %}
+<p>{% blocktrans with site.name as site_name %}Please sign in with one
+of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>{% endblocktrans %}</p>
+
+<div class="socialaccount_ballot">
+
+  <ul class="socialaccount_providers">
+    <a href="{% provider_login_url "google" process="connect" %}"><img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197360/icons8-google-48_fpsdrp.png"></a>
+    <a href="{% provider_login_url "facebook" process="login" %}"><img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197469/icons8-facebook-48_l551du.png"></a>
+    <a href="{% provider_login_url "twitter" process="login" %}"><img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197588/icons8-twitter-48_aiq5um.png"></a>
+  </ul>
+
+</div>
+
+{% include "socialaccount/snippets/login_extra.html" %}
+
+{% else %}
+<p>{% blocktrans %}If you have not created an account yet, then please
+<a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
+{% endif %}
+
+<form class="login form-control p-3" method="POST" action="{% url 'account_login' %}">
+  {% csrf_token %}
+  {{form|crispy}}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% endif %}
+  
+  <button class="primaryAction btn btn-lg bg-primary text-white" type="submit">{% trans "Sign In" %}</button><br/><br/>
+  <small><a class="button secondaryAction mt-2 " href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a></small>
+</form>
+</div></div>
+{% endblock %}

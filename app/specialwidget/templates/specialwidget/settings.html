@@ -1,0 +1,73 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/sidebar.html' %}
+
+<div id="main" class="col py-3">
+  <div class="d-flex align-items-center justify-content-center mx-auto" style="width: 75vw;max-width:21em; margin-top:20px;margin-bottom: 20px;">
+    <div  id="active-{{data.id}}" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+    <ul class="list-group rounded-bottom">
+        <a class="list-group-item list-group-item-action border-left border-right border-top bg-light p-3" data-bs-toggle="collapse" href="#embedCollapse" role="button" aria-expanded="false" aria-controls="embedCollapse">Embed Code for your Website</a>
+        <span class="collapse" id="embedCollapse">
+          <textarea class="w-100 form-control form-control-sm p-3" style="height:120px;overflow:auto;" onclick="copyToClipboard()" id="embedblock"><script src="http://127.0.0.1:8000/static/specialwidget/widget.js" memberid="{{user.id}}" id="foodscriptone"></script><div id="fooddiv"></div></textarea>
+      </span>
+        <a class="list-group-item list-group-item-action border-left border-right border-top bg-light p-3" data-bs-toggle="collapse" href="#authUsers" role="button" aria-expanded="false" aria-controls="authUsers">Authorized Users</a>
+        <span class="collapse p-3 bg-light" id="authUsers">
+          <ul class="list-group mx-3">
+          {% for user in membership.user.all %}
+             <li class="list-group-item d-flex justify-content-between align-items-right"><span>{{ user.username }}</span>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="active" checked>
+                <i class="fa-regular fa-trash-can text-warning"></i>
+              </div>
+              </li> 
+          {% endfor %}
+        </ul>
+        {{form|crispy}}
+                <form hx-post="{% url 'add_auth_user' %}" class="border p-3 mt-3">
+                  <h5>Add a User</h5>
+                  <input type="hidden" name="member_id" value="{{ membership.id}}">
+                  {% render_field register_form.username placeholder=register_form.username.label class+="form-control mb-3" %}
+                  {% render_field register_form.email placeholder=register_form.email.label class+="form-control mb-3" %}
+                  {% render_field register_form.password1 placeholder=register_form.password1.label class+="form-control mb-3" %}
+                  {% render_field register_form.password2 placeholder=register_form.password2.label class+="form-control mb-3" %}
+        
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm text-light shadow-sm px-4 mt-3" style="background-color:#505285;">Continue</button>
+        
+                  </form>
+
+        </span>
+        <a class="list-group-item list-group-item-action">Billing</a>
+        <a class="list-group-item list-group-item-action">Security</a>
+
+      </ul>
+  
+
+  </div></div>
+  {% if messages %}
+  {% for message in messages %}
+  <div class="toast" style="position:fixed;bottom:5px;right:5px;" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      
+      <strong class="me-auto"><i class="fa-regular fa-bell"></i></strong>
+
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+     <h6>{{ message }}</h6> 
+    </div>
+  </div>{% endfor %}
+  {% endif %}
+
+  
+</div>
+</div>
+</div>
+{% endblock %}

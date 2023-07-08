@@ -1,0 +1,35 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+    <form hx-post="{% url 'add_special' %}" hx-target="#form" hx-encoding="multipart/form-data" enctype='multipart/form-data'
+                                            class="bg-light border shadow rounded pb-2">
+       {{ form.membership.as_hidden }}
+         {{ form.media }}
+         {% csrf_token %}
+         {% render_field form.title type='text' id="title" class+="form-control my-2" %}
+         {% render_field form.description type='textarea' id="description" class+="form-control mb-2" %}
+         
+         <div class="input-group input-group-sm">
+             <span class="input-group-text" id="inputGroup-sizing-sm">$</span>
+             {% render_field form.price type='text' id="price" class+="form-control col-4" %}
+             
+         </div>
+        <div class="input-group input-group-sm">
+         {% render_field form.image|append_attr:"hidden:hidden" type='file' id="image_file" name="image"  class+="form-control"%}
+         <input class="btn btn-sm mb-2 form-control text-light rounded mt-2" type="button" id="image_button" value="Upload Picture"style="background-color:#f08000; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+         background-size: 8px 8px;">
+        </div>
+
+        <div class="input-group">
+            <label class="input-group-text col-form-label-sm " id="" style="height:31px;"><small>Expires</small></label>
+         {% render_field form.expires type='date' id="expires" class+="form-control form-control-sm mb-2" %}
+        </div>
+           <button class="btn btn-lg w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+           background-size: 8px 8px;" role="submit">Continue</button>
+   
+             
+   </form>
+   <p>
+     {% if member.gmb_location_name %}
+   Publishing to Google Account: {{ member.gmb_location_name}
+   {% endif %}</p>
+   

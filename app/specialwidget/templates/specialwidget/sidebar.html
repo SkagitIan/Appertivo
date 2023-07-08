@@ -1,0 +1,54 @@
+
+ 
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+            <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                <a href="{% url 'dashboard' %}" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <span class="fs-5 d-none d-sm-inline">Dashboard</span>
+                </a>
+                <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+                    <li>
+                        <a href="{% url 'dashboard' %}" class="nav-link px-0 align-middle" style="color:#B66EC7;">
+                            <i class="fas fa-home"></i><span class="ms-1 d-none d-sm-inline">Home</span> </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'add_special' %}" class="nav-link px-0 align-middle" style="color:#B66EC7;">
+                            <i class="fa-solid fa-plus"></i><span class="ms-1 d-none d-sm-inline">Add Special</span> </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_subscribers' %}" class="nav-link px-0 align-middle" style="color:#B66EC7;">
+                            <i class="fas fa-mail-bulk"></i><span class="ms-1 d-none d-sm-inline">Subscribers</span> </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_integrations' %}" class="nav-link px-0 align-middle " style="color:#B66EC7;">
+                            <i class="fas fa-code"></i><span class="ms-1 d-none d-sm-inline">Integrations</span></a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_billing' %}" class="nav-link px-0 align-middle " style="color:#B66EC7;">
+                            <i class="fas fa-credit-card"></i><span class="ms-1 d-none d-sm-inline">Billing</span></a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_support' %}" class="nav-link px-0 align-middle " style="color:#B66EC7;">
+                            <i class="far fa-question-circle"></i><span class="ms-1 d-none d-sm-inline">Support</span></a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_google' %}"class="nav-link px-0 align-middle" style="color:#B66EC7;">
+                            <img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197360/icons8-google-48_fpsdrp.png" style="width:20px;"></a>
+                            
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_support' %}" class="nav-link px-0 align-middle " style="color:#3b5998;">
+                            <i class="fa-brands fa-facebook-f"></i></a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard_support' %}" class="nav-link px-0 align-middle " style="color:#00ACEE;">
+                            <i class="fa-brands fa-twitter"></i></a>
+                    </li>
+                    
+                    
+                </ul>
+                <hr>
+                
+            </div>
+        </div>

@@ -1,0 +1,24 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
+    <div id="onboard" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+       <form id="form" hx-get="{% url 'get_locations_from_google' %}" hx-target="#onboard">
+
+            {% csrf_token %}
+        <input type="text" name="location" class="form-control" placeholder="Search for Your Business" required>
+        <small class="text-secondary">It's helpful if you add a city "Gino's Pizza, Burlington, WA"</small><br/>
+        <button class="btn btn-sm w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+        background-size: 8px 8px;" type="submit">Continue</button>
+
+    </form>
+
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+
+<center>
+  <h1 class="mt-2 mb-1" style="color:#505285;">Preview</h1>
+</center>
+{% include 'specialwidget/widget.html' %}
+<center>
+  <button hx-get="{% url 'special_confirm' data.id %}" class="btn btn-lg w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+        background-size: 8px 8px;" role="submit">Continue</button>
+   
+    <a href="{% url 'dashboard' %}" class="btn btn-sm btn bg-secondary rounded mt-2 shadow d-inline text-light col-3">Cancel</a></center>
+</center>

@@ -1,0 +1,26 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+<div class="h-100 d-flex align-items-center justify-content-center">
+    <div class="col-md-3 p-5 text-center border shadow-sm rounded" style="margin-top:15%;background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);">
+        <form method="POST" action="{% url 'register' %}">
+
+
+          {% render_field form.username placeholder=form.username.label class+="form-control mb-3" %}
+          {% render_field form.email placeholder=form.email.label class+="form-control mb-3" %}
+          {% render_field form.password1 placeholder=form.password1.label class+="form-control mb-3" %}
+          {% render_field form.password2 placeholder=form.password2.label class+="form-control mb-3" %}
+
+            {% csrf_token %}
+            <button type="submit" class="btn btn-lg bg-light shadow-sm px-4 mt-3"><i class="fa-solid fa-egg text-black-50">  Continue</i></button>
+
+          </form>
+      
+    </div>
+  </div>
+{% endblock %}

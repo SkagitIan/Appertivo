@@ -1,0 +1,41 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags%}
+{% block title %}
+
+{% endblock %}
+
+{% block content %}
+{% include 'specialwidget/topnavbar.html' %}
+
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
+    <a href="#" onclick=hide()>x</a>
+    <div id="data-none" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+        <h5>Add Code to Website</h5>
+        <p class="mb-3">You will need to add this bit of code to your website, right above the closing body tag </p>
+        <textarea class="mt-2 mb-1 w-100 form-control form-control-sm p-3" style="height:140px;overflow:auto;" onclick="copyToClipboard()" id="embedblock"><script src="http://127.0.0.1:8000/static/specialwidget/widget.js" memberid="{{user.id}}" id="foodscriptone"></script><div id="fooddiv"></div></textarea>
+        <p class="lh-1"><small>There are many guides out there for this depending on your platform, If you need help with this please email support@appertivo.com</small></p>
+
+        </div>
+    </div>
+<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
+    <div  id="" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+        <h5>Then add a special!</h5>
+        <p class="mb-3">Once the appertivo tag is loaded on your website, all thats left is adding a daily special.</p>
+  {% include 'specialwidget/special_form.html' %}
+    </div></div>
+
+<script>
+function hide() {
+    var div = document.getElementById("data-none");
+    if (div.style.display === "none") {
+    div.style.display = "block";
+  } else {
+    div.style.display = "none";
+  }
+}
+
+</script>
+
+{% endblock %}

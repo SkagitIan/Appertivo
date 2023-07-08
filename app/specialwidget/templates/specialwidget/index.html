@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en" style="min-height: 100%;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="generator" content="">
+    <title>Appertivo - Making your Daily Specials Fire!</title>
+    <script src="https://unpkg.com/htmx.org@1.8.4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Paaji+2&family=Pacifico&family=Ubuntu:ital,wght@1,700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@900&family=Raleway&family=Sofia+Sans+Extra+Condensed&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@900&family=Raleway&family=Sofia+Sans+Extra+Condensed&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@900&family=Raleway&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+      .image_section img{
+          display: block;
+      }
+  
+      @media (max-width:640px){
+          .image_section img:first-child{
+              display:none;
+          }
+      }
+      </style>  
+  </head>
+     
+  <body class="w-100 my_container" style="background-image: linear-gradient(to top, #bdc2e8 0%, #bdc2e8 1%, #e6dee9 100%);">
+{% load static %}
+<nav class="navbar navbar-expand-lg text-white" style="background-color: #B66EC7;color:#fff;font-family: 'Lexend Deca', sans-serif;">
+  <div class="container-fluid">
+    <a class="navbar-brand fs-1 ms-5" href="#" style="font-family: 'Pacifico', cursive;">Appertivo</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="mt-3 collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active text-white fs-5 me-3" aria-current="page" href="#features">Features</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active text-white fs-5 me-3" aria-current="page" href="#pricing">Pricing</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active text-white fs-5 me-3" aria-current="page" href="#about">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active text-dark fs-5 px-3 me-3 btn btn-sm border-dark" aria-current="page" href="{{ login_url }}">Login</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% block content %}
+<div class="row pt-3" style="background-color: #B66EC7;min-height:100vh;">
+<div class="col-lg-6 mx-auto p-3 col-md-5 my-auto text-center">
+
+  <main>
+    <h1 class="mb-5 w-100 mx-auto" style="font-family: 'Lexend Deca', sans-serif;letter-spacing: -2px;word-spacing: -1px;font-family: 'Raleway', font-weight:900;sans-serif;color: #000;">
+          Instantly Update your Website, Socials and Fans with your<span style="color: #fff;"> Daily Restaurant Specials!</span>
+          </h1>
+    <p class="w-100 mx-auto text-center text-light fs-4 lh-2 mb-2" style="position:relative;">
+Leverage what you know, Share it with Everyone to Sell More Specials.
+    </p>
+
+    <div class="mb-5 mt-3">
+      {% if user %}
+      <a href="{{ signup_url }}" class="btn btn-lg border px-5 text-white shadow" style="background-color:#f08000; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
+      background-size: 8px 8px;"role="button">Coming Soon</a><br/>
+      <small class="text-white">No Credit Card Required</small>
+      {% else %}
+      <a href="{% url 'dashboard' %}" class="btn btn-dark text-light border shadow-sm btn-lg px-4">Dashboard</a>
+      {% endif %}
+      
+    </div>
+
+  </div>
+  </div>
+
+  <div class="row align-items-center justify-content-center" style="min-height:400px;background-color: #252426;">
+
+      <div class="col-sm-12 col-md-3 col-lg-5 mx-auto p-4">
+        <p class="lh-2 fw-bolder fs-1" style="color:#fff;">
+         For $59 a month, Turn your restaurants daily specials into engaging content<i class="fas fa-utensils text-white p-3 rounded fs-5 ms-4" style="background-color: #B66EC7;"></i></li>
+        </p>
+        <p class="text-white">You make the food taste good & look great, then our restaurant marketing tools go to work keeping your website updated, emailing your friends and sharing it with fans.
+        </p>
+       <p class="mt-4 ms-4 text-white" style="position: relative;">Integrated with: <img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197360/icons8-google-48_fpsdrp.png" width="35px">
+        <img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197469/icons8-facebook-48_l551du.png" width="35px"><img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197548/icons8-twitter-96_zz6c8n.png" width="35px"></p>
+        
+      </div>
+      <div class="col-sm-12 col-md-4 col-lg-4 mx-auto image_section" name="pricing">
+        
+
+        <img height="400px;" src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1676485430/Website%20Files/GsHFRIw7TOK74vD1N9Y8_restaurant_manager_to_leader_egjoja.png">
+      </div>
+
+</div>
+<div class="row bg-white align-items-center justify-content-center">
+  <div class="col-lg-4 col-md-6 p-4 mb-5">
+    <h3 class="mb-4 mt-4 w-100 mx-auto fs-1" style="font-family: 'Lexend Deca', sans-serif;letter-spacing: -2px;word-spacing: -1px;font-family: 'Raleway', font-weight:600;sans-serif;color: #000;">
+      Simple tool with <br/><span style="color: #f08000;">Loads of features!</span></h3>
+      <ul class="list-group">
+        <li class="list-group-item border-0"><i class="fa-solid fa-utensils me-2 p-2 rounded text-white" style="background-color:#B66EC7;"></i>Instantly update the Appertivo widget on your restaurants website.</li>
+        <li class="list-group-item border-0"><i class="fa-solid fa-envelopes-bulk me-2 p-2 rounded text-white" style="background-color:#B66EC7;"></i></i>Start building an email list of fans without any extra software.</li>
+        <li class="list-group-item border-0"><i class="fa-brands fa-google me-2 p-2 rounded text-white" style="background-color:#B66EC7;"></i>Create a Google Local Post on Maps and Business profile pages</li>
+        <li class="list-group-item border-0"><i class="fa-solid fa-hashtag me-2 p-2 rounded text-white" style="background-color:#B66EC7;"></i>Share your daily special on Facebook, Twitter, Instagram and more.</li>
+        <li class="list-group-item border-0"><i class="fa-solid fa-chart-simple me-2 p-2 rounded text-white" style="background-color:#B66EC7;"></i>Track widget views, clicks, email signups & more!</li>
+      </ul>
+  </div>
+  <div class="col-lg-4 col-md-6 p-4" style="" name="features">
+<img class="img-fluid border-left" style="border-color:#f08000;margin-bottom:-35px;" 
+src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1676492788/Website%20Files/screenshots2_xwmtku.png">
+  </div>
+</div>
+<div class="row bg-dark align-items-center justify-content-center">
+  <div class="col-lg-3 col-md-4 p-4 text-right">
+    <img class="img-fluid" style="position:relative;z-index: 100;" src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1676495275/Website%20Files/FB_IMG_1538853330023_rx1rcr.jpg">
+  </div>
+  <div class="col-lg-6 col-md-6 p-4 align-items-top" style="vertical-align: top;">
+    <p class="mb-4 mt-4 w-100 mx-auto fs-1 fw-bolder" style="color: #fff;">
+      Designed by a chef & restaurateur with little time, big demands and hungry for sales!
+     </p>
+     
+      
+      <p class="text-light fs-5">
+      Daily specials are very important for the bottom line as we can control the food cost, pricing and use ingredients as we need to.
+       Specials can also keep the creative juices flowing from the culinary team, they gives you something to talk about at the table and on social media
+       and keeps your customers intrigued and coming back for more.  Our restaurant marketing tools do all the heavy lifting allowing you to do what you do 
+       best, make good food!
+     </p>
+     <p class="text-white fs-5">
+      Feel free to reach out to me with any questions or feature requests.<br/>
+      <button class="btn btn-lg border shadow bg-secondary text-light px-4 mt-2">Contact</button>
+     </p>
+  </div>
+</div>
+<div class="row align-items-center" style="background-color: #B66EC7;min-height:100px;" name="about">
+<div class="col-8">
+  
+</div>
+
+</div>
+  </main>
+  <script>
+    function rotateArrow(){
+      document.querySelector('.arrow').style.transform
+              = 'rotate(90deg)';
+    }
+
+  </script>
+
+
+
+{% endblock %}
