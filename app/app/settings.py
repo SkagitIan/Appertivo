@@ -106,11 +106,11 @@ CRISPY_TEMPLATE_PACK="bootstrap5"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd4jka2f8ku03sn',
-        'USER': 'lsjnrjzsmznvev',
-        'PASSWORD': os.environ['DATABASE_PASSWORD'],
-        'HOST': 'ec2-34-194-158-176.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'NAME': 'defaultdb',
+        'USER': 'doadmin',
+        'PASSWORD': 'AVNS_C0Ius1pV8w_Wzr7CWXb',
+        'HOST': 'dbappertivo-do-user-14353730-0.b.db.ondigitalocean.com',
+        'PORT': '25060',
     }
 }
 
