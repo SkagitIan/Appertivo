@@ -1,6 +1,7 @@
 (() => {
   const restaurantId = "{{ restaurant_id|escapejs }}";
   const apiUrl = "{{ api_url|escapejs }}";
+  const subscribeUrl = "{{ subscribe_url|escapejs }}";
 
   console.log("restaurantId", restaurantId);
   console.log("apiUrl", apiUrl);
@@ -489,7 +490,7 @@
     }
 
     // Call your API endpoint for email subscription
-    fetch(`${apiUrl}/subscribe`, {
+    fetch(subscribeUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

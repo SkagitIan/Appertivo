@@ -30,3 +30,11 @@ class Special(models.Model):
 
     def __str__(self):
         return self.title
+
+class EmailSignup(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='email_signups')
+    email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.email} - {self.user_profile}"
