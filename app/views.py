@@ -69,7 +69,7 @@ def specials_api(request):
         data.append({
             "title": sp.title,
             "description": sp.description,
-            "image_url": request.build_absolute_uri(sp.image.url) if sp.image else "",
+            "image_url": sp.image or "",
             "cta": ctas,
             "enable_email_signup": sp.enable_email_signup,
         })

@@ -1,6 +1,9 @@
 from django import forms
 from .models import Special
 from django.core.exceptions import ValidationError
+from cloudinary import uploader
+from cloudinary.utils import cloudinary_url
+
 
 class SpecialForm(forms.ModelForm):
     CTA_CHOICES = [
@@ -16,6 +19,7 @@ class SpecialForm(forms.ModelForm):
         required=True,
         label="Choose One Call to Action"
     )
+    image = forms.ImageField(required=False)
 
     class Meta:
         model = Special
@@ -27,6 +31,27 @@ class SpecialForm(forms.ModelForm):
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def save(self, commit=True):
+        """Upload image to Cloudinary and store optimized URL."""
+        original_image = self.instance.image if self.instance.pk else None
+        instance = super().save(commit=False)
+        image_file = self.cleaned_data.get("image")
+        if image_file:
+            upload_result = uploader.upload(image_file, folder="specials")
+            optimized_url, _ = cloudinary_url(
+                upload_result["public_id"],
+                format="auto",
+                quality="auto",
+                secure=True,
+            )
+            instance.image = optimized_url
+        else:
+            instance.image = original_image
+
+        if commit:
+            instance.save()
+        return instance
 
     def clean(self):
         cleaned_data = super().clean()
