@@ -190,6 +190,8 @@ def special_inline_update(request, pk):
     if request.method == "POST":
         # Create a mutable copy of POST data
         post_data = request.POST.copy()
+        if 'image' not in request.FILES:
+            post_data.pop('image', None)
         
         # Ensure all required fields are present with current values
         required_fields = {
