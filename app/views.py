@@ -8,6 +8,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseBadRequest, QueryDict
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def dashboard(request):
@@ -40,7 +44,7 @@ def appertivo_widget(request):
     
 def specials_api(request):
     restaurant_id = request.GET.get('restaurant')
-    print(restaurant_id)
+    logger.debug("Restaurant ID: %s", restaurant_id)
     today = timezone.localdate()
     qs = Special.objects.filter(
         Q(published=True),
@@ -131,9 +135,11 @@ from .models import Special
 @require_http_methods(["POST"])
 def special_inline_update(request, pk):
     special = get_object_or_404(Special, pk=pk)
-    print(f"Inline update for special {special.pk} with data: {request.POST}")
-    print("POST:", request.POST)
-    print("FILES:", request.FILES)
+    logger.debug(
+        "Inline update for special %s with data: %s", special.pk, request.POST
+    )
+    logger.debug("POST: %s", request.POST)
+    logger.debug("FILES: %s", request.FILES)
     
     if request.method == "POST":
         # Create a mutable copy of POST data
@@ -175,10 +181,10 @@ def special_inline_update(request, pk):
         
         if form.is_valid():
             updated_special = form.save()
-            print(f"Successfully saved special {updated_special.pk}")
+            logger.info("Successfully saved special %s", updated_special.pk)
             return HttpResponse(status=204)  # Success, no content
         else:
-            print("Form errors:", form.errors.as_json())
+            logger.debug("Form errors: %s", form.errors.as_json())
             # Return more detailed error information
             error_details = []
             for field, errors in form.errors.items():
