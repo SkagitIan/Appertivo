@@ -1,60 +1,113 @@
 {% load static %}
-{% load form_tags %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Preview Special - Appertivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
+<div class="preview-container">
+  <h2 class="preview-heading text-brand fw-bold">
+    <i class="bi bi-eye me-2"></i>Special Preview
+  </h2>
 
-  <!-- Custom Brand Fonts (Optional) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  {% include "_special_widget.html" with special=special show_email_form=special.enable_email_signup %}
+</div>
 
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f9f9f9;
-      color: #49475B;
+<style>
+  :root {
+    --lavender-purple: #B993D6;
+    --vibrant-orange: #f08000;
+    --seafoam-green: #58B09C;
+    --charcoal-purple: #49475B;
+    --jet-black: #14080E;
+  }
+
+  .preview-container {
+    max-width: 400px;
+    margin: 3rem auto;
+  }
+
+  .preview-heading {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .appertivo-widget-content {
+    padding: 25px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  .appertivo-special-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+  }
+
+  .appertivo-special-title {
+    font-family: 'Calistoga', sans-serif;
+    font-size: 20px;
+    color: var(--jet-black);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .appertivo-special-description {
+    color: var(--charcoal-purple);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+
+  .appertivo-cta-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .appertivo-cta-button {
+    flex: 1;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 100px;
+  }
+
+  .appertivo-cta-button:hover {
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+  }
+
+  .appertivo-cta-button.order {
+    background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35);
+  }
+
+  .appertivo-cta-button.call {
+    background: linear-gradient(135deg, var(--seafoam-green), #4a9b8e);
+  }
+
+  .appertivo-cta-button.mobile_order {
+    background: linear-gradient(135deg, var(--lavender-purple), #9b7bc8);
+  }
+</style>
+
+<script>
+  (function () {
+    const emailForm = document.querySelector('#appertivo-email-form');
+    if (emailForm) {
+      emailForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const email = document.querySelector('#appertivo-email-input')?.value || '';
+        alert(`(Preview) Subscribed as: ${email}`);
+      });
     }
-    .preview-container {
-      max-width: 400px;
-      margin: 3rem auto;
-    }
-    .preview-heading {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .appertivo-widget-content {
-      border: 1px solid #eee;
-    }
-  </style>
-</head>
-<body>
-  <div class="container preview-container">
-    <h2 class="preview-heading text-brand fw-bold">
-      <i class="bi bi-eye me-2"></i>Special Preview
-    </h2>
+  })();
+</script>
 
-    </div>
-  </div>
-
-  <script>
-    // Optional: handle email form preview with alert
-    document.addEventListener("DOMContentLoaded", function () {
-      const emailForm = document.querySelector("#appertivo-email-form");
-      if (emailForm) {
-        emailForm.addEventListener("submit", function (e) {
-          e.preventDefault();
-          const email = document.querySelector("#appertivo-email-input")?.value || "";
-          alert(`(Preview) Subscribed as: ${email}`);
-        });
-      }
-    });
-  </script>
-</body>
-</html>
