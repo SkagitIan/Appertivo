@@ -1,0 +1,214 @@
+{% load form_tags %}
+<div class="container bg-light"> 
+  <div class="row justify-content-center">
+
+          <form method="POST" enctype="multipart/form-data"
+                hx-post="{% url 'special_edit' special.pk %}"
+                hx-target="#special-preview-{{ special.pk }}"
+                hx-swap="outerHTML"
+                hx-encoding="multipart/form-data"
+                id="special-edit-form"
+                class="p-4">
+
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <!-- Title Field -->
+            <div class="form-floating mb-4">
+              {{ form.title|add_class:"form-control form-control-lg pt-5 px-3 pb-4 fw-bold brand-purple fs-3 shadow" }}
+              <label for="{{ form.title.id_for_label }}" class="fw-semibold">
+                <i class="bi bi-type me-2"></i>Special Title
+              </label>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <div class="text-danger small">{{ form.title.errors }}</div>
+                <div class="counter-text" id="title-counter">0 / 60</div>
+              </div>
+            </div>
+
+            <!-- Description Field -->
+            <div class="form-floating mb-4">
+              {{ form.description|add_class:"form-control pt-5 px-3 pb-5 fw-bold brand-purple fs-3 shadow" }}
+              <label for="{{ form.description.id_for_label }}" class="fw-semibold">
+                <i class="bi bi-text-paragraph me-2"></i>Description
+              </label>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <div class="text-danger small">{{ form.description.errors }}</div>
+                <div class="counter-text" id="description-counter">0 / 250</div>
+              </div>
+            </div>
+
+            <!-- CTA Choice Section -->
+            <div class="cta-section p-3 mb-3 shadow">
+              <div class="form-check mb-1">
+                {{ form.cta_choices|add_class:"brand-purple fw-bold" }}
+              </div>
+              {% if form.cta_choices.errors %}
+                <div class="text-danger small">{{ form.cta_choice.errors }}</div>
+              {% endif %}
+
+              <!-- Dynamic CTA Fields -->
+              <div id="order-url-group" class="mt-3 d-none">
+                <div class="form-floating">
+                  {{ form.order_url|add_class:"form-control pt-5 px-3 pb-4 fw-bold brand-purple fs-3 shadow" }}
+                  <label for="{{ form.order_url.id_for_label }}">
+                    <i class="bi bi-link-45deg me-2"></i>Order URL
+                  </label>
+                </div>
+                <div class="text-danger small mt-1">{{ form.order_url.errors }}</div>
+              </div>
+
+              <div id="phone-number-group" class="mt-3 d-none">
+                <div class="form-floating">
+                  {{ form.phone_number|add_class:"form-control pt-5 px-3 pb-4 fw-bold brand-purple fs-3 shadow" }}
+                  <label for="{{ form.phone_number.id_for_label }}">
+                    <i class="bi bi-telephone-fill me-2"></i>Phone Number
+                  </label>
+                </div>
+                <div class="text-danger small mt-1">{{ form.phone_number.errors }}</div>
+              </div>
+
+              <div id="mobile-order-url-group" class="mt-3 d-none">
+                <div class="form-floating">
+                  {{ form.mobile_order_url|add_class:"form-control pt-5 px-3 pb-4 fw-bold brand-purple fs-3" }}
+                  <label for="{{ form.mobile_order_url.id_for_label }}">
+                    <i class="bi bi-phone-fill me-2"></i>Mobile Order URL
+                  </label>
+                </div>
+                <div class="text-danger small mt-1">{{ form.mobile_order_url.errors }}</div>
+              </div>
+            </div>
+
+            <!-- Date Fields -->
+            <div class="row mb-4 date-inputs">
+              <div class="col-md-6 mb-3 mb-md-0">
+                <div class="form-floating">
+                  {{ form.start_date|add_class:"form-control pt-5 px-3 pb-4 fw-bold brand-purple fs-3" }}
+                  <label for="{{ form.start_date.id_for_label }}" class="fw-semibold">
+                    <i class="bi bi-calendar-event me-2"></i>Start Date
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-floating">
+                  {{ form.end_date|add_class:"form-control pt-5 px-3 pb-4 fw-bold brand-purple fs-3" }}
+                  <label for="{{ form.end_date.id_for_label }}" class="fw-semibold">
+                    <i class="bi bi-calendar-check me-2"></i>End Date
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="mb-4">
+                <div class="image-upload-area p-4 rounded text-center">
+                  <input type="file" name="image" id="image-input" class="d-none">
+                  
+                  <label for="image-input" class="cursor-pointer">
+                    <i class="bi bi-cloud-upload fs-2 d-block mb-2"></i>
+                    <small>Choose an image file or drag and drop</small>
+                  </label>
+
+                  <div id="file-name" class="mt-2 text-muted"></div>
+                </div>
+
+                {% if form.image.errors %}
+                  <div class="text-danger small mt-1">{{ form.image.errors }}</div>
+                {% endif %}
+
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn brand-orange btn-lg py-3 fw-bold fs-5 rounded-3">
+                <i class="bi bi-plus-circle-fill me-2"></i>
+                Update Special
+                <i class="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </form>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+function updateCounter(inputElem, counterElem, maxLen) {
+  const currentLength = inputElem.value.length;
+  counterElem.textContent = `${currentLength} / ${maxLen}`;
+  
+  // Add visual feedback for character count
+  if (currentLength > maxLen * 0.9) {
+    counterElem.classList.add('text-warning');
+  } else if (currentLength === maxLen) {
+    counterElem.classList.remove('text-warning');
+    counterElem.classList.add('text-danger');
+  } else {
+    counterElem.classList.remove('text-warning', 'text-danger');
+  }
+}
+
+function setupCounters(container) {
+  const titleInput = container.querySelector('input[name="title"]');
+  const titleCounter = container.querySelector('#title-counter');
+  if (titleInput && titleCounter) {
+    updateCounter(titleInput, titleCounter, 60);
+    titleInput.addEventListener('input', () => updateCounter(titleInput, titleCounter, 60));
+  }
+
+  const descInput = container.querySelector('textarea[name="description"]');
+  const descCounter = container.querySelector('#description-counter');
+  if (descInput && descCounter) {
+    updateCounter(descInput, descCounter, 250);
+    descInput.addEventListener('input', () => updateCounter(descInput, descCounter, 250));
+  }
+}
+
+function toggleCTAFields() {
+  const selectedCTA = document.querySelector('input[name="cta_choice"]:checked')?.value;
+
+  const groups = {
+    order: document.getElementById('order-url-group'),
+    call: document.getElementById('phone-number-group'),
+    mobile_order: document.getElementById('mobile-order-url-group')
+  };
+
+  for (const key in groups) {
+    if (groups[key]) {
+      if (selectedCTA === key) {
+        groups[key].classList.remove('d-none');
+        // Add smooth animation
+        groups[key].style.opacity = '0';
+        setTimeout(() => {
+          groups[key].style.transition = 'opacity 0.3s ease';
+          groups[key].style.opacity = '1';
+        }, 10);
+      } else {
+        groups[key].classList.add('d-none');
+        groups[key].style.opacity = '0';
+        const input = groups[key].querySelector('input');
+        if (input) input.value = '';
+      }
+    }
+  }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  setupCounters(document);
+  toggleCTAFields();
+  document.querySelectorAll('input[name="cta_choice"]').forEach(radio => {
+    radio.addEventListener('change', toggleCTAFields);
+  });
+});
+
+// HTMX event handler
+document.addEventListener('htmx:afterSwap', (event) => {
+  if (event.detail.target.id === 'special-form-container') {
+    setupCounters(event.detail.target);
+    toggleCTAFields();
+    event.detail.target.querySelectorAll('input[name="cta_choice"]').forEach(radio => {
+      radio.addEventListener('change', toggleCTAFields);
+    });
+  }
+});
+</script>
