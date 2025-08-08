@@ -73,13 +73,26 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
   <div class="container">
-    <a class="navbar-brand" href="#">Appertivo</a>
-    <div class="d-flex">
-      {% if request.user.is_authenticated %}
-        <span class="text-muted small">Welcome, {{ request.user_profile }}</span>
-      {% else %}
-        <span class="text-muted small">Welcome, Guest</span>
-      {% endif %}
+    <a class="navbar-brand" href="{% url 'dashboard' %}">Appertivo</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        {% if request.user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_specials' %}">My Specials</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+      </ul>
+      <span class="navbar-text ms-3">
+        {% if request.user.is_authenticated %}
+          Welcome, {{ request.user_profile }}
+        {% else %}
+          Welcome, Guest
+        {% endif %}
+      </span>
     </div>
   </div>
 </nav>
