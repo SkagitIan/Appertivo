@@ -88,8 +88,22 @@ def special_create(request):
             special.published = False  # Not published yet
             special.user_profile = user_profile
             special.save()
-            # Return preview fragment instead of full list
-            return render(request, "app/appertivo_widget.js", {"special": special,"form": form})
+
+            ctas = []
+            if "order" in special.cta_choices:
+                ctas.append({"type": "order", "url": special.order_url})
+            if "call" in special.cta_choices:
+                ctas.append({"type": "call", "phone": special.phone_number})
+            if "mobile_order" in special.cta_choices:
+                ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
+            special.cta = ctas
+
+            # After creating the special show a preview that matches the widget
+            return render(
+                request,
+                "app/partials/special_preview.html",
+                {"special": special},
+            )
     else:
         form = SpecialForm()
     return render(request, "app/partials/special_form.html", {"form": form})
@@ -102,7 +116,15 @@ def special_edit(request, pk):
     if request.method == "POST":
         form = SpecialForm(request.POST, request.FILES, instance=special)
         if form.is_valid():
-            form.save()
+            special = form.save()
+            ctas = []
+            if "order" in special.cta_choices:
+                ctas.append({"type": "order", "url": special.order_url})
+            if "call" in special.cta_choices:
+                ctas.append({"type": "call", "phone": special.phone_number})
+            if "mobile_order" in special.cta_choices:
+                ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
+            special.cta = ctas
             return render(request, "app/partials/special_preview.html", {"special": special})
     
     return render(request, "app/partials/special_form_edit.html", {"form": form, "special": special})
