@@ -1,13 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
-from .models import Special
+from .models import Special, EmailSignup
 from .forms import SpecialForm
 from django.db import models
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse, HttpResponseBadRequest, QueryDict
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from profiles.models import UserProfile
+import json
 import logging
 
 
@@ -27,16 +31,16 @@ def dashboard(request):
         "form": form,
     })
 
-from django.http import JsonResponse
-from django.utils import timezone
 from django.db.models import Q
 
 def appertivo_widget(request):
     api_url = request.build_absolute_uri("/api/specials.js")
+    subscribe_url = request.build_absolute_uri("/api/subscribe/")
     restaurant_id = request.GET.get('restaurant', '')
 
     response = render(request, "app/widget_template.html", {
         "api_url": api_url,
+        "subscribe_url": subscribe_url,
         "restaurant_id": restaurant_id,
     })
     response['Content-Type'] = 'application/javascript'
@@ -76,8 +80,6 @@ def specials_api(request):
 
     return JsonResponse({"specials": data})
 
-from django.views.decorators.http import require_POST
-from django.http import HttpResponse
 
 def special_create(request):
     user_profile = getattr(request, 'user_profile', None)
@@ -141,6 +143,28 @@ def special_publish(request, pk):
     html = render_to_string("app/partials/embed_code.html", {"embed_code": embed_code})
 
     return HttpResponse(html)
+
+
+@csrf_exempt
+@require_POST
+def subscribe_email(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False}, status=400)
+
+    email = data.get("email")
+    restaurant_id = data.get("restaurant_id")
+    if not email or not restaurant_id:
+        return JsonResponse({"success": False}, status=400)
+
+    try:
+        profile = UserProfile.objects.get(id=restaurant_id)
+    except UserProfile.DoesNotExist:
+        return JsonResponse({"success": False}, status=404)
+
+    EmailSignup.objects.create(user_profile=profile, email=email)
+    return JsonResponse({"success": True})
 
 def my_specials(request):
     profile = getattr(request, "user_profile", None)

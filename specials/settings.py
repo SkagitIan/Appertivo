@@ -169,3 +169,7 @@ LOGGING = {
         },
     },
 }
+
+LOGIN_REDIRECT_URL = 'profile'
+LOGOUT_REDIRECT_URL = 'dashboard'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
