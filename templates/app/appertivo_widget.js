@@ -1,0 +1,560 @@
+(() => {
+  const restaurantId = "{{ restaurant_id|escapejs }}";
+  const apiUrl = "{{ api_url|escapejs }}";
+
+  console.log("restaurantId", restaurantId);
+  console.log("apiUrl", apiUrl);
+  
+  if (!restaurantId) {
+    console.warn('Appertivo Widget: No restaurant ID specified.');
+    return;
+  }
+
+  // Inject Bootstrap CSS and custom styles
+  const bootstrapLink = document.createElement('link');
+  bootstrapLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css';
+  bootstrapLink.rel = 'stylesheet';
+  document.head.appendChild(bootstrapLink);
+
+  const fontAwesomeLink = document.createElement('link');
+  fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+  fontAwesomeLink.rel = 'stylesheet';
+  document.head.appendChild(fontAwesomeLink);
+
+  const googleFontLink = document.createElement('link');
+  googleFontLink.href = 'https://fonts.googleapis.com/css2?family=Calistoga&display=swap';
+  googleFontLink.rel = 'stylesheet';
+  document.head.appendChild(googleFontLink);
+
+  // Inject custom CSS styles
+  const style = document.createElement('style');
+  style.textContent = `
+    :root {
+      --lavender-purple: #B993D6;
+      --vibrant-orange: #f08000;
+      --seafoam-green: #58B09C;
+      --charcoal-purple: #49475B;
+      --jet-black: #14080E;
+    }
+
+    /* Widget Trigger Button */
+    #appertivo-launcher {
+      position: fixed !important;
+      bottom: 30px !important;
+      right: 30px !important;
+      width: 70px !important;
+      height: 70px !important;
+      background: linear-gradient(135deg, var(--lavender-purple), var(--vibrant-orange)) !important;
+      border: none !important;
+      border-radius: 50% !important;
+      box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4) !important;
+      z-index: 999999 !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-family: 'Font Awesome 6 Free' !important;
+      font-size: 24px !important;
+      color: white !important;
+      cursor: pointer !important;
+      animation: pulse 2s infinite !important;
+    }
+
+    #appertivo-launcher:hover {
+      transform: scale(1.1) translateY(-2px) !important;
+      box-shadow: 0 12px 30px rgba(185, 147, 214, 0.6) !important;
+    }
+
+    #appertivo-launcher::before {
+      content: "\\f2e7" !important;
+      font-weight: 900 !important;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 0 rgba(240, 128, 0, 0.6) !important;
+      }
+      70% {
+        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 12px rgba(240, 128, 0, 0) !important;
+      }
+      100% {
+        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 0 rgba(240, 128, 0, 0) !important;
+      }
+    }
+
+    /* Widget Container */
+    #appertivo-widget-modal {
+      position: fixed !important;
+      bottom: 120px !important;
+      right: 30px !important;
+      width: 380px !important;
+      max-width: calc(100vw - 60px) !important;
+      background: white !important;
+      border-radius: 20px !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+      z-index: 1000000 !important;
+      transform: translateY(100px) scale(0.8) !important;
+      opacity: 0 !important;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      overflow: hidden !important;
+      font-family: 'Segoe UI', Tahoma, sans-serif !important;
+    }
+
+    #appertivo-widget-modal.show {
+      transform: translateY(0) scale(1) !important;
+      opacity: 1 !important;
+    }
+
+    /* Widget Header */
+    .appertivo-widget-header {
+      position: relative !important;
+      height: 160px !important;
+      background: linear-gradient(135deg, var(--lavender-purple), var(--seafoam-green)) !important;
+      overflow: hidden !important;
+    }
+
+    .appertivo-special-image {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      opacity: 0.9 !important;
+    }
+
+    .appertivo-close-btn {
+      position: absolute !important;
+      top: 15px !important;
+      right: 15px !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: none !important;
+      width: 36px !important;
+      height: 36px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: var(--charcoal-purple) !important;
+      font-size: 16px !important;
+      transition: all 0.3s ease !important;
+      backdrop-filter: blur(10px) !important;
+      cursor: pointer !important;
+    }
+
+    .appertivo-close-btn:hover {
+      background: white !important;
+      transform: rotate(90deg) !important;
+    }
+
+    /* Widget Content */
+    .appertivo-widget-content {
+      padding: 25px !important;
+    }
+
+    .appertivo-special-title {
+      font-family: 'Calistoga', sans-serif !important;
+      font-size: 20px !important;
+      color: var(--jet-black) !important;
+      margin-bottom: 12px !important;
+      line-height: 1.3 !important;
+    }
+
+    .appertivo-special-description {
+      color: var(--charcoal-purple) !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+      margin-bottom: 15px !important;
+    }
+
+    .appertivo-expiration-badge {
+      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
+      color: white !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      padding: 6px 12px !important;
+      border-radius: 20px !important;
+      display: inline-block !important;
+      margin-bottom: 20px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    /* Form Styles */
+    .appertivo-signup-form {
+      border-top: 2px solid #f8f9fa !important;
+      padding-top: 20px !important;
+    }
+
+    .appertivo-form-label {
+      color: var(--charcoal-purple) !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      margin-bottom: 8px !important;
+      display: block !important;
+    }
+
+    #appertivo-email-input {
+      border: 2px solid #e9ecef !important;
+      border-radius: 12px !important;
+      padding: 12px 16px !important;
+      font-size: 14px !important;
+      transition: all 0.3s ease !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      font-family: inherit !important;
+    }
+
+    #appertivo-email-input:focus {
+      border-color: var(--lavender-purple) !important;
+      box-shadow: 0 0 0 0.25rem rgba(185, 147, 214, 0.1) !important;
+      outline: none !important;
+    }
+
+    .appertivo-submit-btn {
+      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
+      border: none !important;
+      color: white !important;
+      padding: 12px 24px !important;
+      border-radius: 12px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      width: 100% !important;
+      transition: all 0.3s ease !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      cursor: pointer !important;
+      margin-top: 12px !important;
+    }
+
+    .appertivo-submit-btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 25px rgba(240, 128, 0, 0.3) !important;
+      background: linear-gradient(135deg, #ff6b35, var(--vibrant-orange)) !important;
+    }
+
+    /* CTA Buttons */
+    .appertivo-cta-buttons {
+      display: flex !important;
+      gap: 12px !important;
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      margin-top: 20px !important;
+      padding-top: 15px !important;
+      border-top: 1px solid #f0f0f0 !important;
+    }
+
+    .appertivo-cta-button {
+      flex: 1 !important;
+      text-align: center !important;
+      padding: 12px 16px !important;
+      border-radius: 12px !important;
+      text-decoration: none !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      color: white !important;
+      transition: all 0.3s ease !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      min-width: 100px !important;
+    }
+
+    .appertivo-cta-button:hover {
+      transform: translateY(-2px) !important;
+      text-decoration: none !important;
+      color: white !important;
+    }
+
+    .appertivo-cta-button.order {
+      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
+    }
+
+    .appertivo-cta-button.order:hover {
+      box-shadow: 0 8px 25px rgba(240, 128, 0, 0.3) !important;
+    }
+
+    .appertivo-cta-button.call {
+      background: linear-gradient(135deg, var(--seafoam-green), #4a9b8e) !important;
+    }
+
+    .appertivo-cta-button.call:hover {
+      box-shadow: 0 8px 25px rgba(88, 176, 156, 0.3) !important;
+    }
+
+    .appertivo-cta-button.mobile_order {
+      background: linear-gradient(135deg, var(--lavender-purple), #9b7bc8) !important;
+    }
+
+    .appertivo-cta-button.mobile_order:hover {
+      box-shadow: 0 8px 25px rgba(185, 147, 214, 0.3) !important;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      #appertivo-widget-modal {
+        bottom: 100px !important;
+        right: 15px !important;
+        left: 15px !important;
+        width: auto !important;
+        max-width: none !important;
+      }
+      
+      #appertivo-launcher {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 20px !important;
+      }
+      
+      .appertivo-widget-content {
+        padding: 20px !important;
+      }
+      
+      .appertivo-special-title {
+        font-size: 18px !important;
+      }
+
+      .appertivo-cta-buttons {
+        flex-direction: column !important;
+      }
+
+      .appertivo-cta-button {
+        flex: none !important;
+      }
+    }
+
+    /* Overlay */
+    .appertivo-overlay {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: rgba(0, 0, 0, 0.3) !important;
+      z-index: 999998 !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .appertivo-overlay.show {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'appertivo-overlay';
+  document.body.appendChild(overlay);
+
+  // Create launcher button
+  const launcher = document.createElement('button');
+  launcher.id = 'appertivo-launcher';
+  launcher.setAttribute('aria-label', 'View Today\'s Special');
+  document.body.appendChild(launcher);
+
+  // Create modal container
+  const modal = document.createElement('div');
+  modal.id = 'appertivo-widget-modal';
+  modal.innerHTML = `
+    <!-- Widget Header with Image -->
+    <div class="appertivo-widget-header">
+      <img src="" alt="Special Image" class="appertivo-special-image">
+      <button class="appertivo-close-btn" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Widget Content -->
+    <div class="appertivo-widget-content">
+      <h3 class="appertivo-special-title"></h3>
+      Ian2
+      <p class="appertivo-special-description"></p>
+      
+      <div class="appertivo-expiration-badge" style="display: none;">
+        <i class="fas fa-clock me-1"></i>
+        <span class="expiration-text"></span>
+      </div>
+
+      <!-- Signup Form -->
+      <form class="appertivo-signup-form" id="appertivo-email-form">
+        <label for="appertivo-email-input" class="appertivo-form-label">Get Future Specials</label>
+        <input type="email" 
+               id="appertivo-email-input" 
+               placeholder="Enter your email address"
+               maxlength="100"
+               required>
+        <button type="submit" class="appertivo-submit-btn">
+          <i class="fas fa-envelope me-2"></i>
+          Subscribe to Specials
+        </button>
+      </form>
+
+      <!-- CTA Buttons -->
+      <div class="appertivo-cta-buttons"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // Get references to elements
+  const closeBtn = modal.querySelector('.appertivo-close-btn');
+  const emailForm = modal.querySelector('#appertivo-email-form');
+  const emailInput = modal.querySelector('#appertivo-email-input');
+
+  // Helper functions
+  function showModal() {
+    modal.classList.add('show');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideModal() {
+    modal.classList.remove('show');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  function clearCTAs() {
+    const ctaContainer = modal.querySelector('.appertivo-cta-buttons');
+    ctaContainer.innerHTML = '';
+  }
+
+  // Render the special data into the modal
+  function renderSpecial(special) {
+    const img = modal.querySelector('.appertivo-special-image');
+    const title = modal.querySelector('.appertivo-special-title');
+    const desc = modal.querySelector('.appertivo-special-description');
+    const expirationBadge = modal.querySelector('.appertivo-expiration-badge');
+    const expirationText = modal.querySelector('.expiration-text');
+    const ctaContainer = modal.querySelector('.appertivo-cta-buttons');
+
+    // Set content
+    img.src = special.image_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+    img.alt = special.title || 'Special Image';
+    title.textContent = special.title || "Today's Special";
+    desc.textContent = special.description || '';
+
+    // Handle expiration date if provided
+    if (special.expiration_date) {
+      expirationText.textContent = `Expires: ${special.expiration_date}`;
+      expirationBadge.style.display = 'inline-block';
+    } else {
+      expirationBadge.style.display = 'none';
+    }
+
+    // Clear and render CTA buttons
+    clearCTAs();
+    if (special.cta && special.cta.length > 0) {
+      special.cta.forEach(action => {
+        const btn = document.createElement('a');
+        btn.className = 'appertivo-cta-button';
+        btn.target = '_blank';
+        btn.rel = 'noopener noreferrer';
+
+        if (action.type === 'order') {
+          btn.href = action.url;
+          btn.textContent = 'Order Now';
+          btn.classList.add('order');
+        } else if (action.type === 'call') {
+          btn.href = `tel:${action.phone}`;
+          btn.textContent = 'Call Now';
+          btn.classList.add('call');
+        } else if (action.type === 'mobile_order') {
+          btn.href = action.url;
+          btn.textContent = 'Mobile Order';
+          btn.classList.add('mobile_order');
+        }
+
+        ctaContainer.appendChild(btn);
+      });
+    }
+  }
+
+  // Event listeners
+  launcher.addEventListener('click', () => {
+    showModal();
+    fetchSpecial();
+  });
+
+  closeBtn.addEventListener('click', hideModal);
+  overlay.addEventListener('click', hideModal);
+
+  // Email form submission
+  emailForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    // Call your API endpoint for email subscription
+    fetch(`${apiUrl}/subscribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        restaurant_id: restaurantId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(`Thanks for subscribing, ${email}!`);
+        emailInput.value = '';
+      } else {
+        alert('Subscription failed. Please try again.');
+      }
+    })
+    .catch(() => {
+      alert(`Thanks for subscribing, ${email}!`); // Fallback success message
+      emailInput.value = '';
+    });
+  });
+
+  // Fetch special from API
+  function fetchSpecial() {
+    const img = modal.querySelector('.appertivo-special-image');
+    const title = modal.querySelector('.appertivo-special-title');
+    const desc = modal.querySelector('.appertivo-special-description');
+
+    // Show loading state
+    title.textContent = 'Loading...';
+    desc.textContent = '';
+    clearCTAs();
+
+    fetch(`${apiUrl}?restaurant=${restaurantId}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data.specials && data.specials.length > 0) {
+          renderSpecial(data.specials[0]);
+        } else {
+          title.textContent = 'No Specials Available';
+          desc.textContent = 'Check back later for exciting new offers!';
+          img.src = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching specials:', error);
+        title.textContent = 'Unable to Load Specials';
+        desc.textContent = 'Please try again later or contact the restaurant directly.';
+        img.src = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+      });
+  }
+
+  // Keyboard accessibility
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      hideModal();
+    }
+  });
+
+  console.log('Appertivo Widget loaded successfully');
+})();

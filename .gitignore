@@ -1,0 +1,58 @@
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables file
+.env
+.env.*
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# VSCode settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# macOS files
+.DS_Store
+
+# Node modules (if you use npm/yarn)
+node_modules/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Byte-compiled / optimized / DLL files
+*.so
+
+# Testing
+.coverage
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# mypy
+.mypy_cache/
+
+# Celery stuff
+celerybeat-schedule
+
+# dotenv
+.env
+
+# Local virtualenv
+venv/
+ENV/
+env/

@@ -1,0 +1,13 @@
+{% if specials %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for special in specials %}
+      <div class="col">
+        <div id="special-preview-{{ special.pk }}">
+          {% include "app/partials/special_preview.html" with special=special %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">No specials added yet. Start by creating your first one above!</p>
+{% endif %}

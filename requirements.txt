@@ -1,0 +1,8 @@
+django-cloudinary-storage
+cloudinary
+htmx
+gunicorn                # for production WSGI
+python-dotenv  # to manage env vars locally
+django-extensions  # for development utilities
+django-debug-toolbar  # for development debugging
+django-cors-headers # for handling CORS in development

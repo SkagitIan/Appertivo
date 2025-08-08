@@ -1,0 +1,271 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appertivo Specials Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/hyperscript.org@0.9.7"></script>
+
+  <!-- FontAwesome CDN for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Calistoga&display=swap" rel="stylesheet">
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #49475B;
+    }
+    .brand-purple { color: #B993D6; }
+    .brand-orange { background-color: #f08000; color: white; }
+    .brand-orange:hover { background-color: #e06e00; color: white; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #B993D6 !important; }
+    .hero-section { background: linear-gradient(135deg, #B993D6, #49475B); color: white; padding: 4rem 0; text-align: center; }
+    .hero-section h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .hero-section p { font-size: 1.2rem; }
+        /* Custom form enhancements */
+    .form-control:focus {
+      border-color: #B993D6;
+      box-shadow: 0 0 0 0.2rem rgba(185, 147, 214, 0.25);
+    }
+    
+    .form-check-input:checked {
+      background-color: #B993D6;
+      border-color: #B993D6;
+    }
+    
+    .form-floating > label {
+      color: #6c757d;
+    }
+    
+    .counter-text {
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+    
+    .cta-section {
+      background: linear-gradient(135deg, rgba(185, 147, 214, 0.1), rgba(73, 71, 91, 0.05));
+      border: 1px solid rgba(185, 147, 214, 0.2);
+      border-radius: 0.5rem;
+    }
+    
+    .date-inputs .form-floating {
+      position: relative;
+    }
+    
+    .image-upload-area {
+      border: 2px dashed #B993D6;
+      background: rgba(185, 147, 214, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .image-upload-area:hover {
+      border-color: #9d7bc4;
+      background: rgba(185, 147, 214, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">Appertivo</a>
+    <div class="d-flex">
+      {% if request.user.is_authenticated %}
+        <span class="text-muted small">Welcome, {{ request.user_profile }}</span>
+      {% else %}
+        <span class="text-muted small">Welcome, Guest</span>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container col-lg-6 col-sm-10 col-md-12 my-5">
+  <div id="dashboard" class="">
+<div class="card shadow-sm">
+    <div class="card-header text-white text-center" style="background-color: #B993D6;">
+          <h1>Effortlessly Share Your Daily Specials</h1>
+    <p>Quickly publish eye-catching specials on your site without logins or setup.</p>
+    </div>
+    <div class="card-body p-0">
+
+      <!-- HTMX form loader -->
+      <section id="special-form-container"
+               hx-get="{% url 'special_create' %}"
+               hx-trigger="load"
+               hx-target="#special-form-container"
+               hx-swap="innerHTML"
+               class="mb-4">
+        <!-- form will load here -->
+      </section>
+
+
+
+    </div>
+  </div>
+</div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function getOrCreateProfile() {
+  let token = localStorage.getItem('appertivo_anonymous_token');
+  const headers = {};
+  if (token) headers['X-Anonymous-Token'] = token;
+
+  const response = await fetch('/api/create-profile/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers
+    },
+    body: JSON.stringify({})
+  });
+
+  const data = await response.json();
+  if (!token) {
+    localStorage.setItem('appertivo_anonymous_token', data.anonymous_token);
+  }
+  return data;
+}
+
+    document.addEventListener('htmx:afterSwap', (event) => {
+      if (event.detail.target.id === 'special-form-container' || event.detail.target.id === 'special-description-edit-container') {
+        flatpickr("input[type=date]", { dateFormat: "Y-m-d" });
+      }
+    });
+
+    // CSRF for HTMX POSTs
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      const token = getCookie('csrftoken');
+      if (token) {
+        event.detail.headers['X-CSRFToken'] = token;
+      }
+    });
+function updateCounter(inputElem, counterElem, maxLen) {
+  counterElem.textContent = `${inputElem.value.length} / ${maxLen} characters`;
+}
+
+function setupCounters(container) {
+  const titleInput = container.querySelector('input[name="title"]');
+  const titleCounter = container.querySelector('#title-counter');
+  if (titleInput && titleCounter) {
+    updateCounter(titleInput, titleCounter, 60);
+    titleInput.addEventListener('input', () => updateCounter(titleInput, titleCounter, 60));
+  }
+
+  const descInput = container.querySelector('textarea[name="description"]');
+  const descCounter = container.querySelector('#description-counter');
+  if (descInput && descCounter) {
+    updateCounter(descInput, descCounter, 250);
+    descInput.addEventListener('input', () => updateCounter(descInput, descCounter, 250));
+  }
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Initial setup on page load (in case form is present)
+  setupCounters(document);
+});
+
+document.body.addEventListener('htmx:afterSwap', (event) => {
+  // Run setupCounters only when the special form is swapped in
+  const targetId = event.detail.target.id;
+  if (targetId === 'special-form-container' || targetId === 'special-description-edit-container') {
+    flatpickr("input[type=date]", { dateFormat: "Y-m-d" });
+    setupCounters(event.detail.target);
+  }
+});
+function toggleCTAFields() {
+  const selectedCTA = document.querySelector('input[name="cta_choices"]:checked')?.value;
+
+  const orderGroup = document.getElementById('order-url-group');
+  const callGroup = document.getElementById('phone-number-group');
+  const mobileOrderGroup = document.getElementById('mobile-order-url-group');
+
+  if (orderGroup) {
+    if (selectedCTA === 'order') {
+      orderGroup.classList.remove('d-none');
+    } else {
+      orderGroup.classList.add('d-none');
+      const input = orderGroup.querySelector('input');
+      if (input) input.value = '';
+    }
+  }
+
+  if (callGroup) {
+    if (selectedCTA === 'call') {
+      callGroup.classList.remove('d-none');
+    } else {
+      callGroup.classList.add('d-none');
+      const input = callGroup.querySelector('input');
+      if (input) input.value = '';
+    }
+  }
+
+  if (mobileOrderGroup) {
+    if (selectedCTA === 'mobile_order') {
+      mobileOrderGroup.classList.remove('d-none');
+    } else {
+      mobileOrderGroup.classList.add('d-none');
+      const input = mobileOrderGroup.querySelector('input');
+      if (input) input.value = '';
+    }
+  }
+}
+
+
+document.body.addEventListener('htmx:afterSwap', (event) => {
+  const targetId = event.detail.target.id;
+  if (targetId === 'special-form-container' || targetId === 'special-description-edit-container') {
+    flatpickr("input[name='start_date'], input[name='end_date']", {
+        dateFormat: "Y-m-d"
+      });
+    setupCounters(event.detail.target);
+    toggleCTAFields();  // <-- add this here!
+    
+    // Rebind event listeners for radio buttons after swap
+    event.detail.target.querySelectorAll('input[name="cta_choices"]').forEach(radio => {
+      radio.removeEventListener('change', toggleCTAFields);
+      radio.addEventListener('change', toggleCTAFields);
+    });
+  }
+});
+
+// If using HTMX, also call toggleCTAFields after swap (same pattern as before)
+document.addEventListener('DOMContentLoaded', () => {
+  const userProfile = document.querySelector('meta[name="user-profile"]');
+  if (userProfile) {
+    console.log('User Profile:', userProfile.content);
+  } else {
+    console.log('No user profile found');
+  }
+});
+
+</script>
+</body>
+</html>
