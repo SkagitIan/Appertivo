@@ -38,3 +38,20 @@ class AddSpecialForm(ModelForm):
         self.helper.form_show_labels = False 
 
 
+
+class SignUpForm(forms.Form):
+    email = forms.EmailField(label="Email", max_length=254)
+    password = forms.CharField(label="Password", widget=forms.PasswordInput)
+
+    def save(self, commit=True):
+        email = self.cleaned_data["email"]
+        password = self.cleaned_data["password"]
+        user = User(username=email, email=email)
+        user.set_password(password)
+        if commit:
+            user.save()
+        return user
+
+class EmailAuthenticationForm(AuthenticationForm):
+    username = UsernameField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True}))
+    remember_me = forms.BooleanField(required=False, initial=False, label="Remember me")
