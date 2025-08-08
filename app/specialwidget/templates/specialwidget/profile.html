@@ -1,0 +1,38 @@
+{% extends 'specialwidget/base.html' %}
+{% load static %}
+{% block title %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Profile</h2>
+  <h4>Active Specials</h4>
+  <ul class="list-group mb-4">
+    {% for s in active_specials %}
+      <li class="list-group-item">{{ s.title }} - {{ s.price }}</li>
+    {% empty %}
+      <li class="list-group-item">No active specials.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Expired Specials</h4>
+  <ul class="list-group mb-4">
+    {% for s in expired_specials %}
+      <li class="list-group-item">{{ s.title }} - {{ s.price }}</li>
+    {% empty %}
+      <li class="list-group-item">No expired specials.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Email Signups</h4>
+  <ul class="list-group mb-4">
+    {% for sub in subscribers %}
+      <li class="list-group-item">{{ sub.email }}</li>
+    {% empty %}
+      <li class="list-group-item">No subscribers.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Embed Code</h4>
+  <textarea class="w-100 form-control form-control-sm p-3" style="height:120px;overflow:auto;" onclick="copyToClipboard()" id="embedblock">{{ embed_code|safe }}</textarea>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from .forms import AddSpecialForm
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from .forms import AddSpecialForm, SignUpForm, EmailAuthenticationForm
 from specialwidget.models import Special, Membership, Subscriber,GMBAccounts,GMBLocations,Payment
 from specialwidget.help import get_cloudinary_image, getGMBAuthURI
 from django.core.exceptions import ObjectDoesNotExist
@@ -44,6 +45,56 @@ def special_widget_html(request):
 
 def home(request):
     return render(request, 'specialwidget/index.html')
+
+
+def register(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('profile')
+    else:
+        form = SignUpForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = EmailAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            if not form.cleaned_data.get('remember_me'):
+                request.session.set_expiry(0)
+            return redirect('profile')
+    else:
+        form = EmailAuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+
+@login_required
+def profile(request):
+    membership = Membership.objects.get(user=request.user)
+    active_specials = Special.objects.filter(membership=membership, active=True)
+    expired_specials = Special.objects.filter(membership=membership, active=False)
+    subscribers = Subscriber.objects.filter(membership=membership)
+    embed_code = (
+        f"<script src=\"http://127.0.0.1:8000/static/specialwidget/widget.js\" memberid=\"{membership.id}\" id=\"foodscriptone\"></script><div id=\"fooddiv\"></div>"
+    )
+    context = {
+        'membership': membership,
+        'active_specials': active_specials,
+        'expired_specials': expired_specials,
+        'subscribers': subscribers,
+        'embed_code': embed_code,
+    }
+    return render(request, 'specialwidget/profile.html', context)
 
 @login_required
 def dashboard(request):

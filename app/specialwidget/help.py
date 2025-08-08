@@ -4,7 +4,7 @@ import requests
 import os
 import json
 import stripe
-from specialwidget.forms import AddSpecialForm
+from specialwidget.forms import AddSpecialForm, SignUpForm
 from specialwidget.models import Payment, Membership, Special,Subscriber,GMBAccounts,GMBLocations
 from datetime import datetime
 from django.http import HttpResponse, JsonResponse,HttpResponseRedirect
@@ -31,10 +31,10 @@ def colorpicker(request):
 
 def add_auth_user(request):
     if request.method == "GET":
-        
+        form = SignUpForm()
         return render(request,'specialwidget/special_form.html', {'form':form})
     if request.method == "POST":
-        form = RegisterForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             f = form.save()
             membership = Membership.objects.get(id=request.POST.get('member_id'))
