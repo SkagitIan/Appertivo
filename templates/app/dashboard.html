@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Calistoga&display=swap" rel="stylesheet">
   <!-- HTMX -->
-  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.4"></script>
   <style>
     body {
       background-color: #f8f9fa;
@@ -279,6 +279,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('image-input');
+  const uploadArea = document.querySelector('.image-upload-area');
+  const fileName = document.getElementById('file-name');
+
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('border-primary');
+  });
+
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('border-primary');
+  });
+
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('border-primary');
+
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      fileName.textContent = e.dataTransfer.files[0].name;
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) {
+      fileName.textContent = fileInput.files[0].name;
+    }
+  });
+});
 </script>
+
 </body>
 </html>

@@ -80,34 +80,33 @@ def specials_api(request):
 
     return JsonResponse({"specials": data})
 
-
 def special_create(request):
     user_profile = getattr(request, 'user_profile', None)
     if request.method == "POST":
+        print("FILES:", request.FILES.keys())
         form = SpecialForm(request.POST, request.FILES)
         if form.is_valid():
             special = form.save(commit=False)
-            special.published = False  # Not published yet
+            special.published = False
             special.user_profile = user_profile
             special.save()
 
+            # Build preview-only CTA payload (no 'cta' field on model)
             ctas = []
-            if "order" in special.cta_choices:
-                ctas.append({"type": "order", "url": special.order_url})
-            if "call" in special.cta_choices:
-                ctas.append({"type": "call", "phone": special.phone_number})
-            if "mobile_order" in special.cta_choices:
-                ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
-            special.cta = ctas
+            c = (special.cta_choices or [])
+            if "order" in c:  ctas.append({"type": "order", "url": special.order_url})
+            if "call" in c:   ctas.append({"type": "call", "phone": special.phone_number})
+            if "mobile_order" in c: ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
+            special.ctas_preview = ctas  # temp attribute for the template
 
-            # After creating the special show a preview that matches the widget
-            return render(
-                request,
-                "app/partials/special_preview.html",
-                {"special": special},
-            )
-    else:
-        form = SpecialForm()
+            return render(request, "app/partials/special_preview.html", {"special": special})
+
+        # <-- invalid form: print errors and return form with 422 for HTMX
+        print("FORM ERRORS:", form.errors.as_json())
+        return render(request, "app/partials/special_form.html", {"form": form}, status=422)
+
+    # GET
+    form = SpecialForm()
     return render(request, "app/partials/special_form.html", {"form": form})
 
 # views.py

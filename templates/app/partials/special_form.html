@@ -101,7 +101,7 @@
             <!-- Image Upload -->
             <div class="mb-4">
                 <div class="image-upload-area p-4 rounded text-center">
-                  <input type="file" name="image" id="image-input" class="d-none">
+                  <input type="file" name="image_file" id="image-input" class="d-none">
                   
                   <label for="image-input" class="cursor-pointer">
                     <i class="bi bi-cloud-upload fs-2 d-block mb-2"></i>
@@ -164,7 +164,7 @@ function setupCounters(container) {
 }
 
 function toggleCTAFields() {
-  const selectedCTA = document.querySelector('input[name="cta_choice"]:checked')?.value;
+  const selectedCTA = document.querySelector('input[name="cta_choices"]:checked')?.value;
 
   const groups = {
     order: document.getElementById('order-url-group'),
@@ -196,7 +196,7 @@ function toggleCTAFields() {
 document.addEventListener('DOMContentLoaded', function() {
   setupCounters(document);
   toggleCTAFields();
-  document.querySelectorAll('input[name="cta_choice"]').forEach(radio => {
+  document.querySelectorAll('input[name="cta_choices"]').forEach(radio => {
     radio.addEventListener('change', toggleCTAFields);
   });
 });
@@ -206,7 +206,7 @@ document.addEventListener('htmx:afterSwap', (event) => {
   if (event.detail.target.id === 'special-form-container') {
     setupCounters(event.detail.target);
     toggleCTAFields();
-    event.detail.target.querySelectorAll('input[name="cta_choice"]').forEach(radio => {
+    event.detail.target.querySelectorAll('input[name="cta_choices"]').forEach(radio => {
       radio.addEventListener('change', toggleCTAFields);
     });
   }

@@ -1,9 +1,9 @@
+# forms.py
 from django import forms
-from .models import Special
 from django.core.exceptions import ValidationError
 from cloudinary import uploader
 from cloudinary.utils import cloudinary_url
-
+from .models import Special
 
 class SpecialForm(forms.ModelForm):
     CTA_CHOICES = [
@@ -12,20 +12,24 @@ class SpecialForm(forms.ModelForm):
         ("mobile_order", "Mobile Order"),
     ]
 
-    # Change this to match your model field name
+    # non-model field used only to accept uploads
+    image_file = forms.ImageField(required=False)
+
     cta_choices = forms.ChoiceField(
         choices=CTA_CHOICES,
         widget=forms.RadioSelect,
         required=True,
-        label="Choose One Call to Action"
+        label="Choose One Call to Action",
     )
-    image = forms.ImageField(required=False)
 
     class Meta:
         model = Special
         fields = [
-            "title", "description", "image", "start_date", "end_date",
-            "cta_choices", "order_url", "phone_number", "mobile_order_url", "enable_email_signup"
+            "title", "description",
+            # NOTE: do NOT include 'image' here; it's a URLField on the model
+            "start_date", "end_date",
+            "cta_choices", "order_url", "phone_number",
+            "mobile_order_url", "enable_email_signup",
         ]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}),
@@ -33,56 +37,45 @@ class SpecialForm(forms.ModelForm):
         }
 
     def save(self, commit=True):
-        """Upload image to Cloudinary and store optimized URL."""
-        original_image = self.instance.image if self.instance.pk else None
+        """Upload image_file to Cloudinary and store resulting URL in model.image."""
         instance = super().save(commit=False)
-        image_file = self.cleaned_data.get("image")
+
+        # If you're storing a single CTA, consider normalizing to a list here:
+        if isinstance(self.cleaned_data.get("cta_choices"), str):
+            instance.cta_choices = [self.cleaned_data["cta_choices"]]
+
+        image_file = self.cleaned_data.get("image_file")
         if image_file:
-            upload_result = uploader.upload(image_file, folder="specials")
-            optimized_url, _ = cloudinary_url(
-                upload_result["public_id"],
-                format="auto",
-                quality="auto",
-                secure=True,
-            )
-            instance.image = optimized_url
-        else:
-            instance.image = original_image
+            try:
+                upload_result = uploader.upload(image_file, folder="specials")
+                optimized_url, _ = cloudinary_url(
+                    upload_result["public_id"],
+                    format="jpg", quality="auto", secure=True,
+                )
+                instance.image = optimized_url  # URLField on the model
+            except Exception as e:
+                raise ValidationError(f"Cloudinary upload failed: {e}")
 
         if commit:
             instance.save()
         return instance
 
     def clean(self):
-        cleaned_data = super().clean()
+        cleaned = super().clean()
 
-        # Detect partial update by checking if only a few fields are present
-        # csrf + 1 field = 2 keys; csrf + multiple = 3–5
-        is_partial = len(self.data) <= 5  # allow a few fields
+        # Skip full validation for partial HTMX updates
+        if len(self.data) <= 5:
+            return cleaned
 
-        if is_partial:
-            return cleaned_data  # ✅ skip full-form validation
-
-        # 🔥 Full validation only for full form submissions
-        cta = cleaned_data.get("cta_choices")  # Changed from cta_choice to cta_choices
-
+        cta = cleaned.get("cta_choices")
         if not cta:
             raise ValidationError("Please select a call-to-action.")
 
-        if cta == "order" and not cleaned_data.get("order_url"):
+        if cta == "order" and not cleaned.get("order_url"):
             self.add_error("order_url", "Order URL is required if Click to Order is selected.")
-        elif cta == "call" and not cleaned_data.get("phone_number"):
+        elif cta == "call" and not cleaned.get("phone_number"):
             self.add_error("phone_number", "Phone Number is required if Call Now is selected.")
-        elif cta == "mobile_order" and not cleaned_data.get("mobile_order_url"):
+        elif cta == "mobile_order" and not cleaned.get("mobile_order_url"):
             self.add_error("mobile_order_url", "Mobile Order URL is required if Mobile Order is selected.")
 
-        return cleaned_data
-
-
-class SpecialDescriptionForm(forms.ModelForm):
-    class Meta:
-        model = Special
-        fields = ["description"]
-        widgets = {
-            "description": forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
-        }
+        return cleaned
