@@ -172,7 +172,7 @@
       font-weight: 600 !important;
       padding: 6px 12px !important;
       border-radius: 20px !important;
-      display: inline-block !important;
+      display: none !important;
       margin-bottom: 20px !important;
       text-transform: uppercase !important;
       letter-spacing: 0.5px !important;
@@ -372,7 +372,7 @@
       Ian2
       <p class="appertivo-special-description"></p>
       
-      <div class="appertivo-expiration-badge" style="display: none;">
+      <div class="appertivo-expiration-badge">
         <i class="fas fa-clock me-1"></i>
         <span class="expiration-text"></span>
       </div>

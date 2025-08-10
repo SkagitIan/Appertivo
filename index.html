@@ -14,76 +14,10 @@
   <meta name="twitter:title" content="Appertivo — Instantly Share Your Restaurant Specials" />
   <meta name="twitter:description" content="Let your customers know what’s special today. Easy, mobile-first, and no logins required." />
   <meta name="twitter:image" content="https://yourdomain.com/og-image.png" />
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      background: linear-gradient(135deg, #B993D6 0%, #49475B 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: #f8f9fa;
-      text-align: center;
-      padding: 20px;
-    }
-    .container {
-      max-width: 600px;
-      background: rgba(20, 8, 14, 0.6);
-      padding: 40px 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(73, 71, 91, 0.6);
-    }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 15px;
-      color: #f08000;
-      font-weight: 700;
-    }
-    .tagline {
-      font-size: 1.4rem;
-      color: #58B09C;
-      margin-bottom: 20px;
-      font-weight: 500;
-    }
-    ul {
-      text-align: left;
-      font-size: 1.05rem;
-      color: #dcdcdc;
-      margin-bottom: 30px;
-      padding-left: 1.2em;
-    }
-    ul li {
-      margin-bottom: 0.7em;
-    }
-    .cta {
-      margin: 25px 0 10px 0;
-      font-weight: bold;
-      color: #f8f9fa;
-      background: #f08000;
-      padding: 0.7em 1.3em;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      box-shadow: 0 4px 14px rgba(240, 128, 0, 0.2);
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: background 0.2s;
-    }
-    .cta:hover {
-      background: #ff9900;
-    }
-    .footer {
-      font-size: 0.95rem;
-      color: #58B09C;
-      margin-top: 25px;
-    }
-  </style>
+  <link rel="stylesheet" href="static/style.css">
 </head>
-<body>
-  <div class="container" role="main">
+<body class="landing-body">
+  <div class="landing-container" role="main">
     <h1>Appertivo is Coming Soon</h1>
     <div class="tagline">Add a Special. See It Live. Delight Your Customers.</div>
     <ul>
@@ -97,7 +31,7 @@
     <a class="cta" href="mailto:hello@appertivo.com?subject=Early%20Access%20Request">Get Early Access</a>
     <div class="footer">
       Thank you for your patience & support.<br>
-      <span style="font-size:0.9em;">Free for early adopters • Powered by Django & HTMX</span>
+      <span class="small-note">Free for early adopters • Powered by Django & HTMX</span>
     </div>
   </div>
 </body>
