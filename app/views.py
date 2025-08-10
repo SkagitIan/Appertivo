@@ -13,7 +13,7 @@ from django.views.decorators.http import require_POST
 from profiles.models import UserProfile
 import json
 import logging
-
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def dashboard(request):
         "form": form,
     })
 
-from django.db.models import Q
+
 
 def appertivo_widget(request):
     api_url = request.build_absolute_uri("/api/specials.js")
@@ -170,7 +170,7 @@ def my_specials(request):
     if not profile:
         return redirect("home")
 
-    specials = Special.objects.filter(user=profile).order_by('-created_at')
+    specials = Special.objects.filter(user_profile=profile).order_by('-created_at')
     return render(request, "app/my_specials.html", {"specials": specials})
 
 from django.http import QueryDict
