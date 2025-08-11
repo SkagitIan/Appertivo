@@ -1,13 +1,15 @@
-<div class="row g-3">
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
   {% for sp in specials %}
-    <div class="col-md-6 col-lg-4">
-      <div class="card h-100 border-0 shadow-sm">
+    <div class="col">
+      <div class="card h-100 border-0 shadow-sm {% if sp.published %}special-live{% endif %}">
         {% if sp.image %}<img src="{{ sp.image.url }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
-        <div class="card-body">
+        <div class="card-body p-2">
           <h3 class="h6 mb-1">{{ sp.title }}</h3>
           <p class="small text-secondary">{{ sp.description|truncatechars:100 }}</p>
-          <div class="d-flex gap-2">
+          <div class="d-flex flex-wrap gap-1">
             <a href="" class="btn btn-outline-light btn-sm">Edit</a>
+            <a href="" class="btn btn-outline-warning btn-sm">Sold Out</a>
+            <a href="" class="btn btn-outline-success btn-sm">Make Active</a>
             <a href="" class="btn btn-outline-danger btn-sm">Delete</a>
           </div>
         </div>

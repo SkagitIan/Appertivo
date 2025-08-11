@@ -2,6 +2,7 @@ from django.template.loader import render_to_string
 from django.test import TestCase
 
 from .forms import SpecialForm
+from .models import Special
 
 
 class SpecialFormTemplateTests(TestCase):
@@ -68,3 +69,27 @@ class DashboardTemplateTests(TestCase):
     def test_connections_partial_included(self):
         html = render_to_string("app/dashboard.html", {"specials": [], "form": None})
         self.assertIn("integration-connections", html)
+
+
+class SpecialsListTemplateTests(TestCase):
+    def render(self, specials):
+        return render_to_string("app/partials/specials_list.html", {"specials": specials})
+
+    def test_management_buttons_present(self):
+        sp = Special(title="Test")
+        html = self.render([sp])
+        self.assertIn("Delete", html)
+        self.assertIn("Sold Out", html)
+        self.assertIn("Make Active", html)
+        self.assertIn("Edit", html)
+
+    def test_published_special_has_glow(self):
+        live = Special(title="Live", published=True)
+        draft = Special(title="Draft", published=False)
+        html = self.render([live, draft])
+        self.assertEqual(html.count("special-live"), 1)
+
+    def test_uses_grid_layout(self):
+        sp = Special(title="Grid")
+        html = self.render([sp])
+        self.assertIn("row-cols", html)
