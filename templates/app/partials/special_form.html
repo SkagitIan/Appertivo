@@ -134,7 +134,7 @@
                    name="{{ form.cta_choices.name }}"
                    id="cta_{{ forloop.counter }}"
                    value="{{ choice.choice_value }}"
-                   {% if choice.choice_value in form.cta_choices.value %}checked{% endif %}>
+                   {% if choice.choice_value == form.cta_choices.value %}checked{% endif %}>
             <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
               {{ choice.choice_label }}
             </label>
