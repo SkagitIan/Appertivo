@@ -13,6 +13,7 @@ class Special(models.Model):
     title = models.CharField(max_length=60)
     description = models.TextField(max_length=250, blank=True)
     image = models.URLField(blank=True, null=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     published = models.BooleanField(default=False)

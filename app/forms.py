@@ -25,7 +25,7 @@ class SpecialForm(forms.ModelForm):
     class Meta:
         model = Special
         fields = [
-            "title", "description",
+            "title", "description", "price",
             # NOTE: do NOT include 'image' here; it's a URLField on the model
             "start_date", "end_date",
             "cta_choices", "order_url", "phone_number",
@@ -34,6 +34,7 @@ class SpecialForm(forms.ModelForm):
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
+            "price": forms.NumberInput(attrs={"step": "0.01"}),
         }
 
     def save(self, commit=True):

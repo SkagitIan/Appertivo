@@ -21,7 +21,7 @@
   <!-- Header -->
   <div class="card-header py-3 px-4 d-flex align-items-center gap-2 border-ink-700">
     <div class="icon-dot bg-orange"></div>
-    <h5 class="mb-0 fw-bold gradient-text">New Special</h5>
+    <div class="mb-0 fw-bold gradient-text">New Special</div>
   </div>
 
   <div class="card-body p-4">
@@ -58,25 +58,21 @@
 
     <!-- Schedule -->
     <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <div class="form-floating">
-          {{ form.start_date|add_class:"form-control"|attr:"placeholder:Start date"|attr:"id:id_start_date" }}
-          <label for="id_start_date">Start date</label>
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
+          <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
+          {% if form.start_date.errors %}
+            <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
+          {% endif %}
         </div>
-        {% if form.start_date.errors %}
-          <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="col-md-6">
-        <div class="form-floating">
-          {{ form.end_date|add_class:"form-control"|attr:"placeholder:End date"|attr:"id:id_end_date" }}
-          <label for="id_end_date">End date</label>
+        <div class="col-md-6">
+          {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
+          <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
+          {% if form.end_date.errors %}
+            <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
+          {% endif %}
         </div>
-        {% if form.end_date.errors %}
-          <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
-        {% endif %}
-      </div>
       <div class="col-12">
         <!-- Quick date chips -->
         <div class="d-flex flex-wrap gap-2 small">
@@ -88,20 +84,10 @@
       </div>
     </div>
 
-    <!-- Price & Image -->
+    <!-- Image -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3">
-      <div class="col-md-4">
-        <div class="form-floating">
-          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price" }}
-          <label for="id_price">Price</label>
-        </div>
-        {% if form.price.errors %}
-          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="col-md-8">
+      <div class="col-12">
         <!-- Image dropzone + preview -->
         <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
           <div class="d-flex align-items-center justify-content-between">
@@ -115,68 +101,68 @@
             </div>
           </div>
 
-          {{ form.image|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
+            {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
 
           <div class="ratio ratio-16x9 mt-3 rounded overflow-hidden bg-dark-subtle" id="image-preview-shell" aria-live="polite">
             <img id="image-preview" class="w-100 h-100 object-cover d-none" alt="Image preview">
           </div>
         </div>
-        {% if form.image.errors %}
-          <div class="invalid-feedback d-block">{{ form.image.errors }}</div>
-        {% endif %}
+          {% if form.image_file.errors %}
+            <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
+          {% endif %}
       </div>
     </div>
 
-    <!-- CTA -->
+    <!-- Price & CTA -->
     <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-12">
+    <div class="row g-3 align-items-start">
+      <div class="col-md-4">
+        <div class="form-floating">
+          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
+          <label for="id_price">Price</label>
+        </div>
+        {% if form.price.errors %}
+          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="col-md-8">
         <div class="fw-semibold mb-2">Call-to-Action</div>
-        <!-- Segmented control bound to your form.cta_choices radios -->
-        <div class="btn-group" role="group" aria-label="CTA">
-                    {# use the BoundField's canonical name so radios group properly #}
-                    {% for choice in form.cta_choices %}
-                    <input type="radio"
-                            class="btn-check"
-                            name="{{ form.cta_choices.name }}"
-                            id="cta_{{ forloop.counter }}"
-                            value="{{ choice.choice_value }}"
-                            {% if choice.choice_value in form.cta_choices.value %}checked{% endif %}>
-                    <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
-                        {{ choice.choice_label }}
-                    </label>
-                    {% endfor %}
-
+        <div class="btn-group w-100" role="group" aria-label="CTA">
+          {% for choice in form.cta_choices %}
+            <input type="radio"
+                   class="btn-check"
+                   name="{{ form.cta_choices.name }}"
+                   id="cta_{{ forloop.counter }}"
+                   value="{{ choice.choice_value }}"
+                   {% if choice.choice_value in form.cta_choices.value %}checked{% endif %}>
+            <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
+              {{ choice.choice_label }}
+            </label>
+          {% endfor %}
         </div>
         {% if form.cta_choices.errors %}
           <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>
         {% endif %}
-      </div>
-
-      <!-- Contextual fields -->
-      <div class="col-md-4 d-none" id="group-order">
-        <div class="form-floating">
-          {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
-          <label for="id_order_url">Order URL</label>
-        </div>
-      </div>
-      <div class="col-md-4 d-none" id="group-mobile">
-        <div class="form-floating">
-          {{ form.mobile_order_url|add_class:"form-control"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
-          <label for="id_mobile_order_url">Mobile order URL</label>
-        </div>
-      </div>
-      <div class="col-md-4 d-none" id="group-call">
-        <div class="form-floating">
-          {{ form.phone_number|add_class:"form-control"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
-          <label for="id_phone_number">Phone number</label>
+        <div class="mt-3">
+          <div class="form-floating d-none" id="group-order">
+            {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
+            <label for="id_order_url">Order URL</label>
+          </div>
+          <div class="form-floating d-none" id="group-mobile">
+            {{ form.mobile_order_url|add_class:"form-control"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
+            <label for="id_mobile_order_url">Mobile order URL</label>
+          </div>
+          <div class="form-floating d-none" id="group-call">
+            {{ form.phone_number|add_class:"form-control"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
+            <label for="id_phone_number">Phone number</label>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Sticky actions -->
-  <div class="card-footer py-3 px-4 position-sticky bottom-0 bg-gradient-dark backdrop-blur border-ink-700">
+  <div class="card-footer py-3 px-4 position-sticky bottom-0 border-ink-700 bg-transparent">
     <div class="d-flex flex-wrap gap-2 justify-content-end">
       <button type="button"
               class="btn btn-outline-ink"
@@ -217,69 +203,93 @@ function bindCounters(root){
   }
 }
 
-// ---------- Price formatting (display only) ----------
-function bindCTA(root){
-  const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
-  const radios = root.querySelectorAll(`input[name="${name}"]`);
-  const groups = {
-    order: root.querySelector('#group-order'),
-    mobile_order: root.querySelector('#group-mobile'),
-    call: root.querySelector('#group-call'),
-  };
-  const labels = root.querySelectorAll('label[data-cta]');
-
-  function showGroup(key){
-    Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
-    labels.forEach(l => l.classList.remove('btn-orange'));         // clear active accent
-    const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
-    if (activeLabel) activeLabel.classList.add('btn-orange');       // accent active option
-    const g = groups[key];
-    if (g){
-      g.classList.remove('d-none');
-      requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
-    }
+  // ---------- Price formatting (display only) ----------
+  function bindPrice(root){
+    const input = $('#id_price', root);
+    if(!input) return;
+    input.addEventListener('blur', () => {
+      const v = parseFloat(input.value);
+      if(!isNaN(v)) input.value = v.toFixed(2);
+    });
   }
 
-  function sync(){
-    const r = Array.from(radios).find(x => x.checked);
-    if (r) showGroup(r.value);
+  // ---------- CTA segmented control ----------
+  function bindCTA(root){
+    const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
+    const radios = root.querySelectorAll(`input[name="${name}"]`);
+    const groups = {
+      order: root.querySelector('#group-order'),
+      mobile_order: root.querySelector('#group-mobile'),
+      call: root.querySelector('#group-call'),
+    };
+    const labels = root.querySelectorAll('label[data-cta]');
+
+    function showGroup(key){
+      Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
+      labels.forEach(l => l.classList.remove('btn-orange'));         // clear active accent
+      const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
+      if (activeLabel) activeLabel.classList.add('btn-orange');       // accent active option
+      const g = groups[key];
+      if (g){
+        g.classList.remove('d-none');
+        requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
+      }
+    }
+
+    function sync(){
+      const r = Array.from(radios).find(x => x.checked);
+      if (r) showGroup(r.value);
+    }
+
+    radios.forEach(r => r.addEventListener('change', sync));
+    labels.forEach(l => l.addEventListener('click', () => {
+      const val = l.getAttribute('data-cta');
+      const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
+      if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+    }));
+    sync();
   }
 
-  radios.forEach(r => r.addEventListener('change', sync));
-  labels.forEach(l => l.addEventListener('click', () => {
-    const val = l.getAttribute('data-cta');
-    const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
-    if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
-  }));
-  sync();
-}
+  // ---------- Date helpers ----------
+  function bindDates(root){
+    const start = $('#id_start_date', root);
+    const end   = $('#id_end_date', root);
+    const startBtn = $('#start-date-button', root);
+    const endBtn   = $('#end-date-button', root);
+    const help  = $('#date-help', root);
 
+    function attach(input, btn){
+      if(!(input && btn)) return;
+      btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
+      input.addEventListener('change', ()=>{
+        btn.textContent = input.value ? new Date(input.value).toLocaleDateString() : btn.dataset.placeholder;
+        validate();
+      });
+      btn.dataset.placeholder = btn.textContent;
+    }
+    attach(start, startBtn);
+    attach(end, endBtn);
 
-// ---------- Date helpers ----------
-function bindDates(root){
-  const start = $('#id_start_date', root);
-  const end   = $('#id_end_date', root);
-  const help  = $('#date-help', root);
-
-  function setChip(type){
-    const today = new Date();
-    const pad = (n)=> String(n).padStart(2,'0');
-    const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    if(!start || !end) return;
-    if(type === 'today'){
-      start.value = toISO(today);
-      end.value   = toISO(today);
+    function setChip(type){
+      const today = new Date();
+      const pad = (n)=> String(n).padStart(2,'0');
+      const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      if(!start || !end) return;
+      if(type === 'today'){
+        start.value = toISO(today);
+        end.value   = toISO(today);
+      }
+      if(type === 'plus3'){
+        const e = new Date(today); e.setDate(e.getDate()+3);
+        start.value = toISO(today); end.value = toISO(e);
+      }
+      if(type === 'plus7'){
+        const e = new Date(today); e.setDate(e.getDate()+7);
+        start.value = toISO(today); end.value = toISO(e);
+      }
+      start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
+      validate();
     }
-    if(type === 'plus3'){
-      const e = new Date(today); e.setDate(e.getDate()+3);
-      start.value = toISO(today); end.value = toISO(e);
-    }
-    if(type === 'plus7'){
-      const e = new Date(today); e.setDate(e.getDate()+7);
-      start.value = toISO(today); end.value = toISO(e);
-    }
-    validate();
-  }
 
   function validate(){
     if(!(start && end && help)) return;
@@ -292,39 +302,14 @@ function bindDates(root){
     }
   }
 
-  $$('[data-datechip]').forEach(b=>{
-    b.addEventListener('click', ()=> setChip(b.dataset.datechip));
-  });
-  start?.addEventListener('change', validate);
-  end?.addEventListener('change', validate);
-}
-
-// ---------- CTA segmented control ----------
-function bindCTA(root){
-  const radioName = ($$('input.btn-check', root)[0] || {}).name || 'cta_choices';
-  const radios = $$(`input[name="${radioName}"]`, root);
-  const groups = {
-    order: $('#group-order', root),
-    mobile_order: $('#group-mobile', root),
-    call: $('#group-call', root)
-  };
-  function sync(){
-    // Hide all first
-    Object.values(groups).forEach(g=> g && (g.classList.add('d-none'), g.style.opacity = 0));
-    const checked = radios.find(r=> r.checked)?.value;
-    if(checked && groups[checked]){
-      const g = groups[checked];
-      g.classList.remove('d-none');
-      // soft fade
-      requestAnimationFrame(()=>{ g.style.transition = 'opacity .25s ease'; g.style.opacity = 1; });
-    }
+    $$('[data-datechip]').forEach(b=>{
+      b.addEventListener('click', ()=> setChip(b.dataset.datechip));
+    });
+    start?.addEventListener('change', validate);
+    end?.addEventListener('change', validate);
   }
-  radios.forEach(r => r.addEventListener('change', sync));
-  sync();
-}
-
-// ---------- Image dropzone ----------
-function bindImage(root){
+  // ---------- Image dropzone ----------
+  function bindImage(root){
   const input  = $('#id_image', root);
   const dz     = $('#image-dropzone', root);
   const img    = $('#image-preview', root);
