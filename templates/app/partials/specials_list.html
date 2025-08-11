@@ -1,13 +1,19 @@
-{% if specials %}
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    {% for special in specials %}
-      <div class="col">
-        <div id="special-preview-{{ special.pk }}">
-          {% include "app/partials/special_preview.html" with special=special %}
+<div class="row g-3">
+  {% for sp in specials %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm">
+        {% if sp.image %}<img src="{{ sp.image.url }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
+        <div class="card-body">
+          <h3 class="h6 mb-1">{{ sp.title }}</h3>
+          <p class="small text-secondary">{{ sp.description|truncatechars:100 }}</p>
+          <div class="d-flex gap-2">
+            <a href="" class="btn btn-outline-light btn-sm">Edit</a>
+            <a href="" class="btn btn-outline-danger btn-sm">Delete</a>
+          </div>
         </div>
       </div>
-    {% endfor %}
-  </div>
-{% else %}
-  <p class="text-muted">No specials added yet. Start by creating your first one above!</p>
-{% endif %}
+    </div>
+  {% empty %}
+    <div class="col-12 text-secondary">No specials yet.</div>
+  {% endfor %}
+</div>

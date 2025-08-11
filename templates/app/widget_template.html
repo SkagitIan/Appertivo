@@ -1,36 +1,106 @@
 (() => {
-  const restaurantId = "{{ restaurant_id|escapejs }}";
-  const apiUrl = "{{ api_url|escapejs }}";
-  const subscribeUrl = "{{ subscribe_url|escapejs }}";
+  // -------------------------------
+  // Config & helpers
+  // -------------------------------
+  const scriptEl =
+    document.currentScript ||
+    document.getElementById('appertivo-widget') ||
+    document.querySelector('script[src*="appertivo-widget"]');
 
-  console.log("restaurantId", restaurantId);
-  console.log("apiUrl", apiUrl);
-  
+  // Read booleans safely from data-attrs
+  const readBool = (v, fallback=false) => {
+    if (typeof v === 'boolean') return v;
+    if (typeof v === 'string') return ['true', '1', 'yes'].includes(v.toLowerCase());
+    return fallback;
+  };
+
+  // Defaults + external overrides (window.appertivoConfig and data-attrs)
+  const cfg = Object.assign(
+    {
+      // Behavior
+      mount: null,                 // e.g. '#appertivo-preview'
+      inline: false,
+      openOnLoad: false,
+      inlineWidth: '100%',
+      inlineMaxWidth: '520px',
+
+      // Launcher customization (future-proof)
+      launcherIcon: '🍽️',         // emoji or short text
+      launcherLabel: "View Today's Special",
+      launcherBg: 'linear-gradient(135deg,#B993D6,#f08000)',
+      launcherColor: '#ffffff',
+      launcherShape: 'circle',     // 'circle' | 'pill'
+      launcherSize: 70             // number(px) or string ('70px')
+    },
+    window.appertivoConfig || {}
+  );
+
+  // Data-attrs (win over defaults but under window.appertivoConfig)
+  const data = scriptEl ? scriptEl.dataset : {};
+  if (data) {
+    if (data.mount) cfg.mount = data.mount;
+    if (typeof data.inline !== 'undefined') cfg.inline = readBool(data.inline, cfg.inline);
+    if (typeof data.openOnLoad !== 'undefined') cfg.openOnLoad = readBool(data.openOnLoad, cfg.openOnLoad);
+    if (data.inlineWidth) cfg.inlineWidth = data.inlineWidth;
+    if (data.inlineMaxWidth) cfg.inlineMaxWidth = data.inlineMaxWidth;
+
+    if (data.launcherIcon) cfg.launcherIcon = data.launcherIcon;
+    if (data.launcherLabel) cfg.launcherLabel = data.launcherLabel;
+    if (data.launcherBg) cfg.launcherBg = data.launcherBg;
+    if (data.launcherColor) cfg.launcherColor = data.launcherColor;
+    if (data.launcherShape) cfg.launcherShape = data.launcherShape;
+    if (data.launcherSize) {
+      const sz = /^\d+$/.test(data.launcherSize) ? Number(data.launcherSize) : data.launcherSize;
+      cfg.launcherSize = sz;
+    }
+  }
+
+  const restaurantId = (scriptEl?.dataset.restaurantId) || "{{ restaurant_id|escapejs }}";
+  const apiUrl       = (scriptEl?.dataset.apiUrl)       || "{{ api_url|escapejs }}";
+  const subscribeUrl = (scriptEl?.dataset.subscribeUrl) || "{{ subscribe_url|escapejs }}";
+
   if (!restaurantId) {
     console.warn('Appertivo Widget: No restaurant ID specified.');
     return;
   }
 
-  // Inject Bootstrap CSS and custom styles
-  const bootstrapLink = document.createElement('link');
-  bootstrapLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css';
-  bootstrapLink.rel = 'stylesheet';
-  document.head.appendChild(bootstrapLink);
+  // -------------------------------
+  // Host + Shadow root
+  // -------------------------------
+  let host;
+  if (cfg.inline && cfg.mount) {
+    host = document.querySelector(cfg.mount);
+    if (!host) {
+      console.warn('Appertivo Widget: mount selector not found:', cfg.mount);
+      return;
+    }
+  } else {
+    host = document.createElement('div');
+    host.style.all = 'initial'; // paranoia isolation
+    document.body.appendChild(host);
+  }
+  const root = host.attachShadow({ mode: 'open' });
 
-  const fontAwesomeLink = document.createElement('link');
-  fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-  fontAwesomeLink.rel = 'stylesheet';
-  document.head.appendChild(fontAwesomeLink);
+  // Bootstrap inside shadow (safe from host page)
+  const bs = document.createElement('link');
+  bs.rel = 'stylesheet';
+  bs.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css';
+  root.appendChild(bs);
 
-  const googleFontLink = document.createElement('link');
-  googleFontLink.href = 'https://fonts.googleapis.com/css2?family=Calistoga&display=swap';
-  googleFontLink.rel = 'stylesheet';
-  document.head.appendChild(googleFontLink);
+  // Optional Google font for title
+  const fonts = document.createElement('link');
+  fonts.rel = 'stylesheet';
+  fonts.href = 'https://fonts.googleapis.com/css2?family=Calistoga&display=swap';
+  root.appendChild(fonts);
 
-  // Inject custom CSS styles
+  // -------------------------------
+  // Styles (scoped)
+  // -------------------------------
+  const px = (v) => (typeof v === 'number' ? `${v}px` : v);
+
   const style = document.createElement('style');
   style.textContent = `
-    :root {
+    :host { all: initial;
       --lavender-purple: #B993D6;
       --vibrant-orange: #f08000;
       --seafoam-green: #58B09C;
@@ -38,537 +108,370 @@
       --jet-black: #14080E;
     }
 
-    /* Widget Trigger Button */
+    /* Overlay (floating only) */
+    #appertivo-overlay { 
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.3);
+      opacity: 0; visibility: hidden;
+      transition: all .25s ease;
+    }
+    #appertivo-overlay.show { opacity: 1; visibility: visible; }
+    :host([data-inline]) #appertivo-overlay { display: none; }
+
+    /* Modal container */
+    #appertivo-widget-modal {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      transform: translateY(100px) scale(.8);
+      opacity: 0;
+      transition: all .35s cubic-bezier(.4,0,.2,1);
+    }
+    #appertivo-widget-modal.show { transform: translateY(0) scale(1); opacity: 1; }
+
+    /* Floating placement */
+    :host(:not([data-inline])) #appertivo-widget-modal {
+      position: fixed;
+      bottom: 120px; right: 30px;
+      width: 380px; max-width: calc(100vw - 60px);
+      z-index: 3;
+    }
+
+    /* Inline placement (hidden until .show to allow openOnLoad control) */
+    :host([data-inline]) #appertivo-widget-modal {
+      position: static;
+      width: ${cfg.inlineWidth};
+      max-width: ${cfg.inlineMaxWidth};
+      margin: 0 auto;
+      box-shadow: none;
+      transform: none; /* avoid translate animation in inline */
+    }
+    :host([data-inline]) #appertivo-widget-modal:not(.show) { opacity: 0; }
+
+    /* Launcher (floating only) */
     #appertivo-launcher {
-      position: fixed !important;
-      bottom: 30px !important;
-      right: 30px !important;
-      width: 70px !important;
-      height: 70px !important;
-      background: linear-gradient(135deg, var(--lavender-purple), var(--vibrant-orange)) !important;
-      border: none !important;
-      border-radius: 50% !important;
-      box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4) !important;
-      z-index: 999999 !important;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-family: 'Font Awesome 6 Free' !important;
-      font-size: 24px !important;
-      color: white !important;
-      cursor: pointer !important;
-      animation: pulse 2s infinite !important;
+      position: fixed;
+      bottom: 30px; right: 30px;
+      width: ${px(cfg.launcherSize)}; height: ${px(cfg.launcherSize)};
+      background: ${cfg.launcherBg};
+      border: 0;
+      border-radius: ${cfg.launcherShape === 'pill' ? '999px' : '50%'};
+      box-shadow: 0 8px 25px rgba(185,147,214,0.4);
+      z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: ${cfg.launcherColor};
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      transition: transform .2s ease, box-shadow .2s ease;
+      padding: 0 18px; /* works for pill shape text */
+      line-height: 1;
+      user-select: none;
     }
-
-    #appertivo-launcher:hover {
-      transform: scale(1.1) translateY(-2px) !important;
-      box-shadow: 0 12px 30px rgba(185, 147, 214, 0.6) !important;
-    }
-
-    #appertivo-launcher::before {
-      content: "\\f2e7" !important;
-      font-weight: 900 !important;
-    }
+    #appertivo-launcher:hover { transform: scale(1.08) translateY(-2px); }
 
     @keyframes pulse {
-      0% {
-        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 0 rgba(240, 128, 0, 0.6) !important;
-      }
-      70% {
-        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 12px rgba(240, 128, 0, 0) !important;
-      }
-      100% {
-        box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4), 0 0 0 0 rgba(240, 128, 0, 0) !important;
-      }
+      0% { box-shadow: 0 8px 25px rgba(185,147,214,0.4), 0 0 0 0 rgba(240,128,0,.6); }
+      70%{ box-shadow: 0 8px 25px rgba(185,147,214,0.4), 0 0 0 12px rgba(240,128,0,0); }
+      100%{box-shadow: 0 8px 25px rgba(185,147,214,0.4), 0 0 0 0 rgba(240,128,0,0); }
     }
 
-    /* Widget Container */
-    #appertivo-widget-modal {
-      position: fixed !important;
-      bottom: 120px !important;
-      right: 30px !important;
-      width: 380px !important;
-      max-width: calc(100vw - 60px) !important;
-      background: white !important;
-      border-radius: 20px !important;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
-      z-index: 1000000 !important;
-      transform: translateY(100px) scale(0.8) !important;
-      opacity: 0 !important;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      overflow: hidden !important;
-      font-family: 'Segoe UI', Tahoma, sans-serif !important;
-    }
+    /* Card internals */
+    .appertivo-special-image { width: 100%; height: 100%; max-height: 300px; object-fit: cover; opacity: .95; }
 
-    #appertivo-widget-modal.show {
-      transform: translateY(0) scale(1) !important;
-      opacity: 1 !important;
-    }
+    .appertivo-widget-content { padding: 20px; }
+    .appertivo-special-title { font-family: 'Calistoga', sans-serif; font-size: 20px; color: var(--jet-black); margin: 0 0 10px; }
+    .appertivo-special-description { color: var(--charcoal-purple); font-size: 14px; line-height: 1.5; margin: 0 0 15px; }
 
-    /* Widget Header */
-    .appertivo-widget-header {
-      position: relative !important;
-      height: 160px !important;
-      background: linear-gradient(135deg, var(--lavender-purple), var(--seafoam-green)) !important;
-      overflow: hidden !important;
-    }
+    .appertivo-cta-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f0f0f0; }
+    .appertivo-cta-button { flex: 1; min-width: 120px; text-align: center; text-decoration: none; padding: 12px 14px; border-radius: 12px; font-weight: 700; font-size: 13px; color: #fff; }
+    .appertivo-cta-button.order { background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35); }
+    .appertivo-cta-button.call { background: linear-gradient(135deg, var(--seafoam-green), #4a9b8e); }
+    .appertivo-cta-button.mobile_order { background: linear-gradient(135deg, var(--lavender-purple), #9b7bc8); }
 
-    .appertivo-special-image {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
-      opacity: 0.9 !important;
-    }
-
+    /* Close button (SVG, no external deps) */
     .appertivo-close-btn {
-      position: absolute !important;
-      top: 15px !important;
-      right: 15px !important;
-      background: rgba(255, 255, 255, 0.9) !important;
-      border: none !important;
-      width: 36px !important;
-      height: 36px !important;
-      border-radius: 50% !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      color: var(--charcoal-purple) !important;
-      font-size: 16px !important;
-      transition: all 0.3s ease !important;
-      backdrop-filter: blur(10px) !important;
-      cursor: pointer !important;
+      position: absolute; top: 12px; right: 12px;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 0; background: rgba(255,255,255,.95);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--charcoal-purple);
+      cursor: pointer;
+    }
+    .appertivo-close-btn svg { width: 20px; height: 20px; display: block; }
+
+    /* Small screens */
+    @media (max-width: 480px) {
+      :host(:not([data-inline])) #appertivo-widget-modal { left: 15px; right: 15px; width: auto; }
+      .appertivo-cta-buttons { flex-direction: column; }
+      .appertivo-cta-button { flex: none; width: 100%; }
     }
 
-    .appertivo-close-btn:hover {
-      background: white !important;
-      transform: rotate(90deg) !important;
-    }
-
-    /* Widget Content */
-    .appertivo-widget-content {
-      padding: 25px !important;
-    }
-
-    .appertivo-special-title {
-      font-family: 'Calistoga', sans-serif !important;
-      font-size: 20px !important;
-      color: var(--jet-black) !important;
-      margin-bottom: 12px !important;
-      line-height: 1.3 !important;
-    }
-
-    .appertivo-special-description {
-      color: var(--charcoal-purple) !important;
-      font-size: 14px !important;
-      line-height: 1.5 !important;
-      margin-bottom: 15px !important;
-    }
-
-    .appertivo-expiration-badge {
-      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
-      color: white !important;
-      font-size: 11px !important;
-      font-weight: 600 !important;
-      padding: 6px 12px !important;
-      border-radius: 20px !important;
-      display: none !important;
-      margin-bottom: 20px !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.5px !important;
-    }
-
-    /* Form Styles */
-    .appertivo-signup-form {
-      border-top: 2px solid #f8f9fa !important;
-      padding-top: 20px !important;
-    }
-
-    .appertivo-form-label {
-      color: var(--charcoal-purple) !important;
-      font-weight: 600 !important;
-      font-size: 13px !important;
-      margin-bottom: 8px !important;
-      display: block !important;
-    }
-
-    #appertivo-email-input {
-      border: 2px solid #e9ecef !important;
-      border-radius: 12px !important;
-      padding: 12px 16px !important;
-      font-size: 14px !important;
-      transition: all 0.3s ease !important;
-      width: 100% !important;
-      box-sizing: border-box !important;
-      font-family: inherit !important;
-    }
-
-    #appertivo-email-input:focus {
-      border-color: var(--lavender-purple) !important;
-      box-shadow: 0 0 0 0.25rem rgba(185, 147, 214, 0.1) !important;
-      outline: none !important;
-    }
-
-    .appertivo-submit-btn {
-      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
-      border: none !important;
-      color: white !important;
-      padding: 12px 24px !important;
-      border-radius: 12px !important;
-      font-weight: 600 !important;
-      font-size: 14px !important;
-      width: 100% !important;
-      transition: all 0.3s ease !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.5px !important;
-      cursor: pointer !important;
-      margin-top: 12px !important;
-    }
-
-    .appertivo-submit-btn:hover {
-      transform: translateY(-2px) !important;
-      box-shadow: 0 8px 25px rgba(240, 128, 0, 0.3) !important;
-      background: linear-gradient(135deg, #ff6b35, var(--vibrant-orange)) !important;
-    }
-
-    /* CTA Buttons */
-    .appertivo-cta-buttons {
-      display: flex !important;
-      gap: 12px !important;
-      flex-wrap: wrap !important;
-      justify-content: center !important;
-      margin-top: 20px !important;
-      padding-top: 15px !important;
-      border-top: 1px solid #f0f0f0 !important;
-    }
-
-    .appertivo-cta-button {
-      flex: 1 !important;
-      text-align: center !important;
-      padding: 12px 16px !important;
-      border-radius: 12px !important;
-      text-decoration: none !important;
-      font-weight: 600 !important;
-      font-size: 13px !important;
-      color: white !important;
-      transition: all 0.3s ease !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.5px !important;
-      min-width: 100px !important;
-    }
-
-    .appertivo-cta-button:hover {
-      transform: translateY(-2px) !important;
-      text-decoration: none !important;
-      color: white !important;
-    }
-
-    .appertivo-cta-button.order {
-      background: linear-gradient(135deg, var(--vibrant-orange), #ff6b35) !important;
-    }
-
-    .appertivo-cta-button.order:hover {
-      box-shadow: 0 8px 25px rgba(240, 128, 0, 0.3) !important;
-    }
-
-    .appertivo-cta-button.call {
-      background: linear-gradient(135deg, var(--seafoam-green), #4a9b8e) !important;
-    }
-
-    .appertivo-cta-button.call:hover {
-      box-shadow: 0 8px 25px rgba(88, 176, 156, 0.3) !important;
-    }
-
-    .appertivo-cta-button.mobile_order {
-      background: linear-gradient(135deg, var(--lavender-purple), #9b7bc8) !important;
-    }
-
-    .appertivo-cta-button.mobile_order:hover {
-      box-shadow: 0 8px 25px rgba(185, 147, 214, 0.3) !important;
-    }
-
-    /* Mobile Responsiveness */
-    @media (max-width: 768px) {
-      #appertivo-widget-modal {
-        bottom: 100px !important;
-        right: 15px !important;
-        left: 15px !important;
-        width: auto !important;
-        max-width: none !important;
-      }
-      
-      #appertivo-launcher {
-        bottom: 20px !important;
-        right: 20px !important;
-        width: 60px !important;
-        height: 60px !important;
-        font-size: 20px !important;
-      }
-      
-      .appertivo-widget-content {
-        padding: 20px !important;
-      }
-      
-      .appertivo-special-title {
-        font-size: 18px !important;
-      }
-
-      .appertivo-cta-buttons {
-        flex-direction: column !important;
-      }
-
-      .appertivo-cta-button {
-        flex: none !important;
-      }
-    }
-
-    /* Overlay */
-    .appertivo-overlay {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      background: rgba(0, 0, 0, 0.3) !important;
-      z-index: 999998 !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      transition: all 0.3s ease !important;
-    }
-
-    .appertivo-overlay.show {
-      opacity: 1 !important;
-      visibility: visible !important;
+    /* Toast */
+    .appertivo-toast {
+      position: fixed; bottom: 100px; right: 30px;
+      background: rgba(20,8,14,.95); color: #fff;
+      padding: 10px 14px; border-radius: 10px; font-size: 13px; z-index: 9999;
     }
   `;
-  document.head.appendChild(style);
+  root.appendChild(style);
 
-  // Create overlay
+  if (cfg.inline) host.setAttribute('data-inline', '');
+
+  // -------------------------------
+  // DOM
+  // -------------------------------
   const overlay = document.createElement('div');
-  overlay.className = 'appertivo-overlay';
-  document.body.appendChild(overlay);
+  overlay.id = 'appertivo-overlay';
+  root.appendChild(overlay);
 
-  // Create launcher button
-  const launcher = document.createElement('button');
-  launcher.id = 'appertivo-launcher';
-  launcher.setAttribute('aria-label', 'View Today\'s Special');
-  document.body.appendChild(launcher);
-
-  // Create modal container
   const modal = document.createElement('div');
   modal.id = 'appertivo-widget-modal';
   modal.innerHTML = `
-    <!-- Widget Header with Image -->
-    <div class="appertivo-widget-header">
-      <img src="" alt="Special Image" class="appertivo-special-image">
-      <button class="appertivo-close-btn" aria-label="Close">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <!-- Widget Content -->
-    <div class="appertivo-widget-content">
-      <h3 class="appertivo-special-title"></h3>
-      <p class="appertivo-special-description">Ian</p>
-      
-      <div class="appertivo-expiration-badge">
-        <i class="fas fa-clock me-1"></i>
-        <span class="expiration-text"></span>
+    <div class="card shadow-sm mb-0">
+      <div class="position-relative">
+        <img src="" alt="Special Image" class="card-img-top appertivo-special-image">
+        <button class="btn btn-light appertivo-close-btn" aria-label="Close">
+          <!-- Inline SVG ensures icon always renders -->
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7a1 1 0 1 0-1.41 1.42L10.59 12l-4.9 4.89a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.9a1 1 0 0 0 1.42-1.41L13.41 12l4.9-4.89a1 1 0 0 0-.01-1.4z"/>
+          </svg>
+        </button>
       </div>
 
-      <!-- Signup Form -->
-      <form class="appertivo-signup-form" id="appertivo-email-form">
-        <label for="appertivo-email-input" class="appertivo-form-label">Get Future Specials</label>
-        <input type="email" 
-               id="appertivo-email-input" 
-               placeholder="Enter your email address"
-               maxlength="100"
-               required>
-        <button type="submit" class="appertivo-submit-btn">
-          <i class="fas fa-envelope me-2"></i>
-          Subscribe to Specials
-        </button>
-      </form>
+      <div class="card-body appertivo-widget-content">
+        <h5 class="card-title appertivo-special-title"></h5>
+        <p class="card-text appertivo-special-description"></p>
 
-      <!-- CTA Buttons -->
-      <div class="appertivo-cta-buttons"></div>
+        <form class="appertivo-signup-form" id="appertivo-email-form">
+          <input type="email" id="appertivo-email-input" class="form-control form-control-sm mb-2 border-2" placeholder="Enter your email" maxlength="100" required>
+          <button type="submit" class="btn btn-sm w-100 appertivo-submit-btn text-white" style="background:#f08000">Subscribe to Specials</button>
+        </form>
+
+        <div class="appertivo-cta-buttons mt-3 d-flex gap-2 flex-wrap justify-content-center"></div>
+      </div>
     </div>
   `;
-  document.body.appendChild(modal);
+  root.appendChild(modal);
 
-  // Get references to elements
+  // Launcher (floating only)
+  let launcher = null;
+  if (!cfg.inline) {
+    launcher = document.createElement('button');
+    launcher.id = 'appertivo-launcher';
+    launcher.setAttribute('aria-label', cfg.launcherLabel || "View Today's Special");
+    launcher.textContent = cfg.launcherIcon || '🍽️'; // can be short text too
+    root.appendChild(launcher);
+  }
+
+  // -------------------------------
+  // Refs & helpers
+  // -------------------------------
+  const img = modal.querySelector('.appertivo-special-image');
+  const title = modal.querySelector('.appertivo-special-title');
+  const desc = modal.querySelector('.appertivo-special-description');
   const closeBtn = modal.querySelector('.appertivo-close-btn');
   const emailForm = modal.querySelector('#appertivo-email-form');
   const emailInput = modal.querySelector('#appertivo-email-input');
+  const ctaContainer = modal.querySelector('.appertivo-cta-buttons');
+  const signupFormWrap = emailForm;
 
-  // Helper functions
   function showModal() {
+    if (!cfg.inline) overlay.classList.add('show');
     modal.classList.add('show');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
+    // focus trap-ish
+    closeBtn.focus({ preventScroll: true });
   }
-
   function hideModal() {
+    if (!cfg.inline) overlay.classList.remove('show');
     modal.classList.remove('show');
-    overlay.classList.remove('show');
-    document.body.style.overflow = '';
+  }
+  function clearCTAs() { ctaContainer.innerHTML = ''; }
+
+  function normalizeCtas(cta) {
+    // Allow stringified JSON arrays defensively
+    if (!cta) return [];
+    let out = cta;
+    if (typeof cta === 'string') {
+      try { out = JSON.parse(cta); } catch { out = []; }
+    }
+    return Array.isArray(out) ? out : [];
   }
 
-  function clearCTAs() {
-    const ctaContainer = modal.querySelector('.appertivo-cta-buttons');
-    ctaContainer.innerHTML = '';
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'appertivo-toast';
+    t.textContent = msg;
+    root.appendChild(t);
+    setTimeout(() => t.remove(), 2400);
+  }
+function buildActionsFromPassthrough(sp) {
+  const actions = [];
+  if (sp.order_url)       actions.push({ type: 'order',        url: sp.order_url });
+  if (sp.phone_number)    actions.push({ type: 'call',         phone: sp.phone_number });
+  if (sp.mobile_order_url)actions.push({ type: 'mobile_order', url: sp.mobile_order_url });
+  return actions;
+}
+function renderSpecial(special) {
+  // Image, title, desc
+  img.src = special.image_url || 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http%3A//www.w3.org/2000/svg%22 width=%22600%22 height=%22300%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23B993D6%22/%3E%3C/svg%3E';
+  img.alt = special.title || 'Special Image';
+  title.textContent = special.title || "Today's Special";
+  desc.textContent = special.description || '';
+
+  // Subscribe on/off
+  if (signupFormWrap) {
+    const enabled = !!special.enable_email_signup;
+    signupFormWrap.style.display = enabled ? '' : 'none';
   }
 
-  // Render the special data into the modal
-  function renderSpecial(special) {
-    const img = modal.querySelector('.appertivo-special-image');
-    const title = modal.querySelector('.appertivo-special-title');
-    const desc = modal.querySelector('.appertivo-special-description');
-    const expirationBadge = modal.querySelector('.appertivo-expiration-badge');
-    const expirationText = modal.querySelector('.expiration-text');
-    const ctaContainer = modal.querySelector('.appertivo-cta-buttons');
+  // CTAs
+  clearCTAs();
 
-    // Set content
-    img.src = special.image_url || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
-    img.alt = special.title || 'Special Image';
-    title.textContent = special.title || "Today's Special";
-    desc.textContent = special.description || '';
+  // Prefer server-provided array if present, else build from passthrough
+  let actions = [];
+  if (Array.isArray(special.cta) && special.cta.length) {
+    actions = special.cta;
+  } else {
+    actions = buildActionsFromPassthrough(special);
+  }
 
-    // Handle expiration date if provided
-    if (special.expiration_date) {
-      expirationText.textContent = `Expires: ${special.expiration_date}`;
-      expirationBadge.style.display = 'inline-block';
+  actions.forEach(action => {
+    if (!action || !action.type) return;
+    const btn = document.createElement('a');
+    btn.className = 'appertivo-cta-button';
+    btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
+
+    if (action.type === 'order' && (action.url || special.order_url)) {
+      btn.href = action.url || special.order_url;
+      btn.textContent = 'Order Now';
+      btn.classList.add('order');
+    } else if (action.type === 'call' && (action.phone || special.phone_number)) {
+      btn.href = `tel:${action.phone || special.phone_number}`;
+      btn.textContent = 'Call Now';
+      btn.classList.add('call');
+    } else if (action.type === 'mobile_order' && (action.url || special.mobile_order_url)) {
+      btn.href = action.url || special.mobile_order_url;
+      btn.textContent = 'Mobile Order';
+      btn.classList.add('mobile_order');
     } else {
-      expirationBadge.style.display = 'none';
+      return; // skip incomplete
     }
 
-    // Clear and render CTA buttons
-    clearCTAs();
-    if (special.cta && special.cta.length > 0) {
-      special.cta.forEach(action => {
-        const btn = document.createElement('a');
-        btn.className = 'appertivo-cta-button';
-        btn.target = '_blank';
-        btn.rel = 'noopener noreferrer';
+    ctaContainer.appendChild(btn);
+  });
+}
 
-        if (action.type === 'order') {
-          btn.href = action.url;
-          btn.textContent = 'Order Now';
-          btn.classList.add('order');
-        } else if (action.type === 'call') {
-          btn.href = `tel:${action.phone}`;
-          btn.textContent = 'Call Now';
-          btn.classList.add('call');
-        } else if (action.type === 'mobile_order') {
-          btn.href = action.url;
-          btn.textContent = 'Mobile Order';
-          btn.classList.add('mobile_order');
-        }
-
-        ctaContainer.appendChild(btn);
-      });
-    } else {
-      // Add fallback demo buttons if no CTA data
-      const orderBtn = document.createElement('a');
-      orderBtn.className = 'appertivo-cta-button order';
-      orderBtn.href = '#';
-      orderBtn.textContent = 'Order Now';
-      orderBtn.target = '_blank';
-      ctaContainer.appendChild(orderBtn);
-
-      const callBtn = document.createElement('a');
-      callBtn.className = 'appertivo-cta-button call';
-      callBtn.href = 'tel:+1234567890';
-      callBtn.textContent = 'Call Now';
-      ctaContainer.appendChild(callBtn);
+  // Hide the entire widget (used when no published specials)
+  function hideWidgetCompletely() {
+    if (!cfg.inline && launcher) launcher.remove();
+    if (cfg.inline) {
+      // Clear inline content
+      root.innerHTML = '';
+      // Keep an empty host so we don't error if called twice
     }
   }
 
-  // Event listeners
-  launcher.addEventListener('click', () => {
-    showModal();
-    fetchSpecial();
-  });
-
-  closeBtn.addEventListener('click', hideModal);
-  overlay.addEventListener('click', hideModal);
-
-  // Email form submission
-  emailForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = emailInput.value.trim();
-    if (!email) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-
-    // Call your API endpoint for email subscription
-    fetch(subscribeUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        restaurant_id: restaurantId
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert(`Thanks for subscribing, ${email}!`);
-        emailInput.value = '';
-      } else {
-        alert('Subscription failed. Please try again.');
-      }
-    })
-    .catch(() => {
-      alert(`Thanks for subscribing, ${email}!`); // Fallback success message
-      emailInput.value = '';
-    });
-  });
-
-  // Fetch special from API
-  function fetchSpecial() {
-    const img = modal.querySelector('.appertivo-special-image');
-    const title = modal.querySelector('.appertivo-special-title');
-    const desc = modal.querySelector('.appertivo-special-description');
-
-    // Show loading state
+  // Fetch logic with meta handling
+  function fetchSpecial({ openAfter = false } = {}) {
     title.textContent = 'Loading...';
     desc.textContent = '';
     clearCTAs();
 
-    fetch(`${apiUrl}?restaurant=${restaurantId}`)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return res.json();
-      })
+    const url = `${apiUrl}?restaurant=${encodeURIComponent(restaurantId)}`;
+
+    return fetch(url)
+      .then(r => (r.ok ? r.json() : Promise.reject()))
       .then(data => {
-        if (data.specials && data.specials.length > 0) {
-          renderSpecial(data.specials[0]);
-        } else {
-          title.textContent = 'No Specials Available';
-          desc.textContent = 'Check back later for exciting new offers!';
-          img.src = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+        // If backend says the restaurant has no active specials, bail out and remove widget.
+        const metaMode = data?.meta?.mode || '';
+        const count = Number(data?.meta?.count ?? 0);
+
+        if (metaMode === 'fallback_empty_restaurant' || count === 0 || !Array.isArray(data?.specials) || data.specials.length === 0) {
+          hideWidgetCompletely();
+          return null;
         }
+
+        const sp = data.specials[0];
+        if (!sp) {
+          hideWidgetCompletely();
+          return null;
+        }
+
+        renderSpecial(sp);
+        if (openAfter) showModal();
+        return sp;
       })
-      .catch(error => {
-        console.error('Error fetching specials:', error);
+      .catch(() => {
+        // If we can’t load, quietly do nothing for floating (keeps FAB),
+        // but avoid noisy UI. You could log here if needed.
         title.textContent = 'Unable to Load Specials';
-        desc.textContent = 'Please try again later or contact the restaurant directly.';
-        img.src = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80';
+        desc.textContent = 'Please try again later.';
+        img.src = 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http%3A//www.w3.org/2000/svg%22 width=%22600%22 height=%22300%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%2358475B%22/%3E%3C/svg%3E';
+        return null;
       });
   }
 
-  // Keyboard accessibility
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('show')) {
-      hideModal();
-    }
+  // -------------------------------
+  // Events
+  // -------------------------------
+  if (!cfg.inline && launcher) {
+    launcher.addEventListener('click', () => {
+      // Fetch latest, then open
+      fetchSpecial({ openAfter: true });
+    });
+    overlay.addEventListener('click', hideModal);
+    // Escape to close (floating only)
+    root.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideModal(); });
+  }
+
+  closeBtn.addEventListener('click', hideModal);
+
+  emailForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email) return;
+
+    // x-www-form-urlencoded to reduce CORS preflight friction
+    const body = new URLSearchParams({ email, restaurant_id: restaurantId });
+
+    fetch(subscribeUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    })
+    .then(() => {
+      emailInput.value = '';
+      showToast(`Thanks for subscribing, ${email}!`);
+    })
+    .catch(() => {
+      showToast('Subscription failed. Please try again later.');
+    });
   });
 
-  console.log('Appertivo Widget loaded successfully');
+  // -------------------------------
+  // Initial behavior
+  // -------------------------------
+  if (cfg.inline) {
+    // Inline: fetch now; show immediately only if openOnLoad
+    fetchSpecial().then(sp => {
+      if (sp && cfg.openOnLoad) showModal();
+      // If no specials, fetchSpecial() already removed the widget.
+    });
+  } else {
+    // Floating: optional warm prefetch (silent). Keeps launcher hidden if no specials.
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        fetchSpecial().then(sp => {
+          if (!sp && launcher) launcher.remove(); // hide FAB when no specials
+        });
+      });
+    } else {
+      fetchSpecial().then(sp => {
+        if (!sp && launcher) launcher.remove();
+      });
+    }
+  }
 })();

@@ -2,9 +2,12 @@
 {% block title %}My Specials{% endblock %}
 {% block content %}
 {% load static %}
-<div class="container mt-5">
-  <h2 class="mb-4 brand-purple text-center">Your Past Specials</h2>
-  {% include "app/partials/specials_list.html" %}
+<div class="p-4">
+  <h2 class="h4 mb-3">My Specials</h2>
+  <div id="specials-list" hx-get="{% url 'specials_list' %}" hx-trigger="load" hx-target="#specials-list" hx-swap="innerHTML">
+    <div class="text-secondary">Loading…</div>
+  </div>
 </div>
+
 {% endblock %}
 

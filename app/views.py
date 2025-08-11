@@ -45,40 +45,79 @@ def appertivo_widget(request):
     })
     response['Content-Type'] = 'application/javascript'
     return response
-    
+
+DEMO_SPECIALS = [
+    {
+        "title": "Try Me — Daily Special",
+        "description": "This is a demo special from Appertivo. Add a photo and a CTA to see how it looks on your site.",
+        "image_url": "",  # leave blank or host a small demo image in /static and use request.build_absolute_uri in view
+        "cta_choices": [
+            {"type": "order", "url": "https://example.com/order"},
+            {"type": "call", "phone": "+1-555-0100"},
+        ],
+        "enable_email_signup": True,
+    }
+]
+
 def specials_api(request):
-    restaurant_id = request.GET.get('restaurant')
-    logger.debug("Restaurant ID: %s", restaurant_id)
     today = timezone.localdate()
-    qs = Special.objects.filter(
-        Q(published=True),
-        Q(start_date__lte=today) | Q(start_date__isnull=True),
-        Q(end_date__gte=today) | Q(end_date__isnull=True),
-    )
-    if restaurant_id:
-        qs = qs.filter(user_profile__id=restaurant_id)  # or another filter by user/restaurant
+    # 1) Get param; optionally fall back to a configured demo restaurant
+    requested_restaurant = request.GET.get("restaurant",13)
+    demo_mode = False
+    restaurant_id = requested_restaurant
 
-    qs = qs.order_by("start_date")
-
-    data = []
-    for sp in qs:
-        ctas = []
-        if "order" in sp.cta_choices:
-            ctas.append({"type": "order", "url": sp.order_url})
-        if "call" in sp.cta_choices:
-            ctas.append({"type": "call", "phone": sp.phone_number})
-        if "mobile_order" in sp.cta_choices:
-            ctas.append({"type": "mobile_order", "url": sp.mobile_order_url})
-
-        data.append({
-            "title": sp.title,
-            "description": sp.description,
-            "image_url": sp.image or "",
-            "cta": ctas,
-            "enable_email_signup": sp.enable_email_signup,
+    # 2) If still no id at all, return static demo payload (safe & fast)
+    if not restaurant_id:
+        return JsonResponse({
+            "specials": DEMO_SPECIALS,
+            "meta": {"mode": "default_demo", "restaurant": None, "count": len(DEMO_SPECIALS)}
         })
+    print("Restaurant ID:", restaurant_id)
+    # 3) Query current, published specials for that restaurant
+    qs = (Special.objects
+          .filter(
+              Q(user_profile__pk=restaurant_id),
+              Q(published=True),
+              Q(start_date__lte=today) | Q(start_date__isnull=True),
+              Q(end_date__gte=today) | Q(end_date__isnull=True),
+          ))
 
-    return JsonResponse({"specials": data})
+    latest = qs.last()
+
+    if demo_mode:
+        return JsonResponse({
+            "specials": DEMO_SPECIALS,
+            "meta": {
+                "mode": "default_demo",
+                "restaurant": None,
+                "count": len(DEMO_SPECIALS),
+                "note": "No active specials for demo restaurant; using static demo."
+            }
+        })
+    # 5) Passthrough payload (you’re storing Cloudinary + URLs already)
+    payload = {
+        "title": latest.title or "",
+        "description": latest.description or "",
+        "image_url": latest.image or "",            # URLField → Cloudinary URL as-is
+        "order_url": latest.order_url or "",
+        "phone_number": latest.phone_number or "",
+        "mobile_order_url": latest.mobile_order_url or "",
+        "cta_choices": latest.cta_choices,          # whatever type you store
+        "enable_email_signup": bool(latest.enable_email_signup),
+        "start_date": latest.start_date,
+        "end_date": latest.end_date,
+        "published": bool(latest.published),
+    }
+
+    return JsonResponse({
+        "specials": [payload],
+        "meta": {
+            "mode": "demo_restaurant" if demo_mode else "live",
+            "restaurant": restaurant_id,
+            "count": 1,
+        }
+    })
+
 
 def special_create(request):
     user_profile = getattr(request, 'user_profile', None)

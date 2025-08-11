@@ -1,11 +1,24 @@
 {% load static %}
 
-<div class="preview-container">
-  <h2 class="preview-heading text-brand fw-bold">
-    <i class="bi bi-eye me-2"></i>Special Preview
-  </h2>
-
-  {% include "_special_widget.html" with special=special show_email_form=special.enable_email_signup %}
+<div class="p-3">
+  <div class="widget-frame rounded-4 overflow-hidden">
+    {% if special.image %}
+      <img src="{{ special.image.url }}" alt="{{ special.title }}" class="w-100 object-cover" style="max-height:240px;">
+    {% endif %}
+    <div class="p-3 bg-body rounded-bottom-4">
+      <h3 class="h5 mb-1">{{ special.title }}</h3>
+      <p class="mb-2 text-secondary">{{ special.description|linebreaks }}</p>
+      <div class="d-flex flex-wrap gap-2">
+        {% if special.order_url %}<a href="{{ special.order_url }}" target="_blank" class="btn btn-teal">Order</a>{% endif %}
+        {% if special.mobile_order_url %}<a href="{{ special.mobile_order_url }}" target="_blank" class="btn btn-purple">Mobile</a>{% endif %}
+        {% if special.phone_number %}<a href="tel:{{ special.phone_number }}" class="btn btn-orange">Call</a>{% endif %}
+      </div>
+      <p class="small text-muted mt-2">
+        {% if special.start_date %}Starts {{ special.start_date }}{% endif %}
+        {% if special.end_date %} · Ends {{ special.end_date }}{% endif %}
+      </p>
+    </div>
+  </div>
 </div>
 
 <script>

@@ -1,31 +1,151 @@
-{% extends "app/base.html" %}
-{% block title %}Dashboard{% endblock %}
-{% block content %}
+{% extends 'app/base.html' %}
+{% block title %}Dashboard · Appertivo{% endblock %}
 {% load static %}
+{% block content %}
+<style>
+    .appertivo-launcher {
+      position: absolute;
+      bottom: -30px;
+      right: -30px;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #B993D6, #f08000);
+      border: 0;
+      border-radius: 50%;
+      box-shadow: 0 8px 25px rgba(185, 147, 214, 0.4);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #ffffff;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+      transition: transform .2s ease, box-shadow .2s ease;
+      padding: 0 18px;
+      line-height: 1;
+      user-select: none;
+    }
 
-<div class="container col-lg-5 col-sm-10 col-md-10 my-5">
-  <div id="dashboard" class="">
-<div class="card shadow-sm border-0">
-    <div class="card-header text-white text-center p-4 brand-orange">
-          <h1>Effortlessly Share Your Daily Specials</h1>
-    <p>Quickly publish eye-catching specials on your site without logins or setup.</p>
+</style>
+  <section class="hero container py-5 py-lg-6">
+    <div class="row align-items-top g-4">
+      <div class="col-lg-8 p-5">
+
+          <section class="text-white">
+          <div class="container text-left">
+            <h1 class="display-4 fw-extrabold gradient-text mb-3" data-animate="reveal">Launch specials with ease</h1>
+            <p class="lead mb-4">
+              <strong>Effortlessly Showcase Your Daily Specials & Boost Sales</strong>
+            </p>
+            <p class="mb-4">
+              Running a restaurant is demanding — promoting limited-time specials shouldn’t add to your stress.
+              Appertivo lets you create eye-catching daily specials in seconds and display them right on your website
+              with a sleek, floating widget.
+            </p>
+            <ul class="list-unstyled mb-4 text-start mx-auto" style="max-width: 600px;">
+              <li class="mb-2">✅ <strong>Quick & Easy:</strong> Snap a photo, add a description, and publish instantly — no technical skills required.</li>
+              <li class="mb-2">✅ <strong>No Login Needed:</strong> Start creating specials immediately with our seamless anonymous profile system.</li>
+              <li class="mb-2">✅ <strong>Powerful Widget:</strong> Engage visitors with a beautiful, mobile-friendly widget featuring your specials and direct call-to-action buttons like “Order Now” or “Call to Reserve.”</li>
+              <li class="mb-2">✅ <strong>Automated Marketing:</strong> Capture emails effortlessly and keep customers coming back with automated special announcements.</li>
+              <li class="mb-2">✅ <strong>AI-Powered Enhancements:</strong> Get smart suggestions to make your specials more compelling and increase conversions.</li>
+            </ul>
+            
+          </div>
+        </section>
+
+        <div class="d-flex gap-3">
+          <a href="{% url 'special_create' %}" class="btn btn-orange btn-lg px-4 text-white" data-animate="pop">Create a Special</a>
+          <a href="{% url 'my_specials' %}" class="btn btn-outline-light btn-lg" data-animate="pop">My Specials</a>
+        </div>
+      </div>
+      <div class="col-lg-4 pe-3">
+        <!-- Live preview frame with HTMX swap -->
+        <div class="card card-glass shadow-lg" data-animate="float">
+          <div id="special-preview-container"
+               hx-target="#special-preview-container"
+               hx-swap="innerHTML" style="position: relative;">
+               <div class="appertivo-launcher"><i class="fa-solid fa-utensils"></i></div>
+            <div class="p-5 text-center text-secondary">
+                <div id="appertivo-preview"></div>
+
+                <script>
+                  // Configure BEFORE loading the widget script
+                  window.appertivoConfig = {
+                    mount: '#appertivo-preview',   // where to render inline
+                    inline: true,                  // render inside the div, not floating
+                    openOnLoad: true,              // show as if clicked
+                    // optional: inlineWidth: '100%', inlineMaxWidth: '520px'
+                  };
+                </script>
+                <script src="http://127.0.0.1:8000/appertivo-widget.js?restaurant=13"></script>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body p-0">
+  </section>
 
-      <!-- HTMX form loader -->
-      <section id="special-form-container"
-               hx-get="{% url 'special_create' %}"
-               hx-trigger="load"
-               hx-target="#special-form-container"
-               hx-swap="innerHTML"
-               class="mb-4">
-        <!-- form will load here -->
-      </section>
+  <section class="container pb-5">
+    <div class="row g-4">
+      <div class="col-md-4" data-animate="lift">
+        <div class="feature-card p-4 rounded-4 h-100">
+          <div class="icon-dot bg-teal"></div>
+          <h3 class="h5 mt-3">Create</h3>
+          <p class="text-secondary">Snap a pic, add a price, set dates. The rest is automated.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-animate="lift">
+        <div class="feature-card p-4 rounded-4 h-100">
+          <div class="icon-dot bg-purple"></div>
+          <h3 class="h5 mt-3">Preview</h3>
+          <p class="text-secondary">Accurate widget preview before publish—what you see is what your site gets.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-animate="lift">
+        <div class="feature-card p-4 rounded-4 h-100">
+          <div class="icon-dot bg-orange"></div>
+          <h3 class="h5 mt-3">Publish</h3>
+          <p class="text-secondary">One click publish across your site and channels.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- Form zone -->
+  <section class="container pb-6">
+    <div class="row justify-content-center">
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4" data-animate="reveal">
+          <div class="card-header py-4 rounded-top-4" style="background-color:#f08000">
+            <h2 class="h4 mb-0 text-white">Create a Special</h2>
+          </div>
+          <div class="card-body p-0">
+        {% include 'app/partials/special_form.html' %}
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7 p-5 display-6">
+      <p class="fs-5 brand-purple mx-auto" style="max-width: 700px; line-height: 1.7;">
+  <strong>Specials</strong> are one of the most effective ways for restaurants to 
+  <span class="font-purple fw-semibold">attract attention</span>, 
+  <span class="font-purple fw-semibold">drive foot traffic</span>, and 
+  <span class="font-purple fw-semibold">boost sales</span>. Yet, many establishments 
+  struggle to promote their limited-time offers efficiently and consistently.
+</p>
 
+<p class="fs-5 text-light mx-auto" style="max-width: 700px; line-height: 1.7;">
+  <strong>Appertivo</strong> focuses on simplifying this process, empowering restaurant owners to 
+  quickly create, showcase, and manage their specials without technical headaches or time-consuming setups. 
+  In an industry where every moment counts, our tool provides the 
+  <span class="font-orange fw-bold">focus and automation</span> needed to turn daily specials into powerful marketing assets — helping restaurants 
+  <span class="font-orange fw-bold">stand out</span>, <span class="font-orange fw-bold">engage customers</span>, and 
+  <span class="font-orange fw-bold">grow revenue effortlessly</span>.
+</p>
 
     </div>
-  </div>
 </div>
+    </div>
+  </section>
 {% endblock %}
 
