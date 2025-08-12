@@ -1,62 +1,84 @@
 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
   {% for sp in specials %}
     <div class="col">
-      <div class="card h-100 border-0 shadow-sm {% if sp.published %}special-live{% endif %}">
+      <div class="card h-100 border-0 shadow-sm position-relative {% if sp.published %}special-live{% endif %}">
         {% if sp.image %}<img src="{{ sp.image.url }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
+        <div class="position-absolute top-0 start-0 m-1">
+          <a href="" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+        </div>
+        <div class="position-absolute top-0 end-0 m-1">
+          <a href="" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+        </div>
         <div class="card-body p-2">
           <h3 class="h6 mb-1">{{ sp.title }}</h3>
-          <p class="small text-secondary">{{ sp.description|truncatechars:100 }}</p>
+          <p class="small text-secondary mb-1">{{ sp.description|truncatechars:100 }}</p>
+          {% if sp.end_date %}
+          <p class="small text-secondary mb-2">Expired: {{ sp.end_date|date:"Y-m-d" }}</p>
+          {% endif %}
           <div class="d-flex flex-wrap gap-1">
-            <a href="" class="btn btn-outline-light btn-sm">Edit</a>
-            <a href="" class="btn btn-outline-warning btn-sm">Sold Out</a>
-            <a href="" class="btn btn-outline-success btn-sm">Make Active</a>
-            <a href="" class="btn btn-outline-danger btn-sm">Delete</a>
+            <a href="" class="btn btn-orange btn-sm">Sold Out</a>
+            <a href="" class="btn btn-teal btn-sm">Make Active</a>
           </div>
         </div>
       </div>
     </div>
   {% empty %}
     <div class="col">
-      <div class="card h-100 border-0 shadow-sm">
+      <div class="card h-100 border-0 shadow-sm position-relative">
         <div class="card-img-top bg-secondary" style="height:160px;"></div>
+        <div class="position-absolute top-0 start-0 m-1">
+          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+        </div>
+        <div class="position-absolute top-0 end-0 m-1">
+          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+        </div>
         <div class="card-body p-2">
           <h3 class="h6 mb-1">Sample Special 1</h3>
-          <p class="small text-secondary">A tasty placeholder item.</p>
+          <p class="small text-secondary mb-1">A tasty placeholder item.</p>
+          <p class="small text-secondary mb-2">Expired: 2024-01-01</p>
           <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-outline-light btn-sm">Edit</a>
-            <a href="#" class="btn btn-outline-warning btn-sm">Sold Out</a>
-            <a href="#" class="btn btn-outline-success btn-sm">Make Active</a>
-            <a href="#" class="btn btn-outline-danger btn-sm">Delete</a>
+            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
+            <a href="#" class="btn btn-teal btn-sm">Make Active</a>
           </div>
         </div>
       </div>
     </div>
     <div class="col">
-      <div class="card h-100 border-0 shadow-sm">
+      <div class="card h-100 border-0 shadow-sm position-relative">
         <div class="card-img-top bg-secondary" style="height:160px;"></div>
+        <div class="position-absolute top-0 start-0 m-1">
+          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+        </div>
+        <div class="position-absolute top-0 end-0 m-1">
+          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+        </div>
         <div class="card-body p-2">
           <h3 class="h6 mb-1">Sample Special 2</h3>
-          <p class="small text-secondary">Another delicious placeholder.</p>
+          <p class="small text-secondary mb-1">Another delicious placeholder.</p>
+          <p class="small text-secondary mb-2">Expired: 2024-01-01</p>
           <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-outline-light btn-sm">Edit</a>
-            <a href="#" class="btn btn-outline-warning btn-sm">Sold Out</a>
-            <a href="#" class="btn btn-outline-success btn-sm">Make Active</a>
-            <a href="#" class="btn btn-outline-danger btn-sm">Delete</a>
+            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
+            <a href="#" class="btn btn-teal btn-sm">Make Active</a>
           </div>
         </div>
       </div>
     </div>
     <div class="col">
-      <div class="card h-100 border-0 shadow-sm">
+      <div class="card h-100 border-0 shadow-sm position-relative">
         <div class="card-img-top bg-secondary" style="height:160px;"></div>
+        <div class="position-absolute top-0 start-0 m-1">
+          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+        </div>
+        <div class="position-absolute top-0 end-0 m-1">
+          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+        </div>
         <div class="card-body p-2">
           <h3 class="h6 mb-1">Sample Special 3</h3>
-          <p class="small text-secondary">Fill in your own amazing deal.</p>
+          <p class="small text-secondary mb-1">Fill in your own amazing deal.</p>
+          <p class="small text-secondary mb-2">Expired: 2024-01-01</p>
           <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-outline-light btn-sm">Edit</a>
-            <a href="#" class="btn btn-outline-warning btn-sm">Sold Out</a>
-            <a href="#" class="btn btn-outline-success btn-sm">Make Active</a>
-            <a href="#" class="btn btn-outline-danger btn-sm">Delete</a>
+            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
+            <a href="#" class="btn btn-teal btn-sm">Make Active</a>
           </div>
         </div>
       </div>
