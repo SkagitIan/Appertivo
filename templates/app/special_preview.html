@@ -37,7 +37,7 @@
 
       {# Render the same form partial but in "embedded" mode #}
       <div class="special-form-embedded bg-light p-5 rounded">
-        {% include 'app/partials/special_form.html' with form=form action_url=action_url submit_label='Update' %}
+        {% include 'app/partials/special_form.html' with form=form action_url=publish_url submit_label='Publish' %}
       </div>
     </div>
   </div>
@@ -46,6 +46,7 @@
 <script>
 // After the form partial renders, rewire its Refresh button to hit this page's widget fragment.
 document.addEventListener('DOMContentLoaded', () => {
+  window.scrollTo(0,0);
   const btn = document.getElementById('btn-refresh-preview');
   if (btn) {
     btn.setAttribute('hx-get', "{% url 'special_preview' special.pk %}?fragment=widget");

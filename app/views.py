@@ -148,7 +148,7 @@ def special_preview(request, pk):
     ctx = {
         "special": sp,
         "form": form,
-        "action_url": reverse("special_preview", args=[sp.pk]),
+        "publish_url": reverse("special_publish", args=[sp.pk]),
     }
     return render(request, "app/special_preview.html", ctx)
 
