@@ -75,8 +75,11 @@
   [data-animate="lift"]{opacity:0; transform:translateY(8px); transition:opacity .6s ease, transform .6s ease}
   [data-animate="pop"]{transform:translateY(0)}
   [data-animate="float"]{opacity:0; transform:translateY(10px)}
-  .inview{opacity:1!important; transform:none!important}
+.inview{opacity:1!important; transform:none!important}
 }
+
+/* Active specials */
+.special-live{box-shadow:0 0 0 2px var(--teal),0 0 8px var(--teal);}
 
 
 /* ================================ */
