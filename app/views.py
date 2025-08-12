@@ -1,37 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
 from django.utils import timezone
 from .models import Special, EmailSignup
 from .forms import SpecialForm
-from django.db import models
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, HttpResponseBadRequest, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from profiles.models import UserProfile
-import json
-import logging
 from django.db.models import Q
 from django.urls import reverse
+import json
+import logging
+from types import SimpleNamespace
 logger = logging.getLogger(__name__)
 
 
 def dashboard(request):
-    """
-    Renders the main dashboard: 
-    - full-page list of specials 
-    - form is included via HTMX fragment
-    """
-    specials = Special.objects.order_by("-start_date", "-created_at")
-    form     = SpecialForm()
-    return render(request, "app/dashboard.html", {
-        "specials": specials,
-        "form": form,
-    })
-
-
+    form = SpecialForm()
+    return render(request, 'app/dashboard.html', {'form': form})
 
 def appertivo_widget(request):
     api_url = request.build_absolute_uri("/api/specials.js")
@@ -121,57 +106,56 @@ def specials_api(request):
 
 
 def special_create(request):
-    user_profile = getattr(request, 'user_profile', None)
-
-    if request.method == "POST":
+    """Create a draft special then redirect to preview."""
+    if request.method == 'POST':
         form = SpecialForm(request.POST, request.FILES)
         if form.is_valid():
             special = form.save(commit=False)
+            special.user_profile = getattr(request, 'user_profile', None)
             special.published = False
-            special.user_profile = user_profile
             special.save()
+            return redirect('special_preview', pk=special.pk)
+    else:
+        form = SpecialForm()
+    return render(request, 'app/dashboard.html', {'form': form})
 
-            # (Optional) build preview-only CTA payload if you still want it
-            ctas = []
-            c = (special.cta_choices or [])
-            if "order" in c:         ctas.append({"type": "order", "url": special.order_url})
-            if "call" in c:          ctas.append({"type": "call", "phone": special.phone_number})
-            if "mobile_order" in c:  ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
-            special.ctas_preview = ctas
 
-            # Bind the same form to the instance for inline edits
-            edit_form = SpecialForm(instance=special)
+def _build_preview(special):
+    ctas = []
+    for choice in special.cta_choices:
+        if choice == 'order' and special.order_url:
+            ctas.append({'type': 'order', 'url': special.order_url})
+        elif choice == 'call' and special.phone_number:
+            ctas.append({'type': 'call', 'phone': special.phone_number})
+        elif choice == 'mobile_order' and special.mobile_order_url:
+            ctas.append({'type': 'mobile_order', 'url': special.mobile_order_url})
+    return SimpleNamespace(title=special.title, description=special.description, image=special.image, cta=ctas, enable_email_signup=special.enable_email_signup)
 
-            ctx = {
-                "special": special,
-                "form": edit_form,
-                "action_url": reverse("special_update", args=[special.pk]),  # we'll add this view below
-                "target_id": "#main",
-                "submit_label": "Save Changes",
-            }
-            return render(request, "app/partials/special_edit_panel.html", ctx)
 
-        # invalid
-        return render(request, "app/partials/special_form.html", {"form": form}, status=422)
+def special_preview(request, pk):
+    special = get_object_or_404(Special, pk=pk)
+    if request.method == 'POST':
+        form = SpecialForm(request.POST, request.FILES, instance=special)
+        if form.is_valid():
+            special = form.save(commit=False)
+            special.user_profile = getattr(request, 'user_profile', None) or special.user_profile
+            special.published = False
+            special.save()
+            form = SpecialForm(instance=special)
+    else:
+        form = SpecialForm(instance=special)
+    preview = _build_preview(special)
+    context = {'form': form, 'special': special, 'preview_special': preview, 'form_action': reverse('special_preview', args=[special.pk])}
+    return render(request, 'app/special_preview.html', context)
 
-    # GET -> empty create form
-    form = SpecialForm()
-    return render(request, "app/partials/special_form.html", {"form": form})
 
 @require_POST
 def special_publish(request, pk):
-    sp = get_object_or_404(Special, pk=pk)
-    sp.published = True
-    sp.save(update_fields=["published"])
-    # Re-render the same panel so the badge/button update
-    ctx = {
-        "special": sp,
-        "form": SpecialForm(instance=sp),
-        "action_url": reverse("special_update", args=[sp.pk]),
-        "target_id": "#main",
-        "submit_label": "Save Changes",
-    }
-    return render(request, "app/partials/special_edit_panel.html", ctx)
+    special = get_object_or_404(Special, pk=pk)
+    special.published = True
+    special.save(update_fields=['published'])
+    return redirect('my_specials')
+
 
 @csrf_exempt
 @require_POST
@@ -197,35 +181,8 @@ def subscribe_email(request):
 def my_specials(request):
     profile = getattr(request, "user_profile", None)
     if not profile:
-        return redirect("home")
+        return redirect("dashboard")
 
     specials = Special.objects.filter(user_profile=profile).order_by('-created_at')
     return render(request, "app/my_specials.html", {"specials": specials})
 
-@require_POST
-def special_update(request, pk):
-    sp = get_object_or_404(Special, pk=pk)
-    form = SpecialForm(request.POST, request.FILES, instance=sp)
-    if form.is_valid():
-        sp = form.save()
-        ctx = {
-            "special": sp,
-            "form": SpecialForm(instance=sp),
-            "action_url": reverse("special_update", args=[sp.pk]),
-            "target_id": "#main",
-            "submit_label": "Save Changes",
-        }
-        return render(request, "app/partials/special_edit_panel.html", ctx)
-
-    # on errors: return the same form partial, configured for update
-    return render(
-        request,
-        "app/partials/special_form.html",
-        {
-            "form": form,
-            "action_url": reverse("special_update", args=[pk]),
-            "target_id": "#main",
-            "submit_label": "Save Changes",
-        },
-        status=422,
-    )

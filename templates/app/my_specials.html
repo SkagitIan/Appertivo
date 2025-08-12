@@ -1,13 +1,14 @@
 {% extends "app/base.html" %}
 {% block title %}My Specials{% endblock %}
 {% block content %}
-{% load static %}
 <div class="p-4">
   <h2 class="h4 mb-3">My Specials</h2>
-  <div id="specials-list" hx-get="{% url 'specials_list' %}" hx-trigger="load" hx-target="#specials-list" hx-swap="innerHTML">
-    <div class="text-secondary">Loading…</div>
-  </div>
+  <ul>
+    {% for sp in specials %}
+      <li>{{ sp.title }}{% if not sp.published %} (Draft){% endif %}</li>
+    {% empty %}
+      <li>No specials yet.</li>
+    {% endfor %}
+  </ul>
 </div>
-
 {% endblock %}
-

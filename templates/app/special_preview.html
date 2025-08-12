@@ -1,0 +1,14 @@
+{% extends 'app/base.html' %}
+{% block title %}Preview Special{% endblock %}
+{% block content %}
+<div class="container py-5">
+  {% include 'app/special_form.html' with action=form_action submit_label="Update Preview" %}
+  <div class="mt-5">
+    {% include '_special_widget.html' with special=preview_special %}
+  </div>
+  <form method="post" action="{% url 'special_publish' special.pk %}" class="mt-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-orange">Publish</button>
+  </form>
+</div>
+{% endblock %}

@@ -19,10 +19,22 @@
 </nav>
 <div class="container my-5">
   <h2 class="brand-purple">Active Specials</h2>
-  {% include "app/partials/specials_list.html" with specials=active_specials %}
+  <ul class="list-group mb-4">
+    {% for s in active_specials %}
+      <li class="list-group-item">{{ s.title }}</li>
+    {% empty %}
+      <li class="list-group-item">No active specials.</li>
+    {% endfor %}
+  </ul>
 
   <h2 class="brand-purple mt-5">Expired Specials</h2>
-  {% include "app/partials/specials_list.html" with specials=expired_specials %}
+  <ul class="list-group mb-4">
+    {% for s in expired_specials %}
+      <li class="list-group-item">{{ s.title }}</li>
+    {% empty %}
+      <li class="list-group-item">No expired specials.</li>
+    {% endfor %}
+  </ul>
 
   <h2 class="brand-purple mt-5">Email Signups</h2>
   <ul class="list-group mb-4">
@@ -33,7 +45,10 @@
     {% endfor %}
   </ul>
 
-  {% include "app/partials/embed_code.html" with embed_code=embed_code %}
+  {% if embed_code %}
+  <h2 class="brand-purple mt-5">Embed Code</h2>
+  <pre><code>{{ embed_code }}</code></pre>
+  {% endif %}
 </div>
 </body>
 </html>

@@ -1,0 +1,5 @@
+<form method="post" enctype="multipart/form-data" action="{{ action }}">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">{{ submit_label|default:"Preview" }}</button>
+</form>
