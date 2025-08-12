@@ -13,10 +13,9 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("specials/create/", views.special_create, name="special_create"),
     # urls.py
-    path("specials/<int:pk>/edit/", views.special_edit, name="special_edit"),
-    path("specials/<int:pk>/inline-update/", views.special_inline_update, name="special_inline_update"),
-
+    path("specials/<int:pk>/update/", views.special_update, name="special_update"),
     path("specials/<int:pk>/publish/", views.special_publish, name="special_publish"),
+    
     path("api/specials.js", views.specials_api, name="specials_api"),
     path("appertivo-widget.js", views.appertivo_widget, name="appertivo_widget"),
     path("api/subscribe/", views.subscribe_email, name="subscribe_email"),

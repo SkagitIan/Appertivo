@@ -1,390 +1,180 @@
-{% load form_tags %}
-<!-- ===================================== -->
-<!-- /templates/partials/special_form.html -->
-<!-- Streamlined, brand-aligned form        -->
-<!-- ===================================== -->
+{% load form_tags %}{% load extras %}
+<!-- {# ===================================== #}
+{# /templates/partials/special_form.html #}
+{# Reusable create/edit form (HTMX-ready) #}
+{# Params (optional):
+   - action_url: hx-post target URL (default = current path)
+   - target_id : hx-target selector (default = '#main')
+   - submit_label: button text (default = 'Continue')
+   - hide_submit: truthy to hide the submit button
+#}
+{# ===================================== #} -->
+
 <form method="POST"
       enctype="multipart/form-data"
       hx-post="{% url 'special_create' %}"
-      hx-target="#special-form-container"
+      hx-target="#special-form"
       hx-swap="innerHTML"
       id="special-form"
-      class="card card-glass border-ink-800 overflow-hidden">
+      class="card card-glass overflow-hidden">
 
   {% csrf_token %}
+
+  {# Top-level form errors #}
   {% if form.non_field_errors %}
     <div class="alert alert-danger m-3" role="alert">
       {{ form.non_field_errors }}
     </div>
   {% endif %}
 
-  <!-- Header -->
-  <div class="card-header py-3 px-4 d-flex align-items-center gap-2 border-ink-700">
-    <div class="icon-dot bg-orange"></div>
-    <div class="mb-0 fw-bold gradient-text">New Special</div>
+  {# ===================== Basics ===================== #}
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="form-floating">
+        {{ form.title|add_class:"form-control form-control-lg"|attr:"placeholder:Title"|attr:"maxlength:60"|attr:"id:id_title" }}
+        <label for="id_title">Title</label>
+      </div>
+      <div class="d-flex justify-content-between mt-1 small">
+        <span class="text-muted">Make it punchy.</span>
+        <span id="title-count" class="text-muted" aria-live="polite">0/60</span>
+      </div>
+      {% if form.title.errors %}
+        <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div class="col-12">
+      <div class="form-floating">
+        {{ form.description|add_class:"form-control"|attr:"placeholder:Description"|attr:"rows:4"|attr:"style:height:120px"|attr:"maxlength:250"|attr:"id:id_description" }}
+        <label for="id_description">Description</label>
+      </div>
+      <div class="d-flex justify-content-between mt-1 small">
+        <span class="text-muted">Focus on benefits, no fluff.</span>
+        <span id="desc-count" class="text-muted" aria-live="polite">0/250</span>
+      </div>
+      {% if form.description.errors %}
+        <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="card-body p-4">
-    <!-- Basics -->
-    <div class="row g-3">
-      <div class="col-12">
-        <div class="form-floating">
-          {{ form.title|add_class:"form-control form-control-lg"|attr:"placeholder:Title"|attr:"maxlength:60"|attr:"id:id_title" }}
-          <label for="id_title">Title</label>
-        </div>
-        <div class="d-flex justify-content-between mt-1 small">
-          <span class="text-muted">Make it punchy.</span>
-          <span id="title-count" class="text-muted" aria-live="polite">0/60</span>
-        </div>
-        {% if form.title.errors %}
-          <div class="invalid-feedback d-block">{{ form.title.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="col-12">
-        <div class="form-floating">
-          {{ form.description|add_class:"form-control"|attr:"placeholder:Description"|attr:"rows:4"|attr:"style:height:120px"|attr:"maxlength:250"|attr:"id:id_description" }}
-          <label for="id_description">Description</label>
-        </div>
-        <div class="d-flex justify-content-between mt-1 small">
-          <span class="text-muted">Focus on benefits, no fluff.</span>
-          <span id="desc-count" class="text-muted" aria-live="polite">0/250</span>
-        </div>
-        {% if form.description.errors %}
-          <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
-        {% endif %}
-      </div>
+  {# ===================== Schedule ===================== #}
+  <hr class="border-ink-700 my-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
+      <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
+      {% if form.start_date.errors %}
+        <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
+      {% endif %}
     </div>
-
-    <!-- Schedule -->
-    <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-md-6">
-        {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
-        <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
-        {% if form.start_date.errors %}
-          <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="col-md-6">
-        {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
-        <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
-        {% if form.end_date.errors %}
-          <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="col-12">
-        <!-- Quick date chips -->
-        <div class="d-flex flex-wrap gap-2 small">
-          <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="today">Today</button>
-          <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="plus3">+3 days</button>
-          <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="plus7">+7 days</button>
-        </div>
-        <div id="date-help" class="form-text mt-1"></div>
-      </div>
+    <div class="col-md-6">
+      {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
+      <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
+      {% if form.end_date.errors %}
+        <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
+      {% endif %}
     </div>
-
-    <!-- Price & Image -->
-    <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <div class="form-floating">
-          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
-          <label for="id_price">Price</label>
-        </div>
-        {% if form.price.errors %}
-          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
-        {% endif %}
+    <div class="col-12">
+      <div class="d-flex flex-wrap gap-2 small">
+        <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="today">Today</button>
+        <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="plus3">+3 days</button>
+        <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="plus7">+7 days</button>
       </div>
-      <div class="col-md-8">
-        <!-- Image dropzone + preview -->
-        <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
-          <div class="d-flex align-items-center justify-content-between">
-            <div>
-              <div class="fw-semibold">Photo</div>
-              <div class="small text-muted">Drag & drop or choose a file (JPG/PNG, &lt; 5MB).</div>
+      <div id="date-help" class="form-text mt-1"></div>
+    </div>
+  </div>
+
+  {# ============== Image (shows existing if editing) ============== #}
+  <hr class="border-ink-700 my-4">
+  <div class="row g-3">
+    <div class="col-md-12">
+      {% if special %}
+        {% with img=special.image|default:special.image_file %}
+          {% if img %}
+            <div class="mb-2 text-center">
+              <img src="{{ img.url }}" alt="{{ special.title }}" class="img-fluid rounded" style="max-height:200px;">
             </div>
-            <div class="d-flex gap-2">
-              <label class="btn btn-teal btn-sm mb-0" for="id_image">Choose</label>
-              <button class="btn btn-outline-ink btn-sm" type="button" id="image-reset" hidden>Reset</button>
-            </div>
+          {% endif %}
+        {% endwith %}
+      {% endif %}
+
+      <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="fw-semibold">Photo</div>
+            <div class="small text-muted">Drag &amp; drop or choose a file (JPG/PNG, &lt; 5MB).</div>
           </div>
-
-          {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
-
-          <div class="ratio ratio-16x9 mt-3 rounded overflow-hidden bg-dark-subtle" id="image-preview-shell" aria-live="polite">
-            <img id="image-preview" class="w-100 h-100 object-cover d-none" alt="Image preview">
+          <div class="d-flex gap-2">
+            <label class="btn btn-teal btn-sm mb-0" for="id_image">Choose</label>
+            <button class="btn btn-outline-ink btn-sm" type="button" id="image-reset" hidden>Reset</button>
           </div>
         </div>
-        {% if form.image_file.errors %}
-          <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
-        {% endif %}
+
+        {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
+
+        <div class="ratio ratio-16x9 mt-3 rounded overflow-hidden bg-dark-subtle" id="image-preview-shell" aria-live="polite">
+          <img id="image-preview" class="w-100 h-100 object-cover d-none" alt="Image preview">
+        </div>
       </div>
+      {% if form.image_file.errors %}
+        <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ===================== CTA ===================== #}
+  <hr class="border-ink-700 my-4">
+  <div class="row g-3 align-items-start">
+    <div class="col-md-12 text-center">
+      {# Radios rendered from choices so values are correct #}
+      <div class="btn-group w-100" role="group">
+        {% for val, label in form.cta_choices.field.choices %}
+          <input
+            type="radio"
+            class="btn-check"
+            name="{{ form.cta_choices.name }}"
+            id="cta_{{ forloop.counter }}"
+            value="{{ val }}"
+            {% if form.cta_choices.value == val %}checked{% endif %}
+          >
+          <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ val }}">
+            {{ label }}
+          </label>
+        {% endfor %}
+      </div>
+
+      {% if form.cta_choices.errors %}
+        <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>
+      {% endif %}
     </div>
 
-    <!-- Call-to-Action -->
-    <hr class="border-ink-700 my-4">
-    <div class="row g-3 align-items-start">
-      <div class="col-md-4">
-        <div class="fw-semibold mb-2">Call-to-Action</div>
-        <div class="btn-group w-100" role="group" aria-label="CTA">
-          {% for choice in form.cta_choices %}
-            <input type="radio"
-                   class="btn-check"
-                   name="{{ form.cta_choices.name }}"
-                   id="cta_{{ forloop.counter }}"
-                   value="{{ choice.choice_value }}"
-                   {% if choice.choice_value == form.cta_choices.value %}checked{% endif %}>
-            <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
-              {{ choice.choice_label }}
-            </label>
-          {% endfor %}
+    <div class="col-md-12 text-center">
+      <div class="mt-3">
+        {# IDs must match "group-<value>" for JS mapping #}
+        <div class="form-floating d-none" id="group-order">
+          {{ form.order_url|add_class:"form-control form-control-sm"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
+          <label for="id_order_url" data-cta="order">Order URL</label>
         </div>
-        {% if form.cta_choices.errors %}
-          <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="col-md-8">
-        <div class="mt-3">
-          <div class="form-floating d-none" id="group-order">
-            {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
-            <label for="id_order_url">Order URL</label>
-          </div>
-          <div class="form-floating d-none" id="group-mobile">
-            {{ form.mobile_order_url|add_class:"form-control"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
-            <label for="id_mobile_order_url">Mobile order URL</label>
-          </div>
-          <div class="form-floating d-none" id="group-call">
-            {{ form.phone_number|add_class:"form-control"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
-            <label for="id_phone_number">Phone number</label>
-          </div>
+        <div class="form-floating d-none" id="group-mobile_order">
+          {{ form.mobile_order_url|add_class:"form-control form-control-sm"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
+          <label for="id_mobile_order_url" data-cta="mobile_order">Mobile order URL</label>
+        </div>
+        <div class="form-floating d-none" id="group-call">
+          {{ form.phone_number|add_class:"form-control form-control-sm"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
+          <label for="id_phone_number" data-cta="call">Phone number</label>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Actions -->
-    <hr class="border-ink-700 my-4">
-    <div class="d-flex flex-wrap gap-2 justify-content-end">
-      <button type="button"
-              class="btn btn-outline-ink"
-              id="btn-refresh-preview"
-              hx-get=""
-              hx-target="#special-preview-container"
-              hx-swap="innerHTML"
-              title="Shift+P">
-        Refresh Preview
+  {# ===================== Actions ===================== #}
+  <hr class="border-ink-700 my-4">
+  <div class="d-flex flex-wrap gap-2 justify-content-end">
+    {% if not hide_submit %}
+      <button type="submit" class="btn btn-orange w-100 text-center text-white" title="Ctrl/Cmd + Enter">
+        {{ submit_label|default:"Continue" }}
       </button>
-      <button type="submit" class="btn btn-orange" title="Ctrl/Cmd + Enter">
-        Save Draft
-      </button>
-    </div>
+    {% endif %}
   </div>
 </form>
-
-<script>
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-const $  = (sel, root=document) => root.querySelector(sel);
-
-function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-// ---------- Counters ----------
-function bindCounters(root){
-  const title = $('#id_title', root);
-  const desc  = $('#id_description', root);
-  const tOut  = $('#title-count', root);
-  const dOut  = $('#desc-count', root);
-  if(title && tOut){
-    const update = ()=>{ tOut.textContent = `${clamp(title.value.length,0,60)}/60`; };
-    title.addEventListener('input', update); update();
-  }
-  if(desc && dOut){
-    const update = ()=>{ dOut.textContent = `${clamp(desc.value.length,0,250)}/250`; };
-    desc.addEventListener('input', update); update();
-  }
-}
-
-// ---------- Price formatting (display only) ----------
-function bindPrice(root){
-  const input = $('#id_price', root);
-  if(!input) return;
-  input.addEventListener('blur', ()=>{
-    const v = parseFloat(input.value);
-    if(!isNaN(v)) input.value = v.toFixed(2);
-  });
-}
-
-// ---------- CTA segmented control ----------
-function bindCTA(root){
-  const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
-  const radios = root.querySelectorAll(`input[name="${name}"]`);
-  const groups = {
-    order: root.querySelector('#group-order'),
-    mobile_order: root.querySelector('#group-mobile'),
-    call: root.querySelector('#group-call'),
-  };
-  const labels = root.querySelectorAll('label[data-cta]');
-
-  function showGroup(key){
-    Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
-    labels.forEach(l => l.classList.remove('btn-orange'));
-    const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
-    if (activeLabel) activeLabel.classList.add('btn-orange');
-    const g = groups[key];
-    if (g){
-      g.classList.remove('d-none');
-      requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
-    }
-  }
-
-  function sync(){
-    const r = Array.from(radios).find(x => x.checked);
-    if (r) showGroup(r.value);
-  }
-
-  radios.forEach(r => r.addEventListener('change', sync));
-  labels.forEach(l => l.addEventListener('click', () => {
-    const val = l.getAttribute('data-cta');
-    const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
-    if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
-  }));
-  sync();
-}
-
-// ---------- Date helpers ----------
-function bindDates(root){
-  const start = $('#id_start_date', root);
-  const end   = $('#id_end_date', root);
-  const startBtn = $('#start-date-button', root);
-  const endBtn   = $('#end-date-button', root);
-  const help  = $('#date-help', root);
-
-  function attach(input, btn){
-    if(!(input && btn)) return;
-    btn.addEventListener('click', ()=> input.showPicker ? input.showPicker() : input.click());
-    input.addEventListener('change', ()=>{
-      btn.textContent = input.value || btn.dataset.placeholder;
-      validate();
-    });
-    btn.dataset.placeholder = btn.textContent;
-  }
-  attach(start, startBtn);
-  attach(end, endBtn);
-
-  function setChip(type){
-    const today = new Date();
-    const pad = (n)=> String(n).padStart(2,'0');
-    const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    if(!start || !end) return;
-    if(type === 'today'){
-      start.value = toISO(today);
-      end.value   = toISO(today);
-    }
-    if(type === 'plus3'){
-      const e = new Date(today); e.setDate(e.getDate()+3);
-      start.value = toISO(today); end.value = toISO(e);
-    }
-    if(type === 'plus7'){
-      const e = new Date(today); e.setDate(e.getDate()+7);
-      start.value = toISO(today); end.value = toISO(e);
-    }
-    start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
-    validate();
-  }
-
-  function validate(){
-    if(!(start && end && help)) return;
-    if(start.value && end.value && end.value < start.value){
-      help.textContent = 'End date must be on or after the start date.';
-      help.classList.add('text-danger');
-    } else {
-      help.textContent = '';
-      help.classList.remove('text-danger');
-    }
-  }
-
-  $$('[data-datechip]').forEach(b=>{ b.addEventListener('click', ()=> setChip(b.dataset.datechip)); });
-  start?.addEventListener('change', validate);
-  end?.addEventListener('change', validate);
-}
-
-// ---------- Image dropzone ----------
-function bindImage(root){
-  const input  = $('#id_image', root);
-  const dz     = $('#image-dropzone', root);
-  const img    = $('#image-preview', root);
-  const shell  = $('#image-preview-shell', root);
-  const reset  = $('#image-reset', root);
-  if(!(input && dz && img && shell && reset)) return;
-
-  function showPreview(file){
-    const okType = /image\/(jpeg|png)/.test(file.type);
-    const okSize = file.size <= 5 * 1024 * 1024;
-    if(!okType || !okSize){
-      shell.classList.add('border','border-danger');
-      shell.setAttribute('title','Use JPG/PNG under 5MB');
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    img.src = url;
-    img.classList.remove('d-none');
-    reset.hidden = false;
-  }
-
-  input.addEventListener('change', (e)=>{
-    const file = e.target.files?.[0];
-    if(file) showPreview(file);
-  });
-
-  function consume(e){ e.preventDefault(); e.stopPropagation(); }
-  ['dragenter','dragover','dragleave','drop'].forEach(ev => dz.addEventListener(ev, consume));
-  dz.addEventListener('dragover', ()=> dz.classList.add('border','border-teal'));
-  dz.addEventListener('dragleave', ()=> dz.classList.remove('border','border-teal'));
-  dz.addEventListener('drop', (e)=>{
-    const file = e.dataTransfer.files?.[0];
-    if(file){ input.files = e.dataTransfer.files; showPreview(file); }
-    dz.classList.remove('border','border-teal');
-  });
-
-  reset.addEventListener('click', ()=>{
-    input.value = '';
-    img.src = '';
-    img.classList.add('d-none');
-    reset.hidden = true;
-  });
-}
-
-// ---------- Keyboard shortcuts ----------
-function bindShortcuts(root){
-  document.addEventListener('keydown', (e)=>{
-    const metaEnter = (e.ctrlKey || e.metaKey) && e.key === 'Enter';
-    const shiftP    = e.shiftKey && (e.key.toLowerCase() === 'p');
-    if(metaEnter){ $('#special-form')?.requestSubmit(); }
-    if(shiftP){ $('#btn-refresh-preview')?.click(); }
-  });
-}
-
-// ---------- Button press micro-animation ----------
-function bindButtonPop(){
-  document.addEventListener('click', (e)=>{
-    const b = e.target.closest('.btn');
-    if(!b) return;
-    b.animate([{transform:'translateY(0)'}, {transform:'translateY(1px)'}, {transform:'translateY(0)'}], {duration:120});
-  });
-}
-
-// ---------- HTMX-safe initializer ----------
-function init(root=document){
-  bindCounters(root);
-  bindPrice(root);
-  bindDates(root);
-  bindCTA(root);
-  bindImage(root);
-  bindShortcuts(root);
-  bindButtonPop();
-}
-
-document.addEventListener('DOMContentLoaded', ()=> init(document));
-document.body.addEventListener('htmx:afterSwap', (ev)=> {
-  if (ev?.target?.closest('#special-form-container')) init(ev.target);
-});
-</script>

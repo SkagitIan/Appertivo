@@ -5,6 +5,9 @@ from django.forms.boundfield import BoundField
 import re
 
 register = template.Library()
+# templatetags/extras.py
+from django import template
+register = template.Library()
 
 def _render_with_attrs(bound_field: BoundField, extra: dict) -> str:
     """Render a BoundField with extra widget attrs, without mutating the global widget."""
