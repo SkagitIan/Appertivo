@@ -58,21 +58,21 @@
 
     <!-- Schedule -->
     <hr class="border-ink-700 my-4">
-      <div class="row g-3">
-        <div class="col-md-6">
-          {{ form.start_date|add_class:"d-none"|attr:"id:id_start_date" }}
-          <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
-          {% if form.start_date.errors %}
-            <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
-          {% endif %}
-        </div>
-        <div class="col-md-6">
-          {{ form.end_date|add_class:"d-none"|attr:"id:id_end_date" }}
-          <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
-          {% if form.end_date.errors %}
-            <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
-          {% endif %}
-        </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
+        <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
+        {% if form.start_date.errors %}
+          <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
+        <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
+        {% if form.end_date.errors %}
+          <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
+        {% endif %}
+      </div>
       <div class="col-12">
         <!-- Quick date chips -->
         <div class="d-flex flex-wrap gap-2 small">
@@ -87,16 +87,15 @@
     <!-- Price & Image -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3">
-        <div class="col-md-4">
-          <div class="form-floating">
-            {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
-            <label for="id_price">Price</label>
-          </div>
-          {% if form.price.errors %}
-            <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
-          {% endif %}
+      <div class="col-md-4">
+        <div class="form-floating">
+          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
+          <label for="id_price">Price</label>
         </div>
-
+        {% if form.price.errors %}
+          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+        {% endif %}
+      </div>
       <div class="col-md-8">
         <!-- Image dropzone + preview -->
         <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
@@ -111,37 +110,22 @@
             </div>
           </div>
 
-            {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
-            {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
+          {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
 
           <div class="ratio ratio-16x9 mt-3 rounded overflow-hidden bg-dark-subtle" id="image-preview-shell" aria-live="polite">
             <img id="image-preview" class="w-100 h-100 object-cover d-none" alt="Image preview">
           </div>
         </div>
-          {% if form.image_file.errors %}
-            <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
-          {% endif %}
-        </div>
+        {% if form.image_file.errors %}
+          <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
+        {% endif %}
       </div>
-          {% if form.image_file.errors %}
-            <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
-          {% endif %}
-        </div>
-      </div>
+    </div>
 
-      <!-- Price & CTA -->
+    <!-- Call-to-Action -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3 align-items-start">
       <div class="col-md-4">
-        <div class="form-floating">
-          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
-          <label for="id_price">Price</label>
-        </div>
-        {% if form.price.errors %}
-          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
-        {% endif %}
-      </div>
-      <div class="col-md-8">
         <div class="fw-semibold mb-2">Call-to-Action</div>
         <div class="btn-group w-100" role="group" aria-label="CTA">
           {% for choice in form.cta_choices %}
@@ -159,6 +143,8 @@
         {% if form.cta_choices.errors %}
           <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>
         {% endif %}
+      </div>
+      <div class="col-md-8">
         <div class="mt-3">
           <div class="form-floating d-none" id="group-order">
             {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
@@ -175,10 +161,9 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Sticky actions -->
-  <div class="card-footer py-3 px-4 position-sticky bottom-0 border-ink-700 bg-transparent">
+    <!-- Actions -->
+    <hr class="border-ink-700 my-4">
     <div class="d-flex flex-wrap gap-2 justify-content-end">
       <button type="button"
               class="btn btn-outline-ink"
@@ -197,7 +182,6 @@
 </form>
 
 <script>
-// ---------- Utilities ----------
 const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 const $  = (sel, root=document) => root.querySelector(sel);
 
@@ -219,146 +203,93 @@ function bindCounters(root){
   }
 }
 
-  // ---------- Price formatting (display only) ----------
-  function bindPrice(root){
-    const input = $('#id_price', root);
-    if(!input) return;
-    input.addEventListener('blur', () => {
-      const v = parseFloat(input.value);
-      if(!isNaN(v)) input.value = v.toFixed(2);
-    });
+// ---------- Price formatting (display only) ----------
+function bindPrice(root){
+  const input = $('#id_price', root);
+  if(!input) return;
+  input.addEventListener('blur', ()=>{
+    const v = parseFloat(input.value);
+    if(!isNaN(v)) input.value = v.toFixed(2);
+  });
+}
+
+// ---------- CTA segmented control ----------
+function bindCTA(root){
+  const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
+  const radios = root.querySelectorAll(`input[name="${name}"]`);
+  const groups = {
+    order: root.querySelector('#group-order'),
+    mobile_order: root.querySelector('#group-mobile'),
+    call: root.querySelector('#group-call'),
+  };
+  const labels = root.querySelectorAll('label[data-cta]');
+
+  function showGroup(key){
+    Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
+    labels.forEach(l => l.classList.remove('btn-orange'));
+    const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
+    if (activeLabel) activeLabel.classList.add('btn-orange');
+    const g = groups[key];
+    if (g){
+      g.classList.remove('d-none');
+      requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
+    }
   }
 
-  // ---------- CTA segmented control ----------
-  function bindCTA(root){
-    const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
-    const radios = root.querySelectorAll(`input[name="${name}"]`);
-    const groups = {
-      order: root.querySelector('#group-order'),
-      mobile_order: root.querySelector('#group-mobile'),
-      call: root.querySelector('#group-call'),
-    };
-    const labels = root.querySelectorAll('label[data-cta]');
-  // ---------- Price formatting (display only) ----------
-  function bindPrice(root){
-    const input = $('#id_price', root);
-    if(!input) return;
-    input.addEventListener('blur', () => {
-      const v = parseFloat(input.value);
-      if(!isNaN(v)) input.value = v.toFixed(2);
-    });
+  function sync(){
+    const r = Array.from(radios).find(x => x.checked);
+    if (r) showGroup(r.value);
   }
 
-  // ---------- CTA segmented control ----------
-  function bindCTA(root){
-    const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
-    const radios = root.querySelectorAll(`input[name="${name}"]`);
-    const groups = {
-      order: root.querySelector('#group-order'),
-      mobile_order: root.querySelector('#group-mobile'),
-      call: root.querySelector('#group-call'),
-    };
-    const labels = root.querySelectorAll('label[data-cta]');
+  radios.forEach(r => r.addEventListener('change', sync));
+  labels.forEach(l => l.addEventListener('click', () => {
+    const val = l.getAttribute('data-cta');
+    const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
+    if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+  }));
+  sync();
+}
 
-    function showGroup(key){
-      Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
-      labels.forEach(l => l.classList.remove('btn-orange'));         // clear active accent
-      const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
-      if (activeLabel) activeLabel.classList.add('btn-orange');       // accent active option
-      const g = groups[key];
-      if (g){
-        g.classList.remove('d-none');
-        requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
-      }
-    }
-    function showGroup(key){
-      Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
-      labels.forEach(l => l.classList.remove('btn-orange'));         // clear active accent
-      const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
-      if (activeLabel) activeLabel.classList.add('btn-orange');       // accent active option
-      const g = groups[key];
-      if (g){
-        g.classList.remove('d-none');
-        requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
-      }
-    }
+// ---------- Date helpers ----------
+function bindDates(root){
+  const start = $('#id_start_date', root);
+  const end   = $('#id_end_date', root);
+  const startBtn = $('#start-date-button', root);
+  const endBtn   = $('#end-date-button', root);
+  const help  = $('#date-help', root);
 
-    function sync(){
-      const r = Array.from(radios).find(x => x.checked);
-      if (r) showGroup(r.value);
-    }
-    function sync(){
-      const r = Array.from(radios).find(x => x.checked);
-      if (r) showGroup(r.value);
-    }
-
-    radios.forEach(r => r.addEventListener('change', sync));
-    labels.forEach(l => l.addEventListener('click', () => {
-      const val = l.getAttribute('data-cta');
-      const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
-      if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
-    }));
-    sync();
-  }
-
-
-  // ---------- Date helpers ----------
-  function bindDates(root){
-    const start = $('#id_start_date', root);
-    const end   = $('#id_end_date', root);
-    const startBtn = $('#start-date-button', root);
-    const endBtn   = $('#end-date-button', root);
-    const help  = $('#date-help', root);
-
-    function attach(input, btn){
-      if(!(input && btn)) return;
-      btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
-      input.addEventListener('change', ()=>{ btn.textContent = input.value || btn.dataset.placeholder; validate(); });
-      btn.dataset.placeholder = btn.textContent;
-    }
-    attach(start, startBtn);
-    attach(end, endBtn);
-
-    function setChip(type){
-      const today = new Date();
-      const pad = (n)=> String(n).padStart(2,'0');
-      const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-      if(!start || !end) return;
-      if(type === 'today'){
-        start.value = toISO(today);
-        end.value   = toISO(today);
-      }
-      if(type === 'plus3'){
-        const e = new Date(today); e.setDate(e.getDate()+3);
-        start.value = toISO(today); end.value = toISO(e);
-      }
-      if(type === 'plus7'){
-        const e = new Date(today); e.setDate(e.getDate()+7);
-        start.value = toISO(today); end.value = toISO(e);
-      }
-      start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
+  function attach(input, btn){
+    if(!(input && btn)) return;
+    btn.addEventListener('click', ()=> input.showPicker ? input.showPicker() : input.click());
+    input.addEventListener('change', ()=>{
+      btn.textContent = input.value || btn.dataset.placeholder;
       validate();
+    });
+    btn.dataset.placeholder = btn.textContent;
+  }
+  attach(start, startBtn);
+  attach(end, endBtn);
+
+  function setChip(type){
+    const today = new Date();
+    const pad = (n)=> String(n).padStart(2,'0');
+    const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    if(!start || !end) return;
+    if(type === 'today'){
+      start.value = toISO(today);
+      end.value   = toISO(today);
     }
-    function setChip(type){
-      const today = new Date();
-      const pad = (n)=> String(n).padStart(2,'0');
-      const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-      if(!start || !end) return;
-      if(type === 'today'){
-        start.value = toISO(today);
-        end.value   = toISO(today);
-      }
-      if(type === 'plus3'){
-        const e = new Date(today); e.setDate(e.getDate()+3);
-        start.value = toISO(today); end.value = toISO(e);
-      }
-      if(type === 'plus7'){
-        const e = new Date(today); e.setDate(e.getDate()+7);
-        start.value = toISO(today); end.value = toISO(e);
-      }
-      start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
-      validate();
+    if(type === 'plus3'){
+      const e = new Date(today); e.setDate(e.getDate()+3);
+      start.value = toISO(today); end.value = toISO(e);
     }
+    if(type === 'plus7'){
+      const e = new Date(today); e.setDate(e.getDate()+7);
+      start.value = toISO(today); end.value = toISO(e);
+    }
+    start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
+    validate();
+  }
 
   function validate(){
     if(!(start && end && help)) return;
@@ -371,28 +302,19 @@ function bindCounters(root){
     }
   }
 
-    $$('[data-datechip]').forEach(b=>{
-      b.addEventListener('click', ()=> setChip(b.dataset.datechip));
-    });
-    start?.addEventListener('change', validate);
-    end?.addEventListener('change', validate);
-  }
-  // ---------- Image dropzone ----------
-  function bindImage(root){
-    $$('[data-datechip]').forEach(b=>{
-      b.addEventListener('click', ()=> setChip(b.dataset.datechip));
-    });
-    start?.addEventListener('change', validate);
-    end?.addEventListener('change', validate);
-  }
-  // ---------- Image dropzone ----------
-  function bindImage(root){
+  $$('[data-datechip]').forEach(b=>{ b.addEventListener('click', ()=> setChip(b.dataset.datechip)); });
+  start?.addEventListener('change', validate);
+  end?.addEventListener('change', validate);
+}
+
+// ---------- Image dropzone ----------
+function bindImage(root){
   const input  = $('#id_image', root);
   const dz     = $('#image-dropzone', root);
   const img    = $('#image-preview', root);
   const shell  = $('#image-preview-shell', root);
   const reset  = $('#image-reset', root);
-  if(!(input && dz && img && shell)) return;
+  if(!(input && dz && img && shell && reset)) return;
 
   function showPreview(file){
     const okType = /image\/(jpeg|png)/.test(file.type);
@@ -446,10 +368,7 @@ function bindButtonPop(){
   document.addEventListener('click', (e)=>{
     const b = e.target.closest('.btn');
     if(!b) return;
-    b.animate([{transform:'translateY(0)'},
-               {transform:'translateY(1px)'},
-               {transform:'translateY(0)'}],
-              {duration:120});
+    b.animate([{transform:'translateY(0)'}, {transform:'translateY(1px)'}, {transform:'translateY(0)'}], {duration:120});
   });
 }
 
@@ -463,6 +382,7 @@ function init(root=document){
   bindShortcuts(root);
   bindButtonPop();
 }
+
 document.addEventListener('DOMContentLoaded', ()=> init(document));
 document.body.addEventListener('htmx:afterSwap', (ev)=> {
   if (ev?.target?.closest('#special-form-container')) init(ev.target);

@@ -32,6 +32,15 @@ class SpecialFormTemplateTests(TestCase):
         self.assertTrue('function bindPrice' in html)
         self.assertEqual(html.count('function bindCTA'), 1)
 
+    def test_date_inputs_not_display_none(self):
+        html = self.render()
+        self.assertNotIn('d-none" id="id_start_date"', html)
+        self.assertNotIn('d-none" id="id_end_date"', html)
+
+    def test_no_card_footer(self):
+        html = self.render()
+        self.assertNotIn('card-footer', html)
+
 
 class ConnectionPartialTests(TestCase):
     def render(self):
