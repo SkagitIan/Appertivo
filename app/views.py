@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from .models import Special, EmailSignup
 from .forms import SpecialForm
+from .ai import enhance_special_content
 from django.db import models
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -130,6 +131,8 @@ def special_create(request):
             special.published = False
             special.user_profile = user_profile
             special.save()
+            if form.cleaned_data.get("ai_enhance"):
+                enhance_special_content(special)
             return redirect("special_preview", pk=special.pk)
         specials = Special.objects.order_by("-start_date", "-created_at")
         return render(request, "app/dashboard.html", {"specials": specials, "form": form})
@@ -142,6 +145,8 @@ def special_preview(request, pk):
         form = SpecialForm(request.POST, request.FILES, instance=sp)
         if form.is_valid():
             sp = form.save()
+            if form.cleaned_data.get("ai_enhance"):
+                enhance_special_content(sp)
             form = SpecialForm(instance=sp)
     else:
         form = SpecialForm(instance=sp)
@@ -194,6 +199,8 @@ def special_update(request, pk):
     form = SpecialForm(request.POST, request.FILES, instance=sp)
     if form.is_valid():
         sp = form.save()
+        if form.cleaned_data.get("ai_enhance"):
+            enhance_special_content(sp)
         ctx = {
             "special": sp,
             "form": SpecialForm(instance=sp),

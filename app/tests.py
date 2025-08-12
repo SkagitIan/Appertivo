@@ -1,5 +1,6 @@
 import datetime
 import re
+from unittest.mock import patch
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -71,6 +72,11 @@ class SpecialFormTemplateTests(TestCase):
         html = render_to_string("app/partials/special_form.html", {"form": form, "special": sp})
         self.assertIsNotNone(re.search(r'id="image-preview"[^>]*src="https://img.example/test.jpg"', html))
         self.assertNotIn('d-none" id="image-preview"', html)
+
+    def test_ai_enhance_switch_present_and_checked(self):
+        html = self.render()
+        self.assertIn('id="id_ai_enhance"', html)
+        self.assertIsNotNone(re.search(r'id="id_ai_enhance"[^>]*checked', html))
 
 
 class ConnectionPartialTests(TestCase):
@@ -169,6 +175,21 @@ class SpecialWorkflowTests(TestCase):
         self.assertTrue(response["Location"].endswith(reverse("my_specials")))
         sp.refresh_from_db()
         self.assertTrue(sp.published)
+
+    @override_settings(OPENAI_API_KEY="test")
+    @patch("app.views.enhance_special_content")
+    def test_create_calls_ai_when_enabled(self, mock_enhance):
+        data = self._valid_data()
+        data["ai_enhance"] = "on"
+        self.client.post(reverse("special_create"), data)
+        self.assertTrue(mock_enhance.called)
+
+    @override_settings(OPENAI_API_KEY="test")
+    @patch("app.views.enhance_special_content")
+    def test_create_skips_ai_when_disabled(self, mock_enhance):
+        data = self._valid_data()
+        self.client.post(reverse("special_create"), data)
+        self.assertFalse(mock_enhance.called)
 
 
 
