@@ -116,11 +116,10 @@
   <section class="container pb-6">
     <div class="row justify-content-center">
       <div class="col-lg-5">
-        <div class="card border-0 shadow-sm rounded-4" data-animate="reveal">
-          <div class="card-header py-4 rounded-top-4" style="background-color:#f08000">
-            <h2 class="h4 mb-0 text-white">Create a Special</h2>
-          </div>
-          <div class="card-body p-0">
+        <div class="card shadow-sm rounded-4 p-4" data-animate="reveal">
+          <div class="card-body p-0 border-0">
+            <h2 class="h4 mb-4">Create Your First Special</h2>
+            <p class="text-secondary mb-4">Fill out the form below to get started. No login required.</p>
         {% include 'app/partials/special_form.html' %}
         </div>
       </div>
@@ -146,7 +145,17 @@
     </div>
 </div>
     </div>
+
+      <div class="row">
+    <div class="col-md-6">
+      {% include 'app/partials/connection.html' %}
+    </div>
+    <div class="col-md-6">
+      {% include 'app/partials/specials_list.html' %}
+    </div>
+  </div>
 </section>
-{% include 'app/partials/connection.html' %}
+
+
 {% endblock %}
 

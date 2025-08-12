@@ -1,0 +1,29 @@
+{# app/partials/special_edit_panel.html #}
+<div id="main">
+  <div class="row g-4">
+    <div class="col-lg-5">
+      {% include "app/partials/special_preview.html" with special=special only %}
+      <div class="mt-2">
+        {% if not special.published %}
+          <button class="btn btn-orange"
+                  hx-post="{% url 'special_publish' special.id %}"
+                  hx-target="#main"
+                  hx-swap="innerHTML">Publish</button>
+        {% else %}
+          <span class="badge text-bg-success">Published</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-7">
+      {# Reuse the SAME form partial, but pass update action + labels #}
+      {% include "app/partials/special_form.html" with
+         form=form
+         special=special
+         action_url=action_url
+         target_id=target_id
+         submit_label=submit_label
+         only %}
+    </div>
+  </div>
+</div>
