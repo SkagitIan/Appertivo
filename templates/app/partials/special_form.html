@@ -84,10 +84,10 @@
       </div>
     </div>
 
-    <!-- Image -->
-    <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-12">
+      <!-- Image -->
+      <hr class="border-ink-700 my-4">
+      <div class="row g-3">
+        <div class="col-12">
         <!-- Image dropzone + preview -->
         <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
           <div class="d-flex align-items-center justify-content-between">
@@ -110,10 +110,10 @@
           {% if form.image_file.errors %}
             <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
           {% endif %}
+        </div>
       </div>
-    </div>
 
-    <!-- Price & CTA -->
+      <!-- Price & CTA -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3 align-items-start">
       <div class="col-md-4">
@@ -258,15 +258,15 @@ function bindCounters(root){
     const endBtn   = $('#end-date-button', root);
     const help  = $('#date-help', root);
 
-    function attach(input, btn){
-      if(!(input && btn)) return;
-      btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
-      input.addEventListener('change', ()=>{
-        btn.textContent = input.value ? new Date(input.value).toLocaleDateString() : btn.dataset.placeholder;
-        validate();
-      });
-      btn.dataset.placeholder = btn.textContent;
-    }
+      function attach(input, btn){
+        if(!(input && btn)) return;
+        btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
+        input.addEventListener('change', ()=>{
+          btn.textContent = input.value ? new Date(input.value).toLocaleDateString() : btn.dataset.placeholder;
+          validate();
+        });
+        btn.dataset.placeholder = btn.textContent;
+      }
     attach(start, startBtn);
     attach(end, endBtn);
 
