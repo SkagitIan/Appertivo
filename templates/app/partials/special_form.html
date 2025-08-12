@@ -1,4 +1,6 @@
 {% load form_tags %}{% load extras %}
+{% url 'special_create' as default_create_url %}
+
 <!-- {# ===================================== #}
 {# /templates/partials/special_form.html #}
 {# Reusable create/edit form (HTMX-ready) #}
@@ -12,7 +14,7 @@
 
 <form method="POST"
       enctype="multipart/form-data"
-      action="{% if action_url %}{{ action_url }}{% else %}{% url 'special_create' %}{% endif %}"
+      action="{{ action_url|default:default_create_url }}"
       id="special-form"
       class="card card-glass overflow-hidden">
 

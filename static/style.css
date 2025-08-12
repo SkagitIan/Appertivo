@@ -42,6 +42,12 @@
 #image-dropzone { transition: border-color .2s ease, background-color .2s ease; }
 #image-dropzone:hover { background-color: rgba(255,255,255,.03); }
 
+/* Use the form partial inside a page without its own header/footer */
+.special-form-embedded .card-header,
+.special-form-embedded .card-footer {
+  display: none !important;
+}
+
 /* Gradient text for hero */
 .gradient-text{
   background: linear-gradient(90deg, var(--purple), var(--teal));

@@ -27,14 +27,18 @@ class SpecialForm(forms.ModelForm):
         fields = [
             "title", "description", "price",
             # NOTE: do NOT include 'image' here; it's a URLField on the model
-            "start_date", "end_date",
+            "start_date", "end_date", "image",
             "cta_choices", "order_url", "phone_number",
             "mobile_order_url", "enable_email_signup",
         ]
         widgets = {
-            "start_date": forms.DateInput(attrs={"type": "date"}),
-            "end_date": forms.DateInput(attrs={"type": "date"}),
-            "price": forms.NumberInput(attrs={"step": "0.01"}),
+            # make sure dates are HTML date inputs (see Issue 2 below)
+            "start_date": forms.DateInput(attrs={"type": "date", "class": "form-control"}, format="%Y-%m-%d"),
+            "end_date":   forms.DateInput(attrs={"type": "date", "class": "form-control"}, format="%Y-%m-%d"),
+
+            "price":      forms.TextInput(attrs={"class": "form-control", "inputmode": "decimal"}),
+            # use plain FileInput so Django doesn't render the "Currently/Clear" UI
+            "image":      forms.FileInput(attrs={"class": "form-control d-none", "accept": "image/png,image/jpeg"}),
         }
 
     def save(self, commit=True):
