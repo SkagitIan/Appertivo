@@ -1,3 +1,5 @@
+import datetime
+import re
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -116,10 +118,10 @@ class SpecialsListTemplateTests(TestCase):
     def test_management_buttons_present(self):
         sp = Special(title="Test")
         html = self.render([sp])
-        self.assertIn("Delete", html)
+        self.assertIn("bi-pencil", html)
+        self.assertIn("bi-x-lg", html)
         self.assertIn("Sold Out", html)
         self.assertIn("Make Active", html)
-        self.assertIn("Edit", html)
 
     def test_published_special_has_glow(self):
         live = Special(title="Live", published=True)
@@ -131,6 +133,11 @@ class SpecialsListTemplateTests(TestCase):
         sp = Special(title="Grid")
         html = self.render([sp])
         self.assertIn("row-cols", html)
+
+    def test_shows_expired_label(self):
+        sp = Special(title="Old", end_date=datetime.date(2024, 1, 1))
+        html = self.render([sp])
+        self.assertIn("Expired:", html)
 
 
 class SpecialWorkflowTests(TestCase):
