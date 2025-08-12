@@ -102,3 +102,4 @@ class SpecialsListTemplateTests(TestCase):
         sp = Special(title="Grid")
         html = self.render([sp])
         self.assertIn("row-cols", html)
+
