@@ -63,7 +63,7 @@
   <div class="row g-3">
     <div class="col-md-6">
       <div class="form-floating">
-        {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"id:id_price" }}
+        {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"id:id_price"|attr:"type:number" }}
         <label for="id_price">Price</label>
       </div>
       {% if form.price.errors %}

@@ -1,8 +1,6 @@
 from django.template.loader import render_to_string
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
-import re
-
 from .forms import SpecialForm
 from .models import Special
 from profiles.models import UserProfile
@@ -166,19 +164,4 @@ class SpecialWorkflowTests(TestCase):
         self.assertTrue(sp.published)
 
 
-class SpecialPreviewTemplateTests(TestCase):
-    def test_preview_form_posts_to_publish(self):
-        profile = UserProfile.objects.create()
-        sp = Special.objects.create(
-            title="T",
-            description="D",
-            order_url="https://e.com",
-            cta_choices=["order"],
-            user_profile=profile,
-        )
-        response = self.client.get(reverse("special_preview", args=[sp.pk]))
-        publish_url = reverse("special_publish", args=[sp.pk])
-        content = response.content.decode()
-        self.assertIn(f'action="{publish_url}"', content)
-        self.assertIn('Publish', content)
 

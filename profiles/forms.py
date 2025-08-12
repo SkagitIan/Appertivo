@@ -32,6 +32,7 @@ class SignUpForm(forms.ModelForm):
         user.username = email
         user.email = email
         user.set_password(self.cleaned_data["password1"])
+        user.is_active = False
         if commit:
             user.save()
         return user
