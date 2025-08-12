@@ -60,22 +60,14 @@
     <hr class="border-ink-700 my-4">
       <div class="row g-3">
         <div class="col-md-6">
-<<<<<<< HEAD
           {{ form.start_date|add_class:"d-none"|attr:"id:id_start_date" }}
-=======
-          {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
->>>>>>> origin/codex/fix-issues-in-special_form.html
           <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
           {% if form.start_date.errors %}
             <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
           {% endif %}
         </div>
         <div class="col-md-6">
-<<<<<<< HEAD
           {{ form.end_date|add_class:"d-none"|attr:"id:id_end_date" }}
-=======
-          {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
->>>>>>> origin/codex/fix-issues-in-special_form.html
           <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
           {% if form.end_date.errors %}
             <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
@@ -92,7 +84,6 @@
       </div>
     </div>
 
-<<<<<<< HEAD
     <!-- Price & Image -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3">
@@ -107,12 +98,6 @@
         </div>
 
       <div class="col-md-8">
-=======
-      <!-- Image -->
-      <hr class="border-ink-700 my-4">
-      <div class="row g-3">
-        <div class="col-12">
->>>>>>> origin/codex/fix-issues-in-special_form.html
         <!-- Image dropzone + preview -->
         <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
           <div class="d-flex align-items-center justify-content-between">
@@ -127,11 +112,17 @@
           </div>
 
             {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
+            {{ form.image_file|add_class:"form-control d-none"|attr:"accept:image/png,image/jpeg"|attr:"id:id_image" }}
 
           <div class="ratio ratio-16x9 mt-3 rounded overflow-hidden bg-dark-subtle" id="image-preview-shell" aria-live="polite">
             <img id="image-preview" class="w-100 h-100 object-cover d-none" alt="Image preview">
           </div>
         </div>
+          {% if form.image_file.errors %}
+            <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
           {% if form.image_file.errors %}
             <div class="invalid-feedback d-block">{{ form.image_file.errors }}</div>
           {% endif %}
@@ -248,6 +239,26 @@ function bindCounters(root){
       call: root.querySelector('#group-call'),
     };
     const labels = root.querySelectorAll('label[data-cta]');
+  // ---------- Price formatting (display only) ----------
+  function bindPrice(root){
+    const input = $('#id_price', root);
+    if(!input) return;
+    input.addEventListener('blur', () => {
+      const v = parseFloat(input.value);
+      if(!isNaN(v)) input.value = v.toFixed(2);
+    });
+  }
+
+  // ---------- CTA segmented control ----------
+  function bindCTA(root){
+    const name = "{{ form.cta_choices.name|default:'cta_choices' }}"; // safe fallback
+    const radios = root.querySelectorAll(`input[name="${name}"]`);
+    const groups = {
+      order: root.querySelector('#group-order'),
+      mobile_order: root.querySelector('#group-mobile'),
+      call: root.querySelector('#group-call'),
+    };
+    const labels = root.querySelectorAll('label[data-cta]');
 
     function showGroup(key){
       Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
@@ -260,8 +271,22 @@ function bindCounters(root){
         requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
       }
     }
-<<<<<<< HEAD
+    function showGroup(key){
+      Object.values(groups).forEach(g => g && (g.classList.add('d-none'), g.style.opacity = 0));
+      labels.forEach(l => l.classList.remove('btn-orange'));         // clear active accent
+      const activeLabel = root.querySelector(`label[data-cta="${key}"]`);
+      if (activeLabel) activeLabel.classList.add('btn-orange');       // accent active option
+      const g = groups[key];
+      if (g){
+        g.classList.remove('d-none');
+        requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
+      }
+    }
 
+    function sync(){
+      const r = Array.from(radios).find(x => x.checked);
+      if (r) showGroup(r.value);
+    }
     function sync(){
       const r = Array.from(radios).find(x => x.checked);
       if (r) showGroup(r.value);
@@ -276,23 +301,7 @@ function bindCounters(root){
     sync();
   }
 
-=======
 
-    function sync(){
-      const r = Array.from(radios).find(x => x.checked);
-      if (r) showGroup(r.value);
-    }
-
-    radios.forEach(r => r.addEventListener('change', sync));
-    labels.forEach(l => l.addEventListener('click', () => {
-      const val = l.getAttribute('data-cta');
-      const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
-      if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
-    }));
-    sync();
-  }
-
->>>>>>> origin/codex/fix-issues-in-special_form.html
   // ---------- Date helpers ----------
   function bindDates(root){
     const start = $('#id_start_date', root);
@@ -301,27 +310,35 @@ function bindCounters(root){
     const endBtn   = $('#end-date-button', root);
     const help  = $('#date-help', root);
 
-<<<<<<< HEAD
     function attach(input, btn){
       if(!(input && btn)) return;
       btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
       input.addEventListener('change', ()=>{ btn.textContent = input.value || btn.dataset.placeholder; validate(); });
       btn.dataset.placeholder = btn.textContent;
     }
-=======
-      function attach(input, btn){
-        if(!(input && btn)) return;
-        btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
-        input.addEventListener('change', ()=>{
-          btn.textContent = input.value ? new Date(input.value).toLocaleDateString() : btn.dataset.placeholder;
-          validate();
-        });
-        btn.dataset.placeholder = btn.textContent;
-      }
->>>>>>> origin/codex/fix-issues-in-special_form.html
     attach(start, startBtn);
     attach(end, endBtn);
 
+    function setChip(type){
+      const today = new Date();
+      const pad = (n)=> String(n).padStart(2,'0');
+      const toISO = (d)=> `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      if(!start || !end) return;
+      if(type === 'today'){
+        start.value = toISO(today);
+        end.value   = toISO(today);
+      }
+      if(type === 'plus3'){
+        const e = new Date(today); e.setDate(e.getDate()+3);
+        start.value = toISO(today); end.value = toISO(e);
+      }
+      if(type === 'plus7'){
+        const e = new Date(today); e.setDate(e.getDate()+7);
+        start.value = toISO(today); end.value = toISO(e);
+      }
+      start.dispatchEvent(new Event('change')); end.dispatchEvent(new Event('change'));
+      validate();
+    }
     function setChip(type){
       const today = new Date();
       const pad = (n)=> String(n).padStart(2,'0');
@@ -354,6 +371,14 @@ function bindCounters(root){
     }
   }
 
+    $$('[data-datechip]').forEach(b=>{
+      b.addEventListener('click', ()=> setChip(b.dataset.datechip));
+    });
+    start?.addEventListener('change', validate);
+    end?.addEventListener('change', validate);
+  }
+  // ---------- Image dropzone ----------
+  function bindImage(root){
     $$('[data-datechip]').forEach(b=>{
       b.addEventListener('click', ()=> setChip(b.dataset.datechip));
     });
