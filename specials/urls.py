@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from app import views
@@ -13,7 +13,6 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("specials/create/", views.special_create, name="special_create"),
     path("specials/<int:pk>/preview/", views.special_preview, name="special_preview"),
-    # urls.py
     path("specials/<int:pk>/update/", views.special_update, name="special_update"),
     path("specials/<int:pk>/publish/", views.special_publish, name="special_publish"),
     
