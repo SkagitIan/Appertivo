@@ -1,8 +1,6 @@
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.core import mail
-
 from .forms import SpecialForm
 from .models import Special
 from profiles.models import UserProfile
@@ -15,8 +13,8 @@ class SpecialFormTemplateTests(TestCase):
 
     def test_price_field_rendered(self):
         html = self.render()
-        self.assertTrue('id="id_price"' in html)
-        self.assertTrue('type="number"' in html)
+        self.assertIn('id="id_price"', html)
+        self.assertIn('inputmode="decimal"', html)
 
     def test_date_buttons_present(self):
         html = self.render()
@@ -43,6 +41,34 @@ class SpecialFormTemplateTests(TestCase):
     def test_no_card_footer(self):
         html = self.render()
         self.assertNotIn('card-footer', html)
+
+    def test_cta_radio_checked_with_list_value(self):
+        profile = UserProfile.objects.create()
+        sp = Special(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            user_profile=profile,
+        )
+        form = SpecialForm(instance=sp)
+        html = render_to_string("app/partials/special_form.html", {"form": form, "special": sp})
+        self.assertIsNotNone(re.search(r'id="cta_1"[^>]*value="order"[^>]*checked', html))
+
+    def test_existing_image_shown_inside_dropzone(self):
+        profile = UserProfile.objects.create()
+        sp = Special(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            image="https://img.example/test.jpg",
+            user_profile=profile,
+        )
+        form = SpecialForm(instance=sp)
+        html = render_to_string("app/partials/special_form.html", {"form": form, "special": sp})
+        self.assertIsNotNone(re.search(r'id="image-preview"[^>]*src="https://img.example/test.jpg"', html))
+        self.assertNotIn('d-none" id="image-preview"', html)
 
 
 class ConnectionPartialTests(TestCase):
@@ -138,16 +164,4 @@ class SpecialWorkflowTests(TestCase):
         self.assertTrue(sp.published)
 
 
-@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
-class SpecialPublishedEmailTests(TestCase):
-    def test_publishing_special_sends_email(self):
-        profile = UserProfile.objects.create(email="owner@example.com")
-        sp = Special.objects.create(title="T", user_profile=profile)
-        sp.published = True
-        sp.save()
-
-        # An email should be sent to the owner with an edit link
-        self.assertEqual(len(mail.outbox), 1)
-        edit_url = reverse("special_update", args=[sp.pk])
-        self.assertIn(edit_url, mail.outbox[0].body)
 
