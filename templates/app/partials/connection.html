@@ -1,74 +1,343 @@
-<section id="integration-connections" class="container py-5">
-  <h2 class="h4 mb-4">Integrations</h2>
-  <div class="d-grid gap-2">
-    <!-- DoorDash -->
-    <button class="btn text-white" style="background-color:#FF3008" data-bs-toggle="collapse" data-bs-target="#instr-doordash" aria-expanded="false" aria-controls="instr-doordash">
-      <i class="fa-brands fa-doordash me-2"></i>DoorDash
-    </button>
-    <div class="collapse" id="instr-doordash">
-      <div class="card card-body text-dark">
-        <p>Use your DoorDash merchant portal to add the Appertivo widget link to your menu or promotions page.</p>
-      </div>
+<style>
+        
+        .integration-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .integration-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 1rem 0;
+        }
+        
+        .integration-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .integration-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .integration-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--brand-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .integration-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .integration-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        .integration-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .integration-title i {
+            font-size: 1.5rem;
+            color: var(--brand-color);
+        }
+        
+        .integration-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid var(--brand-color);
+            display: none;
+        }
+        
+        .integration-details.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .integration-details p {
+            margin: 0;
+            color: #4a5568;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .integration-details strong {
+            color: #2d3748;
+        }
+        
+        .integration-button {
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .integration-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .integration-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Brand-specific colors */
+        .doordash {
+            --brand-color: #FF3008;
+        }
+        
+        .grubhub {
+            --brand-color: #F6613A;
+        }
+        
+        .wix {
+            --brand-color: #FFCB00;
+        }
+        
+        .wix .integration-icon {
+            color: #333;
+        }
+        
+        .ubereats {
+            --brand-color: #06C167;
+        }
+        
+        .wordpress {
+            --brand-color: #21759B;
+        }
+        
+        .squarespace {
+            --brand-color: #000000;
+        }
+        
+        .webflow {
+            --brand-color: #4353FF;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .cta-section h3 {
+            color: #2d3748;
+            margin: 0 0 1rem 0;
+        }
+        
+        .cta-section p {
+            color: #4a5568;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .integration-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .integration-header h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="integration-header">
+            <h2>Platform Integrations</h2>
+            <p>Seamlessly connect with your favorite platforms and services</p>
+        </div>
+        
+        <div class="integration-grid">
+            <!-- DoorDash -->
+            <div class="integration-card doordash">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-doordash"></i>
+                    DoorDash
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('doordash-details')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="doordash-details">
+                    <p><strong>Embed the Smart "Order Now" widget:</strong> Copy the script snippet provided by DoorDash and customize <code>businessId</code> and <code>businessSlug</code> with your store's values. Paste the snippet into your site (e.g. head or body). Alternatively, you can add the widget via Google Tag Manager as a Custom HTML tag triggered on all pages.</p>
+                </div>
+            </div>
+            
+            <!-- Grubhub -->
+            <div class="integration-card grubhub">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-grubhub"></i>
+                    Grubhub
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('grubhub-details')">
+                    <i class="fas fa-link"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="grubhub-details">
+                    <p><strong>Insert Marketplace Ordering Link or Button:</strong> In your Grubhub for Restaurants portal, go to the Direct Order Toolkit or Marketplace Ordering Link section. Copy the HTML for the link, button, or QR code and paste it into your promotions or menu page. (Full script embedding is not supported.)</p>
+                </div>
+            </div>
+            
+            <!-- Wix -->
+            <div class="integration-card wix">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-wix"></i>
+                    Wix
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('wix-details')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="wix-details">
+                    <p><strong>Embed the widget script via Wix Editor or Dashboard:</strong><br>
+                       • Editor: Add &gt; Embed Code &gt; Embed HTML, then paste the snippet.<br>
+                       • Dashboard: Settings &gt; Custom Code (Advanced) &gt; +Add Custom Code. Paste the snippet into Head or Body, choose All Pages or specific ones, then Apply.</p>
+                </div>
+            </div>
+            
+            <!-- Uber Eats -->
+            <div class="integration-card ubereats">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-uber"></i>
+                    Uber Eats
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('ubereats-details')">
+                    <i class="fas fa-link"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="ubereats-details">
+                    <p><strong>Use Webshop Button or Link:</strong> In Uber Eats Manager, go to the Webshop tab and click "Actions" → "Create button" or "Copy Link." Paste the generated button code or URL into your website. (Script embedding not supported.)</p>
+                </div>
+            </div>
+            
+            <!-- WordPress -->
+            <div class="integration-card wordpress">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-wordpress"></i>
+                    WordPress
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('wordpress-details')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="wordpress-details">
+                    <p>Paste the script tag into a Text/HTML widget or within your theme template (e.g., header.php or footer.php) to activate the widget site-wide.</p>
+                </div>
+            </div>
+            
+            <!-- Squarespace -->
+            <div class="integration-card squarespace">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-squarespace"></i>
+                    Squarespace
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('squarespace-details')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="squarespace-details">
+                    <p>Insert the embed code into a Code Block on your Squarespace page to display the widget. <em>(If script embedding becomes available, instruction will be provided—Coming Soon.)</em></p>
+                </div>
+            </div>
+            
+            <!-- Webflow -->
+            <div class="integration-card webflow">
+                <h3 class="integration-title">
+                    <i class="fa-brands fa-webflow"></i>
+                    Webflow
+                </h3>
+                <button class="integration-button" onclick="toggleDetails('webflow-details')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details" id="webflow-details">
+                    <p>Add an Embed element to your Webflow project and include the widget's script snippet. (If more platform-specific enhancements arrive in the future, we'll update here—Coming Soon.)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h3>Need Help with Integration?</h3>
+            <p>Our support team is ready to help you get connected with any platform</p>
+        </div>
     </div>
-
-    <!-- Grubhub -->
-    <button class="btn text-white" style="background-color:#F6613A" data-bs-toggle="collapse" data-bs-target="#instr-grubhub" aria-expanded="false" aria-controls="instr-grubhub">
-      <i class="fa-brands fa-grubhub me-2"></i>Grubhub
-    </button>
-    <div class="collapse" id="instr-grubhub">
-      <div class="card card-body text-dark">
-        <p>Embed your specials link in the Grubhub promotions area to direct customers to your latest offers.</p>
-      </div>
-    </div>
-
-    <!-- Wix -->
-    <button class="btn text-dark" style="background-color:#FFCB00" data-bs-toggle="collapse" data-bs-target="#instr-wix" aria-expanded="false" aria-controls="instr-wix">
-      <i class="fa-brands fa-wix me-2"></i>Wix
-    </button>
-    <div class="collapse" id="instr-wix">
-      <div class="card card-body text-dark">
-        <p>Add the embed code to a custom HTML element on your Wix site to display the widget.</p>
-      </div>
-    </div>
-
-    <!-- Uber Eats -->
-    <button class="btn text-white" style="background-color:#06C167" data-bs-toggle="collapse" data-bs-target="#instr-ubereats" aria-expanded="false" aria-controls="instr-ubereats">
-      <i class="fa-brands fa-uber me-2"></i>Uber Eats
-    </button>
-    <div class="collapse" id="instr-ubereats">
-      <div class="card card-body text-dark">
-        <p>Share the specials URL in your Uber Eats profile to entice delivery customers.</p>
-      </div>
-    </div>
-
-    <!-- WordPress -->
-    <button class="btn text-white" style="background-color:#21759B" data-bs-toggle="collapse" data-bs-target="#instr-wordpress" aria-expanded="false" aria-controls="instr-wordpress">
-      <i class="fa-brands fa-wordpress me-2"></i>WordPress
-    </button>
-    <div class="collapse" id="instr-wordpress">
-      <div class="card card-body text-dark">
-        <p>Paste the script tag into a Text/HTML widget or within your theme to activate the widget site-wide.</p>
-      </div>
-    </div>
-
-    <!-- Squarespace -->
-    <button class="btn text-white" style="background-color:#000000" data-bs-toggle="collapse" data-bs-target="#instr-squarespace" aria-expanded="false" aria-controls="instr-squarespace">
-      <i class="fa-brands fa-squarespace me-2"></i>Squarespace
-    </button>
-    <div class="collapse" id="instr-squarespace">
-      <div class="card card-body text-dark">
-        <p>Insert the embed code into a Code Block on your Squarespace page.</p>
-      </div>
-    </div>
-
-    <!-- Webflow -->
-    <button class="btn text-white" style="background-color:#4353FF" data-bs-toggle="collapse" data-bs-target="#instr-webflow" aria-expanded="false" aria-controls="instr-webflow">
-      <i class="fa-brands fa-webflow me-2"></i>Webflow
-    </button>
-    <div class="collapse" id="instr-webflow">
-      <div class="card card-body text-dark">
-        <p>Add an Embed element to your Webflow project and include the script snippet.</p>
-      </div>
-    </div>
-  </div>
-</section>
+    
+    <script>
+        function toggleDetails(detailsId) {
+            const details = document.getElementById(detailsId);
+            const allDetails = document.querySelectorAll('.integration-details');
+            
+            // Close all other details first
+            allDetails.forEach(detail => {
+                if (detail.id !== detailsId) {
+                    detail.classList.remove('active');
+                }
+            });
+            
+            // Toggle the clicked one
+            details.classList.toggle('active');
+        }
+    </script>
