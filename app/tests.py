@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
 from django.test import TestCase
 from django.urls import reverse
+import re
 
 from .forms import SpecialForm
 from .models import Special
@@ -14,8 +15,8 @@ class SpecialFormTemplateTests(TestCase):
 
     def test_price_field_rendered(self):
         html = self.render()
-        self.assertTrue('id="id_price"' in html)
-        self.assertTrue('type="number"' in html)
+        self.assertIn('id="id_price"', html)
+        self.assertIn('inputmode="decimal"', html)
 
     def test_date_buttons_present(self):
         html = self.render()
@@ -42,6 +43,34 @@ class SpecialFormTemplateTests(TestCase):
     def test_no_card_footer(self):
         html = self.render()
         self.assertNotIn('card-footer', html)
+
+    def test_cta_radio_checked_with_list_value(self):
+        profile = UserProfile.objects.create()
+        sp = Special(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            user_profile=profile,
+        )
+        form = SpecialForm(instance=sp)
+        html = render_to_string("app/partials/special_form.html", {"form": form, "special": sp})
+        self.assertIsNotNone(re.search(r'id="cta_1"[^>]*value="order"[^>]*checked', html))
+
+    def test_existing_image_shown_inside_dropzone(self):
+        profile = UserProfile.objects.create()
+        sp = Special(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            image="https://img.example/test.jpg",
+            user_profile=profile,
+        )
+        form = SpecialForm(instance=sp)
+        html = render_to_string("app/partials/special_form.html", {"form": form, "special": sp})
+        self.assertIsNotNone(re.search(r'id="image-preview"[^>]*src="https://img.example/test.jpg"', html))
+        self.assertNotIn('d-none" id="image-preview"', html)
 
 
 class ConnectionPartialTests(TestCase):
@@ -135,4 +164,21 @@ class SpecialWorkflowTests(TestCase):
         self.assertTrue(response["Location"].endswith(reverse("my_specials")))
         sp.refresh_from_db()
         self.assertTrue(sp.published)
+
+
+class SpecialPreviewTemplateTests(TestCase):
+    def test_preview_form_posts_to_publish(self):
+        profile = UserProfile.objects.create()
+        sp = Special.objects.create(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            user_profile=profile,
+        )
+        response = self.client.get(reverse("special_preview", args=[sp.pk]))
+        publish_url = reverse("special_publish", args=[sp.pk])
+        content = response.content.decode()
+        self.assertIn(f'action="{publish_url}"', content)
+        self.assertIn('Publish', content)
 
