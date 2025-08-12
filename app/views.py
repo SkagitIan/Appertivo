@@ -130,48 +130,34 @@ def special_create(request):
             special.published = False
             special.user_profile = user_profile
             special.save()
+            return redirect("special_preview", pk=special.pk)
+        specials = Special.objects.order_by("-start_date", "-created_at")
+        return render(request, "app/dashboard.html", {"specials": specials, "form": form})
+    return redirect("dashboard")
 
-            # (Optional) build preview-only CTA payload if you still want it
-            ctas = []
-            c = (special.cta_choices or [])
-            if "order" in c:         ctas.append({"type": "order", "url": special.order_url})
-            if "call" in c:          ctas.append({"type": "call", "phone": special.phone_number})
-            if "mobile_order" in c:  ctas.append({"type": "mobile_order", "url": special.mobile_order_url})
-            special.ctas_preview = ctas
 
-            # Bind the same form to the instance for inline edits
-            edit_form = SpecialForm(instance=special)
-
-            ctx = {
-                "special": special,
-                "form": edit_form,
-                "action_url": reverse("special_update", args=[special.pk]),  # we'll add this view below
-                "target_id": "#main",
-                "submit_label": "Save Changes",
-            }
-            return render(request, "app/partials/special_edit_panel.html", ctx)
-
-        # invalid
-        return render(request, "app/partials/special_form.html", {"form": form}, status=422)
-
-    # GET -> empty create form
-    form = SpecialForm()
-    return render(request, "app/partials/special_form.html", {"form": form})
+def special_preview(request, pk):
+    sp = get_object_or_404(Special, pk=pk)
+    if request.method == "POST":
+        form = SpecialForm(request.POST, request.FILES, instance=sp)
+        if form.is_valid():
+            sp = form.save()
+            form = SpecialForm(instance=sp)
+    else:
+        form = SpecialForm(instance=sp)
+    ctx = {
+        "special": sp,
+        "form": form,
+        "action_url": reverse("special_preview", args=[sp.pk]),
+    }
+    return render(request, "app/special_preview.html", ctx)
 
 @require_POST
 def special_publish(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     sp.published = True
     sp.save(update_fields=["published"])
-    # Re-render the same panel so the badge/button update
-    ctx = {
-        "special": sp,
-        "form": SpecialForm(instance=sp),
-        "action_url": reverse("special_update", args=[sp.pk]),
-        "target_id": "#main",
-        "submit_label": "Save Changes",
-    }
-    return render(request, "app/partials/special_edit_panel.html", ctx)
+    return redirect("my_specials")
 
 @csrf_exempt
 @require_POST
