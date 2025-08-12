@@ -1,7 +1,7 @@
 import uuid
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -9,6 +9,10 @@ from django.contrib.auth.views import LoginView
 from django.utils import timezone
 from django.db.models import Q
 from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
 from .models import UserProfile
 from .forms import SignUpForm, EmailAuthenticationForm
 from app.models import Special
@@ -76,15 +80,34 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
             if profile:
                 profile.user = user
                 profile.email = user.email
                 profile.save()
-            return redirect("profile")
+            from .emails import send_verification_email
+
+            send_verification_email(user)
+            messages.info(request, "Check your email to verify your account.")
+            return redirect("login")
     else:
         form = SignUpForm()
     return render(request, "registration/signup.html", {"form": form})
+
+
+def verify_email(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Email verified. You can log in now.")
+        return redirect("login")
+
+    return HttpResponse("Invalid verification link", status=400)
 
 
 @login_required

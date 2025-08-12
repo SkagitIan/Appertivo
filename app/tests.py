@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.core import mail
 
 from .forms import SpecialForm
 from .models import Special
@@ -135,4 +136,18 @@ class SpecialWorkflowTests(TestCase):
         self.assertTrue(response["Location"].endswith(reverse("my_specials")))
         sp.refresh_from_db()
         self.assertTrue(sp.published)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class SpecialPublishedEmailTests(TestCase):
+    def test_publishing_special_sends_email(self):
+        profile = UserProfile.objects.create(email="owner@example.com")
+        sp = Special.objects.create(title="T", user_profile=profile)
+        sp.published = True
+        sp.save()
+
+        # An email should be sent to the owner with an edit link
+        self.assertEqual(len(mail.outbox), 1)
+        edit_url = reverse("special_update", args=[sp.pk])
+        self.assertIn(edit_url, mail.outbox[0].body)
 
