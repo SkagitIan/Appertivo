@@ -172,6 +172,13 @@
     </div>
   </div>
 
+  {# ===================== AI Enhance ===================== #}
+  <hr class="border-ink-700 my-4">
+  <div class="form-check form-switch mb-3">
+    {{ form.ai_enhance|add_class:"form-check-input" }}
+    <label class="form-check-label" for="{{ form.ai_enhance.id_for_label }}">Enhance with AI</label>
+  </div>
+
   {# ===================== Actions ===================== #}
   <hr class="border-ink-700 my-4">
   <div class="d-flex flex-wrap gap-2 justify-content-end">

@@ -15,6 +15,13 @@ class SpecialForm(forms.ModelForm):
     # non-model field used only to accept uploads
     image_file = forms.ImageField(required=False)
 
+    ai_enhance = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        label="AI Enhance",
+    )
+
     cta_choices = forms.ChoiceField(
         choices=CTA_CHOICES,
         widget=forms.RadioSelect,
@@ -53,9 +60,12 @@ class SpecialForm(forms.ModelForm):
         if image_file:
             try:
                 upload_result = uploader.upload(image_file, folder="specials")
+                transform_opts = {"format": "jpg", "quality": "auto", "secure": True}
+                if self.cleaned_data.get("ai_enhance"):
+                    transform_opts["effect"] = "enhance"
                 optimized_url, _ = cloudinary_url(
                     upload_result["public_id"],
-                    format="jpg", quality="auto", secure=True,
+                    **transform_opts,
                 )
                 instance.image = optimized_url  # URLField on the model
             except Exception as e:
