@@ -1,13 +1,13 @@
-<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+<div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
   {% for sp in specials %}
     <div class="col">
       <div class="card h-100 border-0 shadow-sm position-relative {% if sp.published %}special-live{% endif %}">
-        {% if sp.image %}<img src="{{ sp.image.url }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
+        {% if sp.image %}<img src="{{ sp.image }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
         <div class="position-absolute top-0 start-0 m-1">
-          <a href="" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+          <a href="" class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Edit"><i class="fa-solid fa-pen text-primary"></i></a>
         </div>
         <div class="position-absolute top-0 end-0 m-1">
-          <a href="" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+          <a href="" class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Delete"><i class="fa-solid fa-circle-minus text-danger"></i></a>
         </div>
         <div class="card-body p-2">
           <h3 class="h6 mb-1">{{ sp.title }}</h3>
@@ -16,8 +16,8 @@
           <p class="small text-secondary mb-2">Expired: {{ sp.end_date|date:"Y-m-d" }}</p>
           {% endif %}
           <div class="d-flex flex-wrap gap-1">
-            <a href="" class="btn btn-orange btn-sm">Sold Out</a>
-            <a href="" class="btn btn-teal btn-sm">Make Active</a>
+            <a href="" class="btn btn-orange btn-sm text-white">Sold Out</a>
+            <a href="" class="btn btn-teal btn-sm text-white">Make Active</a>
           </div>
         </div>
       </div>
