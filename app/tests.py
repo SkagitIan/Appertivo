@@ -1,8 +1,10 @@
 from django.template.loader import render_to_string
 from django.test import TestCase
+from django.urls import reverse
 
 from .forms import SpecialForm
 from .models import Special
+from profiles.models import UserProfile
 
 
 class SpecialFormTemplateTests(TestCase):
@@ -102,4 +104,35 @@ class SpecialsListTemplateTests(TestCase):
         sp = Special(title="Grid")
         html = self.render([sp])
         self.assertIn("row-cols", html)
+
+
+class SpecialWorkflowTests(TestCase):
+    def _valid_data(self):
+        return {
+            "title": "Test",
+            "description": "Desc",
+            "cta_choices": "order",
+            "order_url": "https://example.com",
+        }
+
+    def test_create_redirects_to_preview(self):
+        response = self.client.post(reverse("special_create"), self._valid_data())
+        self.assertEqual(response.status_code, 302)
+        sp = Special.objects.get(title="Test")
+        self.assertRedirects(response, reverse("special_preview", args=[sp.pk]))
+
+    def test_publish_redirects_to_my_specials(self):
+        profile = UserProfile.objects.create()
+        sp = Special.objects.create(
+            title="T",
+            description="D",
+            order_url="https://e.com",
+            cta_choices=["order"],
+            user_profile=profile,
+        )
+        response = self.client.post(reverse("special_publish", args=[sp.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response["Location"].endswith(reverse("my_specials")))
+        sp.refresh_from_db()
+        self.assertTrue(sp.published)
 

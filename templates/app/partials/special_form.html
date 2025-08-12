@@ -12,9 +12,7 @@
 
 <form method="POST"
       enctype="multipart/form-data"
-      hx-post="{% url 'special_create' %}"
-      hx-target="#special-form"
-      hx-swap="innerHTML"
+      action="{% if action_url %}{{ action_url }}{% else %}{% url 'special_create' %}{% endif %}"
       id="special-form"
       class="card card-glass overflow-hidden">
 
@@ -58,6 +56,20 @@
     </div>
   </div>
 
+  {# ===================== Price ===================== #}
+  <hr class="border-ink-700 my-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="form-floating">
+        {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"id:id_price" }}
+        <label for="id_price">Price</label>
+      </div>
+      {% if form.price.errors %}
+        <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+      {% endif %}
+    </div>
+  </div>
+
   {# ===================== Schedule ===================== #}
   <hr class="border-ink-700 my-4">
   <div class="row g-3">
@@ -89,14 +101,10 @@
   <hr class="border-ink-700 my-4">
   <div class="row g-3">
     <div class="col-md-12">
-      {% if special %}
-        {% with img=special.image|default:special.image_file %}
-          {% if img %}
-            <div class="mb-2 text-center">
-              <img src="{{ img.url }}" alt="{{ special.title }}" class="img-fluid rounded" style="max-height:200px;">
-            </div>
-          {% endif %}
-        {% endwith %}
+      {% if special and special.image %}
+        <div class="mb-2 text-center">
+          <img src="{{ special.image }}" alt="{{ special.title }}" class="img-fluid rounded" style="max-height:200px;">
+        </div>
       {% endif %}
 
       <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
@@ -178,3 +186,80 @@
     {% endif %}
   </div>
 </form>
+
+<script>
+function bindPrice(root){
+  const input = root.querySelector('#id_price');
+  if(!input || input.dataset.boundPrice) return;
+  input.addEventListener('blur', function(){
+    const v = parseFloat(this.value);
+    if(!isNaN(v)) this.value = v.toFixed(2);
+  });
+  input.dataset.boundPrice = '1';
+}
+
+function bindCTA(root){
+  const form = root.closest('form') || root;
+  if(!form || form.dataset.ctaBound === '1') return;
+  form.dataset.ctaBound = '1';
+  const labels = form.querySelectorAll('label[data-cta]');
+  const radios = form.querySelectorAll('input[type="radio"].btn-check');
+  const groups = {};
+  const inputs = {};
+  radios.forEach(r => {
+    const g = form.querySelector('#group-' + r.value);
+    if(g){
+      groups[r.value] = g;
+      inputs[r.value] = g.querySelector('input,textarea,select');
+    }
+  });
+  function showGroup(key){
+    Object.keys(groups).forEach(k => {
+      const g = groups[k], inp = inputs[k];
+      g.classList.add('d-none');
+      g.style.opacity = 0;
+      if(inp){inp.disabled = true; inp.required = false;}
+    });
+    labels.forEach(l => l.classList.remove('btn-orange'));
+    form.querySelector('label[data-cta="' + key + '"]').classList.add('btn-orange');
+    const g = groups[key], inp = inputs[key];
+    if(g){
+      g.classList.remove('d-none');
+      requestAnimationFrame(()=>{
+        g.style.transition = 'opacity .18s ease';
+        g.style.opacity = 1;
+      });
+      if(inp){
+        inp.disabled = false;
+        inp.required = true;
+        setTimeout(()=>{inp.focus(); inp.select && inp.select();},50);
+      }
+    }
+  }
+  function sync(){
+    const r = Array.from(radios).find(x => x.checked);
+    if(r) showGroup(r.value);
+  }
+  labels.forEach(l => {
+    l.addEventListener('click', () => {
+      const val = l.getAttribute('data-cta');
+      const r = Array.from(radios).find(x => x.value === val);
+      if(r){ r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+    });
+  });
+  radios.forEach(r => r.addEventListener('change', sync));
+  if(!Array.from(radios).some(r => r.checked)){
+    const first = Array.from(radios).find(r => groups[r.value]);
+    if(first) first.checked = true;
+  }
+  sync();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  const root = document.getElementById('special-form');
+  if(root){
+    bindPrice(root);
+    bindCTA(root);
+  }
+});
+</script>

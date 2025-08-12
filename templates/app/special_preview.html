@@ -1,0 +1,14 @@
+{% extends 'app/base.html' %}
+{% block title %}Preview Special · Appertivo{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="mb-4">
+    {% include '_special_widget.html' with special=special %}
+  </div>
+  <form method="post" action="{% url 'special_publish' special.pk %}" class="mb-5">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-orange text-white">Publish</button>
+  </form>
+  {% include 'app/partials/special_form.html' with form=form action_url=action_url submit_label='Update' %}
+</div>
+{% endblock %}
