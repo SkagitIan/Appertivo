@@ -77,28 +77,22 @@
   // -------------------------------
   // ---------- CTA segmented control (robust, no aria-label dependency) ----------
 function bindCTA(root){
-  // scope to the current form
   const form = root.closest?.('form') || root.querySelector?.('#special-form') || root;
   if (!form) return;
 
-  // find any labels that declare a CTA type
   const labels = form.querySelectorAll('label[data-cta]');
   if (!labels.length) return;
 
-  // find radios that correspond to those labels
   const radios = form.querySelectorAll('input[type="radio"].btn-check');
   if (!radios.length) return;
 
-  // guard: avoid rebinding twice on this form
   if (form.dataset.ctaBound === '1') return;
   form.dataset.ctaBound = '1';
 
-  // build groups map from radio values: "order" -> #group-order, "mobile_order" -> #group-mobile_order
   const groups = {};
   const inputs = {};
-  const getGroupId = (val) => `group-${val}`; // ids in template already match this scheme
+  const getGroupId = (val) => `group-${val}`;
 
-  // prime groups/inputs (only for values that actually exist)
   radios.forEach(r => {
     const id = getGroupId(r.value);
     const g = form.querySelector(`#${CSS.escape(id)}`);
@@ -108,8 +102,7 @@ function bindCTA(root){
     }
   });
 
-  function showGroup(key){
-    // hide/disable all
+  function showGroup(key, focus=false){
     Object.keys(groups).forEach(k => {
       const g = groups[k], inp = inputs[k];
       if (!g) return;
@@ -118,11 +111,9 @@ function bindCTA(root){
       if (inp){ inp.disabled = true; inp.required = false; }
     });
 
-    // active label look
     labels.forEach(l => l.classList.remove('btn-orange'));
     form.querySelector(`label[data-cta="${key}"]`)?.classList.add('btn-orange');
 
-    // show/enable selected
     const g = groups[key], inp = inputs[key];
     if (g){
       g.classList.remove('d-none');
@@ -133,17 +124,16 @@ function bindCTA(root){
       if (inp){
         inp.disabled = false;
         inp.required = true;
-        setTimeout(()=>{ inp.focus(); inp.select?.(); }, 50);
+        if (focus){ setTimeout(()=>{ inp.focus(); inp.select?.(); }, 50); }
       }
     }
   }
 
-  function sync(){
+  function sync(focus=false){
     const r = Array.from(radios).find(x => x.checked);
-    if (r) showGroup(r.value);
+    if (r) showGroup(r.value, focus);
   }
 
-  // click on label -> check radio -> change -> sync
   labels.forEach(l => {
     l.addEventListener('click', () => {
       const val = l.getAttribute('data-cta');
@@ -152,17 +142,14 @@ function bindCTA(root){
     });
   });
 
-  // change on any radio
-  radios.forEach(r => r.addEventListener('change', sync));
+  radios.forEach(r => r.addEventListener('change', ()=>sync(true)));
 
-  // pick first available option if none selected
   if (![...radios].some(r => r.checked)) {
-    const first = [...radios].find(r => groups[r.value]); // only if we have a matching group
+    const first = [...radios].find(r => groups[r.value]);
     if (first) first.checked = true;
   }
 
-  // initial paint
-  sync();
+  sync(false);
 }
 
 
@@ -184,6 +171,7 @@ function bindCTA(root){
         btn.textContent = input.value || btn.dataset.placeholder;
         validate();
       });
+      btn.textContent = input.value || btn.textContent;
       btn.dataset.boundPicker = '1';
     }
     attach(start, startBtn);
@@ -271,6 +259,10 @@ function bindCTA(root){
       img.classList.add('d-none');
       reset.hidden = true;
     });
+
+    if (img.src && !img.classList.contains('d-none')) {
+      reset.hidden = false;
+    }
 
     dz.dataset.imgBound = '1';
   }
