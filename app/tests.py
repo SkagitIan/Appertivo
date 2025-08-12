@@ -27,6 +27,20 @@ class SpecialFormTemplateTests(TestCase):
         self.assertTrue('id="id_image"' in html)
         self.assertTrue('type="file"' in html)
 
+<<<<<<< HEAD
+=======
+    def test_cta_groups_present(self):
+        html = self.render()
+        self.assertIn('id="group-order"', html)
+        self.assertIn('id="group-mobile"', html)
+        self.assertIn('id="group-call"', html)
+
+    def test_date_inputs_visually_hidden(self):
+        html = self.render()
+        self.assertIn('id="id_start_date"', html)
+        self.assertIn('visually-hidden', html)
+
+>>>>>>> origin/codex/fix-issues-in-special_form.html
     def test_js_bindings_exist(self):
         html = self.render()
         self.assertTrue('function bindPrice' in html)

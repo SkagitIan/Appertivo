@@ -21,7 +21,7 @@
   <!-- Header -->
   <div class="card-header py-3 px-4 d-flex align-items-center gap-2 border-ink-700">
     <div class="icon-dot bg-orange"></div>
-    <h5 class="mb-0 fw-bold gradient-text">New Special</h5>
+    <div class="mb-0 fw-bold gradient-text">New Special</div>
   </div>
 
   <div class="card-body p-4">
@@ -60,14 +60,22 @@
     <hr class="border-ink-700 my-4">
       <div class="row g-3">
         <div class="col-md-6">
+<<<<<<< HEAD
           {{ form.start_date|add_class:"d-none"|attr:"id:id_start_date" }}
+=======
+          {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
+>>>>>>> origin/codex/fix-issues-in-special_form.html
           <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
           {% if form.start_date.errors %}
             <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
           {% endif %}
         </div>
         <div class="col-md-6">
+<<<<<<< HEAD
           {{ form.end_date|add_class:"d-none"|attr:"id:id_end_date" }}
+=======
+          {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
+>>>>>>> origin/codex/fix-issues-in-special_form.html
           <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
           {% if form.end_date.errors %}
             <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
@@ -84,6 +92,7 @@
       </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Price & Image -->
     <hr class="border-ink-700 my-4">
     <div class="row g-3">
@@ -98,6 +107,12 @@
         </div>
 
       <div class="col-md-8">
+=======
+      <!-- Image -->
+      <hr class="border-ink-700 my-4">
+      <div class="row g-3">
+        <div class="col-12">
+>>>>>>> origin/codex/fix-issues-in-special_form.html
         <!-- Image dropzone + preview -->
         <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
           <div class="d-flex align-items-center justify-content-between">
@@ -123,56 +138,56 @@
         </div>
       </div>
 
-    <!-- CTA -->
+      <!-- Price & CTA -->
     <hr class="border-ink-700 my-4">
-    <div class="row g-3">
-      <div class="col-12">
+    <div class="row g-3 align-items-start">
+      <div class="col-md-4">
+        <div class="form-floating">
+          {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"inputmode:decimal"|attr:"id:id_price"|attr:"type:number"|attr:"step:0.01" }}
+          <label for="id_price">Price</label>
+        </div>
+        {% if form.price.errors %}
+          <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="col-md-8">
         <div class="fw-semibold mb-2">Call-to-Action</div>
-        <!-- Segmented control bound to your form.cta_choices radios -->
-        <div class="btn-group" role="group" aria-label="CTA">
-                    {# use the BoundField's canonical name so radios group properly #}
-                    {% for choice in form.cta_choices %}
-                    <input type="radio"
-                            class="btn-check"
-                            name="{{ form.cta_choices.name }}"
-                            id="cta_{{ forloop.counter }}"
-                            value="{{ choice.choice_value }}"
-                            {% if choice.choice_value in form.cta_choices.value %}checked{% endif %}>
-                    <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
-                        {{ choice.choice_label }}
-                    </label>
-                    {% endfor %}
-
+        <div class="btn-group w-100" role="group" aria-label="CTA">
+          {% for choice in form.cta_choices %}
+            <input type="radio"
+                   class="btn-check"
+                   name="{{ form.cta_choices.name }}"
+                   id="cta_{{ forloop.counter }}"
+                   value="{{ choice.choice_value }}"
+                   {% if choice.choice_value == form.cta_choices.value %}checked{% endif %}>
+            <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ choice.choice_value }}">
+              {{ choice.choice_label }}
+            </label>
+          {% endfor %}
         </div>
         {% if form.cta_choices.errors %}
           <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>
         {% endif %}
-      </div>
-
-      <!-- Contextual fields -->
-      <div class="col-md-4 d-none" id="group-order">
-        <div class="form-floating">
-          {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
-          <label for="id_order_url">Order URL</label>
-        </div>
-      </div>
-      <div class="col-md-4 d-none" id="group-mobile">
-        <div class="form-floating">
-          {{ form.mobile_order_url|add_class:"form-control"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
-          <label for="id_mobile_order_url">Mobile order URL</label>
-        </div>
-      </div>
-      <div class="col-md-4 d-none" id="group-call">
-        <div class="form-floating">
-          {{ form.phone_number|add_class:"form-control"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
-          <label for="id_phone_number">Phone number</label>
+        <div class="mt-3">
+          <div class="form-floating d-none" id="group-order">
+            {{ form.order_url|add_class:"form-control"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
+            <label for="id_order_url">Order URL</label>
+          </div>
+          <div class="form-floating d-none" id="group-mobile">
+            {{ form.mobile_order_url|add_class:"form-control"|attr:"placeholder:Mobile order URL"|attr:"id:id_mobile_order_url" }}
+            <label for="id_mobile_order_url">Mobile order URL</label>
+          </div>
+          <div class="form-floating d-none" id="group-call">
+            {{ form.phone_number|add_class:"form-control"|attr:"placeholder:(555) 123-4567"|attr:"id:id_phone_number" }}
+            <label for="id_phone_number">Phone number</label>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Sticky actions -->
-  <div class="card-footer py-3 px-4 position-sticky bottom-0 bg-gradient-dark backdrop-blur border-ink-700">
+  <div class="card-footer py-3 px-4 position-sticky bottom-0 border-ink-700 bg-transparent">
     <div class="d-flex flex-wrap gap-2 justify-content-end">
       <button type="button"
               class="btn btn-outline-ink"
@@ -245,6 +260,7 @@ function bindCounters(root){
         requestAnimationFrame(()=>{ g.style.transition = 'opacity .2s ease'; g.style.opacity = 1; });
       }
     }
+<<<<<<< HEAD
 
     function sync(){
       const r = Array.from(radios).find(x => x.checked);
@@ -260,6 +276,23 @@ function bindCounters(root){
     sync();
   }
 
+=======
+
+    function sync(){
+      const r = Array.from(radios).find(x => x.checked);
+      if (r) showGroup(r.value);
+    }
+
+    radios.forEach(r => r.addEventListener('change', sync));
+    labels.forEach(l => l.addEventListener('click', () => {
+      const val = l.getAttribute('data-cta');
+      const r = root.querySelector(`input[name="${name}"][value="${val}"]`);
+      if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); }
+    }));
+    sync();
+  }
+
+>>>>>>> origin/codex/fix-issues-in-special_form.html
   // ---------- Date helpers ----------
   function bindDates(root){
     const start = $('#id_start_date', root);
@@ -268,12 +301,24 @@ function bindCounters(root){
     const endBtn   = $('#end-date-button', root);
     const help  = $('#date-help', root);
 
+<<<<<<< HEAD
     function attach(input, btn){
       if(!(input && btn)) return;
       btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
       input.addEventListener('change', ()=>{ btn.textContent = input.value || btn.dataset.placeholder; validate(); });
       btn.dataset.placeholder = btn.textContent;
     }
+=======
+      function attach(input, btn){
+        if(!(input && btn)) return;
+        btn.addEventListener('click', ()=> input.showPicker && input.showPicker());
+        input.addEventListener('change', ()=>{
+          btn.textContent = input.value ? new Date(input.value).toLocaleDateString() : btn.dataset.placeholder;
+          validate();
+        });
+        btn.dataset.placeholder = btn.textContent;
+      }
+>>>>>>> origin/codex/fix-issues-in-special_form.html
     attach(start, startBtn);
     attach(end, endBtn);
 
