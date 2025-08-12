@@ -1,21 +1,17 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
-from django.utils import timezone
-from .models import Special, EmailSignup
-from .forms import SpecialForm
-from django.db import models
+import json
+
+from django.db.models import Q
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, HttpResponseBadRequest, QueryDict
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+
 from profiles.models import UserProfile
-import json
-import logging
-from django.db.models import Q
-from django.urls import reverse
-logger = logging.getLogger(__name__)
+
+from .forms import SpecialForm
+from .models import Special, EmailSignup
 
 
 def dashboard(request):

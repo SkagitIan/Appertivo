@@ -1,12 +1,10 @@
 # app/templatetags/form_tags.py
-from django import template
-from django.utils.safestring import mark_safe
-from django.forms.boundfield import BoundField
 import re
 
-register = template.Library()
-# templatetags/extras.py
 from django import template
+from django.forms.boundfield import BoundField
+from django.utils.safestring import mark_safe
+
 register = template.Library()
 
 def _render_with_attrs(bound_field: BoundField, extra: dict) -> str:
