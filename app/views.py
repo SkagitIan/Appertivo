@@ -150,7 +150,7 @@ def special_create(request):
             special.save()
             if form.cleaned_data.get("ai_enhance"):
                 enhance_special_content(special)
-            return redirect("special_preview", pk=special.pk, form=form)
+            return redirect("special_preview", pk=special.pk)
         specials = Special.objects.order_by("-start_date", "-created_at")
         return render(request, "app/dashboard.html", {"specials": specials, "form": form})
     return redirect("dashboard")
