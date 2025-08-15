@@ -112,48 +112,16 @@
     </div>
   </section>
 
-  <!-- Form zone -->
-  <section class="container pb-6">
-    <div class="row justify-content-center">
-      <div class="col-lg-5">
-        <div class="card rounded-4 p-4" data-animate="reveal" style="box-shadow: 0 0 20px 5px #B993D6;">
-          <div class="card-body p-0 border-0">
-           
-        {% include 'app/partials/special_form.html' %}
+    <section class="container pb-6">
+      <div class="row">
+        <div class="col-md-12 mt-5">
+          {% include 'app/partials/connection.html' %}
+        </div>
+        <div class="col-md-12 mt-5">
+          {% include 'app/partials/specials_list.html' %}
         </div>
       </div>
-    </div>
-    <div class="col-lg-7 p-5 display-6">
-      <p class="fs-5 brand-purple mx-auto" style="max-width: 700px; line-height: 1.7;">
-  <strong>Specials</strong> are one of the most effective ways for restaurants to 
-  <span class="font-purple fw-semibold">attract attention</span>, 
-  <span class="font-purple fw-semibold">drive foot traffic</span>, and 
-  <span class="font-purple fw-semibold">boost sales</span>. Yet, many establishments 
-  struggle to promote their limited-time offers efficiently and consistently.
-</p>
-
-<p class="fs-5 text-light mx-auto" style="max-width: 700px; line-height: 1.7;">
-  <strong>Appertivo</strong> focuses on simplifying this process, empowering restaurant owners to 
-  quickly create, showcase, and manage their specials without technical headaches or time-consuming setups. 
-  In an industry where every moment counts, our tool provides the 
-  <span class="font-orange fw-bold">focus and automation</span> needed to turn daily specials into powerful marketing assets — helping restaurants 
-  <span class="font-orange fw-bold">stand out</span>, <span class="font-orange fw-bold">engage customers</span>, and 
-  <span class="font-orange fw-bold">grow revenue effortlessly</span>.
-</p>
-
-    </div>
-</div>
-    </div>
-
-      <div class="row">
-    <div class="col-md-12 mt-5">
-      {% include 'app/partials/connection.html' %}
-    </div>
-    <div class="col-md-12 mt-5">
-      {% include 'app/partials/specials_list.html' %}
-    </div>
-  </div>
-</section>
+    </section>
 
 
 {% endblock %}
