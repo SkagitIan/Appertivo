@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from profiles.models import UserProfile  # Adjust import path if needed
 
 class Special(models.Model):
@@ -31,6 +32,11 @@ class Special(models.Model):
 
     def __str__(self):
         return self.title
+     
+    @property
+    def is_expired(self):
+        """Return True if the special's end date has passed."""
+        return bool(self.end_date and self.end_date < timezone.now().date())
 
 
 class SpecialAnalytics(models.Model):

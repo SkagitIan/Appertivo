@@ -149,6 +149,7 @@ def special_create(request):
     return render(request, "app/special_step1.html", {"form": form})
 
 
+
 def special_preview(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     if request.method == "POST":
