@@ -145,6 +145,22 @@ class SpecialsListTemplateTests(TestCase):
         html = self.render([sp])
         self.assertIn("Expired:", html)
 
+    def test_shows_active_label(self):
+        sp = Special(
+            title="Fresh",
+            end_date=datetime.date.today() + datetime.timedelta(days=1),
+        )
+        html = self.render([sp])
+        self.assertIn("Active:", html)
+
+    def test_hides_sold_out_for_expired_special(self):
+        sp = Special(
+            title="Old",
+            end_date=datetime.date.today() - datetime.timedelta(days=1),
+        )
+        html = self.render([sp])
+        self.assertNotIn("Sold Out", html)
+
 
 class SpecialWorkflowTests(TestCase):
     def _valid_data(self):
