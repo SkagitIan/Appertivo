@@ -268,4 +268,4 @@ def special_delete(request, pk):
     profile = getattr(request, "user_profile", None)
     sp = get_object_or_404(Special, pk=pk, user_profile=profile)
     sp.delete()
-    return HttpResponse(status=204)
+    return HttpResponse("")
