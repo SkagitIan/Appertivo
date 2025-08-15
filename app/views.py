@@ -224,30 +224,81 @@ def track_cta(request, pk):
     SpecialAnalytics.objects.filter(pk=analytics.pk).update(cta_clicks=F("cta_clicks") + 1)
     return JsonResponse({"success": True})
 
+# views.py
+from django.db.models import Sum, Value, IntegerField
+from django.db.models.functions import Coalesce
+
+
+@login_required
+@require_http_methods(["POST"])
+def integrations_toggle(request, provider: str):
+    """
+    HTMX endpoint to enable/disable an integration.
+    Expects form or JSON field 'enabled' -> true/false.
+    """
+    # Accept either form-encoded (hx-vals) or raw JSON
+    enabled = None
+    if request.content_type == "application/json":
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+            enabled = payload.get("enabled")
+        except Exception:
+            return HttpResponseBadRequest("Invalid JSON")
+    else:
+        # form-encoded
+        val = request.POST.get("enabled")
+        if val is not None:
+            enabled = (str(val).lower() in ("1", "true", "yes", "on"))
+
+    if enabled is None:
+        return HttpResponseBadRequest("Missing 'enabled'")
+
+    # TODO: persist this to your DB (e.g., Integration table linked to user/restaurant)
+    # Example pseudo-logic:
+    # Integration.objects.update_or_create(
+    #     user=request.user, provider=provider,
+    #     defaults={"enabled": enabled}
+    # )
+
+    return JsonResponse({"provider": provider, "enabled": enabled})
+
+@login_required
+def integrations_connect(request, provider: str):
+    """
+    A simple stub page (or start an OAuth flow).
+    """
+    # For now just render a basic page or redirect to provider auth.
+    # return redirect(external_oauth_url)
+    return JsonResponse({"provider": provider, "action": "configure"})
+
+@login_required
 def my_specials(request):
     profile = getattr(request, "user_profile", None)
     if not profile:
         return redirect("home")
 
-    specials = Special.objects.filter(
-        user_profile=profile
-    ).order_by("-created_at")
-    stats = {
-        "opens": sum(sp.analytics.opens for sp in specials),
-        "cta_clicks": sum(sp.analytics.cta_clicks for sp in specials),
-        "email_signups": sum(
-            sp.analytics.email_signups for sp in specials
-        ),
-    }
-    subscribers = EmailSignup.objects.filter(
-        user_profile=profile
-    ).order_by("-created_at")
+    specials = (Special.objects
+                .filter(user_profile=profile)
+                .order_by("-created_at"))
+
+    # Aggregate across related analytics, defaulting to 0 when none exist
+    agg = specials.aggregate(
+        opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
+        cta_clicks=Coalesce(Sum("analytics__cta_clicks"), Value(0), output_field=IntegerField()),
+        email_signups=Coalesce(Sum("analytics__email_signups"), Value(0), output_field=IntegerField()),
+    )
+
+    subscribers = (EmailSignup.objects
+                   .filter(user_profile=profile)
+                   .order_by("-created_at"))
+
     context = {
-        "specials": specials,
-        "stats": stats,
+        "specials": specials.select_related("analytics"),  # fast access in templates
+        "stats": agg,
         "subscribers": subscribers,
     }
     return render(request, "app/my_specials.html", context)
+
 
 @require_POST
 def special_update(request, pk):

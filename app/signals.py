@@ -23,7 +23,7 @@ def send_published_email(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Special)
 def create_analytics(sender, instance, created, **kwargs):
     if created:
-        SpecialAnalytics.objects.create(special=instance)
+        SpecialAnalytics.objects.get_or_create(special=instance)
 
 
 @receiver(post_save, sender=EmailSignup)

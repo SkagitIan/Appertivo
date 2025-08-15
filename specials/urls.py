@@ -26,6 +26,9 @@ urlpatterns = [
     path('api/create-profile/', profiles_views.create_or_update_profile, name='create_or_update_profile'),
     path("create-profile/", profiles_views.create_or_update_profile, name="create_profile"),
 
+    path("integrations/<slug:provider>/toggle/", views.integrations_toggle, name="integrations_toggle"),
+    path("integrations/<slug:provider>/connect/", views.integrations_connect, name="integrations_connect"),
+
     path("accounts/login/", profiles_views.EmailLoginView.as_view(), name="login"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("accounts/signup/", profiles_views.signup, name="signup"),
