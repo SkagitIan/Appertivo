@@ -1,13 +1,55 @@
 {% extends "app/base.html" %}
+{% load static %}
 {% block title %}My Specials{% endblock %}
 {% block content %}
-{% load static %}
-<div class="p-4">
+<div class="container py-4">
   <h2 class="h4 mb-3">My Specials</h2>
-  <div id="specials-list" hx-get="" hx-trigger="load" hx-target="#specials-list" hx-swap="innerHTML">
-    <div class="text-secondary">Loading…</div>
+  {% include "app/partials/specials_list.html" with specials=specials %}
+
+  <div class="card mt-4">
+    <div class="card-header">Stats</div>
+    <div class="card-body">
+      <div>Total Opens: {{ stats.opens }}</div>
+      <div>CTA Clicks: {{ stats.cta_clicks }}</div>
+      <div>Email Signups: {{ stats.email_signups }}</div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">Email Subscribers</div>
+    <ul class="list-group list-group-flush">
+      {% for sub in subscribers %}
+      <li class="list-group-item">{{ sub.email }}</li>
+      {% empty %}
+      <li class="list-group-item text-secondary">No subscribers yet</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">Billing</div>
+    <div class="card-body">
+      <p class="text-secondary mb-0">Coming soon.</p>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <div class="card-header">Integrations</div>
+    <div class="card-body">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="posIntegration">
+        <label class="form-check-label" for="posIntegration">POS Integration</label>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="websiteIntegration">
+        <label class="form-check-label" for="websiteIntegration">Website Integration</label>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="marketingIntegration">
+        <label class="form-check-label" for="marketingIntegration">Marketing Integration</label>
+      </div>
+    </div>
   </div>
 </div>
-
 {% endblock %}
 

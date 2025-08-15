@@ -229,8 +229,25 @@ def my_specials(request):
     if not profile:
         return redirect("home")
 
-    specials = Special.objects.filter(user_profile=profile).order_by('-created_at')
-    return render(request, "app/my_specials.html", {"specials": specials})
+    specials = Special.objects.filter(
+        user_profile=profile
+    ).order_by("-created_at")
+    stats = {
+        "opens": sum(sp.analytics.opens for sp in specials),
+        "cta_clicks": sum(sp.analytics.cta_clicks for sp in specials),
+        "email_signups": sum(
+            sp.analytics.email_signups for sp in specials
+        ),
+    }
+    subscribers = EmailSignup.objects.filter(
+        user_profile=profile
+    ).order_by("-created_at")
+    context = {
+        "specials": specials,
+        "stats": stats,
+        "subscribers": subscribers,
+    }
+    return render(request, "app/my_specials.html", context)
 
 @require_POST
 def special_update(request, pk):
