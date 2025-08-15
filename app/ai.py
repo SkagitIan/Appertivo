@@ -1,12 +1,10 @@
 import datetime
 import json
 import os
+from dotenv import load_dotenv
+load_dotenv()  # take environment variables
 
-try:
-    from openai import OpenAI
-except Exception:  # pragma: no cover - library missing in tests
-    OpenAI = None
-
+from openai import OpenAI
 
 def enhance_special_content(special):
     """Use OpenAI to enhance textual content for a Special.
@@ -14,7 +12,7 @@ def enhance_special_content(special):
     Sends the current title, description, price, start_date, and end_date
     to the OpenAI API and updates the instance with any returned values.
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
     if not api_key or OpenAI is None:
         return special
     client = OpenAI(api_key=api_key)
@@ -30,10 +28,12 @@ def enhance_special_content(special):
     response = client.responses.create(
         model="gpt-4.1-mini",
         input=prompt,
-        response_format={"type": "json_object"},
+        text={"format": {"type": "json_object"}}
     )
+    print("OpenAI response:", response )
     try:
         content = response.output[0].content[0].text
+        print(content)
         data = json.loads(content)
     except Exception:
         return special

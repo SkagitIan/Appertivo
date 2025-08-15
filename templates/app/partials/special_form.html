@@ -58,38 +58,22 @@
     </div>
   </div>
 
-  {# ===================== Price ===================== #}
-  <hr class="border-ink-700 my-4">
-  <div class="row g-3">
-    <div class="col-md-6">
-      <div class="form-floating">
-        {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"id:id_price"|attr:"type:number" }}
-        <label for="id_price">Price</label>
-      </div>
-      {% if form.price.errors %}
-        <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
-      {% endif %}
-    </div>
-  </div>
 
-  {# ===================== Schedule ===================== #}
-  <hr class="border-ink-700 my-4">
-  <div class="row g-3">
+  {# ===================== Schedule / PRICE / AI ===================== #}
+  <div class="row g-3 mt-3">
     <div class="col-md-6">
       {{ form.start_date|add_class:"visually-hidden"|attr:"id:id_start_date" }}
-      <button type="button" class="btn btn-outline-ink w-100 text-start" id="start-date-button">Start date</button>
+      <button type="button" class="btn btn-outline-ink w-100 text-start mb-2" id="start-date-button">Start date</button>
       {% if form.start_date.errors %}
         <div class="invalid-feedback d-block">{{ form.start_date.errors }}</div>
       {% endif %}
-    </div>
-    <div class="col-md-6">
+
       {{ form.end_date|add_class:"visually-hidden"|attr:"id:id_end_date" }}
       <button type="button" class="btn btn-outline-ink w-100 text-start" id="end-date-button">End date</button>
       {% if form.end_date.errors %}
         <div class="invalid-feedback d-block">{{ form.end_date.errors }}</div>
       {% endif %}
-    </div>
-    <div class="col-12">
+          <div class="col-12 mt-2">
       <div class="d-flex flex-wrap gap-2 small">
         <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="today">Today</button>
         <button type="button" class="btn btn-sm btn-outline-ink" data-datechip="plus3">+3 days</button>
@@ -97,11 +81,27 @@
       </div>
       <div id="date-help" class="form-text mt-1"></div>
     </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        {{ form.price|add_class:"form-control"|attr:"placeholder:Price"|attr:"id:id_price" }}
+        <label for="id_price">Price (USD)</label>
+      </div>
+      {% if form.price.errors %}
+        <div class="invalid-feedback d-block">{{ form.price.errors }}</div>
+      {% endif %}
+        {# ===================== AI Enhance ===================== #}
+
+      <div class="form-check form-switch my-3">
+        {{ form.ai_enhance|add_class:"form-check-input" }}
+        <label class="form-check-label" for="{{ form.ai_enhance.id_for_label }}"></label>
+      </div>
+    </div>
+
   </div>
 
   {# ============== Image (shows existing if editing) ============== #}
-  <hr class="border-ink-700 my-4">
-  <div class="row g-3">
+  <div class="row g-3 mt-3">
     <div class="col-md-12">
       <div class="border rounded-3 p-3 widget-frame position-relative" id="image-dropzone">
         <div class="d-flex align-items-center justify-content-between">
@@ -128,8 +128,7 @@
   </div>
 
   {# ===================== CTA ===================== #}
-  <hr class="border-ink-700 my-4">
-  <div class="row g-3 align-items-start">
+  <div class="row g-3 align-items-start mt-3">
     <div class="col-md-12 text-center">
       {# Radios rendered from choices so values are correct #}
       <div class="btn-group w-100" role="group">
@@ -154,7 +153,7 @@
     </div>
 
     <div class="col-md-12 text-center">
-      <div class="mt-3">
+      <div class="mt-2">
         {# IDs must match "group-<value>" for JS mapping #}
         <div class="form-floating d-none" id="group-order">
           {{ form.order_url|add_class:"form-control form-control-sm"|attr:"placeholder:Order URL"|attr:"id:id_order_url" }}
@@ -172,16 +171,11 @@
     </div>
   </div>
 
-  {# ===================== AI Enhance ===================== #}
-  <hr class="border-ink-700 my-4">
-  <div class="form-check form-switch mb-3">
-    {{ form.ai_enhance|add_class:"form-check-input" }}
-    <label class="form-check-label" for="{{ form.ai_enhance.id_for_label }}">Enhance with AI</label>
-  </div>
+
 
   {# ===================== Actions ===================== #}
-  <hr class="border-ink-700 my-4">
-  <div class="d-flex flex-wrap gap-2 justify-content-end">
+
+  <div class="d-flex flex-wrap gap-2 justify-content-end mt-2">
     {% if not hide_submit %}
       <button type="submit" class="btn btn-orange w-100 text-center text-white" title="Ctrl/Cmd + Enter">
         {{ submit_label|default:"Continue" }}

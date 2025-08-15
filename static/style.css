@@ -66,6 +66,10 @@
 .bg-teal{background:var(--teal)!important}
 .bg-orange{background:var(--orange)!important}
 
+.form-check-input:checked{
+  background-color: var(--teal);
+  border-color: var(--teal);
+}
 /* Widget frame */
 .widget-frame{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08)}
 

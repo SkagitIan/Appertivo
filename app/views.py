@@ -17,7 +17,9 @@ import logging
 from django.db.models import Q
 from django.urls import reverse
 logger = logging.getLogger(__name__)
+from dotenv import load_dotenv
 
+load_dotenv()  # take environment variables
 
 def dashboard(request):
     """
@@ -38,14 +40,17 @@ def appertivo_widget(request):
     api_url = request.build_absolute_uri("/api/specials.js")
     subscribe_url = request.build_absolute_uri("/api/subscribe/")
     restaurant_id = request.GET.get('restaurant', '')
+    special_id = request.GET.get('special', '')
 
     response = render(request, "app/widget_template.html", {
         "api_url": api_url,
         "subscribe_url": subscribe_url,
         "restaurant_id": restaurant_id,
+        "special_id": special_id,
     })
     response['Content-Type'] = 'application/javascript'
     return response
+
 
 DEMO_SPECIALS = [
     {
@@ -62,48 +67,60 @@ DEMO_SPECIALS = [
 
 def specials_api(request):
     today = timezone.localdate()
-    # 1) Get param; optionally fall back to a configured demo restaurant
-    requested_restaurant = request.GET.get("restaurant",13)
+    requested_restaurant = request.GET.get("restaurant", 13)
+    special = request.GET.get("special", None)
     demo_mode = False
     restaurant_id = requested_restaurant
 
-    # 2) If still no id at all, return static demo payload (safe & fast)
+    # Fallback to static demo
     if not restaurant_id:
         return JsonResponse({
             "specials": DEMO_SPECIALS,
             "meta": {"mode": "default_demo", "restaurant": None, "count": len(DEMO_SPECIALS)}
         })
+
     print("Restaurant ID:", restaurant_id)
-    # 3) Query current, published specials for that restaurant
-    qs = (Special.objects
-          .filter(
-              Q(user_profile__pk=restaurant_id),
-              Q(published=True),
-              Q(start_date__lte=today) | Q(start_date__isnull=True),
-              Q(end_date__gte=today) | Q(end_date__isnull=True),
-          ))
+
+    # If specific special requested
+    if special:
+        qs = Special.objects.filter(pk=special)
+    else:
+        qs = Special.objects.filter(
+            Q(user_profile__pk=restaurant_id),
+            Q(published=True),
+            Q(start_date__lte=today) | Q(start_date__isnull=True),
+            Q(end_date__gte=today) | Q(end_date__isnull=True),
+        )
 
     latest = qs.last()
 
-    if demo_mode:
+    # No special found
+    if not latest:
         return JsonResponse({
-            "specials": DEMO_SPECIALS,
+            "specials": [],
             "meta": {
-                "mode": "default_demo",
-                "restaurant": None,
-                "count": len(DEMO_SPECIALS),
-                "note": "No active specials for demo restaurant; using static demo."
+                "mode": "fallback_empty_restaurant",
+                "restaurant": restaurant_id,
+                "count": 0,
             }
         })
-    # 5) Passthrough payload (you’re storing Cloudinary + URLs already)
+    cta = []
+    if latest.order_url:
+        cta.append({"type": "order", "url": latest.order_url})
+    if latest.phone_number:
+        cta.append({"type": "call", "phone": latest.phone_number})
+    if latest.mobile_order_url:
+        cta.append({"type": "mobile_order", "url": latest.mobile_order_url})
+
     payload = {
         "title": latest.title or "",
         "description": latest.description or "",
-        "image_url": latest.image or "",            # URLField → Cloudinary URL as-is
+        "image_url": latest.image or "",
         "order_url": latest.order_url or "",
         "phone_number": latest.phone_number or "",
         "mobile_order_url": latest.mobile_order_url or "",
-        "cta_choices": latest.cta_choices,          # whatever type you store
+        "cta_choices": latest.cta_choices,
+        "cta": cta,
         "enable_email_signup": bool(latest.enable_email_signup),
         "start_date": latest.start_date,
         "end_date": latest.end_date,
@@ -113,7 +130,7 @@ def specials_api(request):
     return JsonResponse({
         "specials": [payload],
         "meta": {
-            "mode": "demo_restaurant" if demo_mode else "live",
+            "mode": "live",
             "restaurant": restaurant_id,
             "count": 1,
         }
@@ -133,7 +150,7 @@ def special_create(request):
             special.save()
             if form.cleaned_data.get("ai_enhance"):
                 enhance_special_content(special)
-            return redirect("special_preview", pk=special.pk)
+            return redirect("special_preview", pk=special.pk, form=form)
         specials = Special.objects.order_by("-start_date", "-created_at")
         return render(request, "app/dashboard.html", {"specials": specials, "form": form})
     return redirect("dashboard")

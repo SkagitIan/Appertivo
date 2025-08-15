@@ -58,6 +58,8 @@
   const restaurantId = (scriptEl?.dataset.restaurantId) || "{{ restaurant_id|escapejs }}";
   const apiUrl       = (scriptEl?.dataset.apiUrl)       || "{{ api_url|escapejs }}";
   const subscribeUrl = (scriptEl?.dataset.subscribeUrl) || "{{ subscribe_url|escapejs }}";
+  const specialId = (scriptEl?.dataset.specialId) || "{{ special_id|escapejs }}";
+
 
   if (!restaurantId) {
     console.warn('Appertivo Widget: No restaurant ID specified.');
@@ -380,7 +382,10 @@ function renderSpecial(special) {
     desc.textContent = '';
     clearCTAs();
 
-    const url = `${apiUrl}?restaurant=${encodeURIComponent(restaurantId)}`;
+    let url = `${apiUrl}?restaurant=${encodeURIComponent(restaurantId)}`;
+    if (specialId) {
+      url += `&special=${encodeURIComponent(specialId)}`;
+    }
 
     return fetch(url)
       .then(r => (r.ok ? r.json() : Promise.reject()))

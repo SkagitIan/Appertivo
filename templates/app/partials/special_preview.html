@@ -1,33 +1,33 @@
 {# app/partials/special_preview.html #}
 {% load static %}
 {% load extras %}
-<div id="special-preview-container" class="p-3">
-  <div class="widget-frame rounded-4 overflow-hidden border">
-    {# Image #}
-    {% if special.image %}
-      {% with img=special.image %}
-        <img src="{{ img.url }}" alt="{{ special.title }}" class="w-100 object-cover" style="max-height:240px;">
-      {% endwith %}
-    {% elif special.image_file %}
-      <img src="{{ special.image_file.url }}" alt="{{ special.title }}" class="w-100 object-cover" style="max-height:240px;">
-    {% endif %}
+  <div class="row g-4 align-items-start">
 
-    <div class="p-3 bg-body rounded-bottom-4">
-      {# Published badge + Publish button #}
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        {% if special.published %}
-          <span class="badge text-bg-success">Published</span>
-        {% else %}
-          <span class="badge text-bg-secondary">Draft</span>
-          <button class="btn btn-sm btn-orange"
-                  hx-post="{% url 'special_publish' special.id %}"
-                  hx-target="#special-preview-container"
-                  hx-swap="outerHTML">
-            Publish
-          </button>
-        {% endif %}
+    <!-- LEFT COLUMN: Widget -->
+    <div class="col-lg-5">
+      <div class="card widget-frame border-ink-800 shadow-sm">
+        <div class="card-body">
+          <div id="appertivo-preview"></div>
+
+          <script>
+            // Configure BEFORE loading the widget script
+            window.appertivoConfig = {
+              mount: '#appertivo-preview',   // where to render inline
+              inline: true,                  // render inside the div, not floating
+              openOnLoad: true               // show as if clicked
+              // optional: inlineWidth: '100%', inlineMaxWidth: '520px'
+            };
+          </script>
+          <script src="http://127.0.0.1:8000/appertivo-widget.js?restaurant=13&special={{ special.pk }}"></script>
+        </div>
       </div>
+    </div>
 
+    <!-- RIGHT COLUMN: Form Preview -->
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          
       {# Title (inline) #}
       <div id="field-title-{{ special.id }}" class="d-flex align-items-start justify-content-between">
         <h3 class="h5 mb-1">{{ special.title|default:"(No title)" }}</h3>
@@ -114,7 +114,9 @@
                   hx-target="#field-end_date-{{ special.id }}"
                   hx-swap="outerHTML">Edit</button>
         </div>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
