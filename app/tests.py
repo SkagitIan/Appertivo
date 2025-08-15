@@ -1,12 +1,13 @@
 import datetime
 import json
 import re
+import uuid
 from unittest.mock import patch
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from .forms import SpecialForm
-from .models import Special
+from .models import Special, EmailSignup
 from profiles.models import UserProfile
 
 
@@ -125,8 +126,8 @@ class SpecialsListTemplateTests(TestCase):
     def test_management_buttons_present(self):
         sp = Special(title="Test")
         html = self.render([sp])
-        self.assertIn("fa-pen", html)
-        self.assertIn("fa-circle-minus", html)
+        self.assertIn("bi-pencil", html)
+        self.assertIn("bi-x-lg", html)
         self.assertIn("Sold Out", html)
         self.assertIn("Make Active", html)
 
@@ -260,5 +261,75 @@ class SpecialAnalyticsTests(TestCase):
         self.assertIn("5", html)
         self.assertIn("2", html)
         self.assertIn("3", html)
+
+
+class MySpecialsTemplateTests(TestCase):
+    """Tests for the my specials page."""
+
+    def setUp(self):
+        self.profile = UserProfile.objects.create(
+            anonymous_token=uuid.uuid4()
+        )
+        self.special1 = Special.objects.create(
+            title="A",
+            user_profile=self.profile,
+        )
+        self.special2 = Special.objects.create(
+            title="B",
+            user_profile=self.profile,
+        )
+        analytics1 = self.special1.analytics
+        analytics1.opens = 3
+        analytics1.cta_clicks = 1
+        analytics1.email_signups = 2
+        analytics1.save()
+        analytics2 = self.special2.analytics
+        analytics2.opens = 2
+        analytics2.cta_clicks = 4
+        analytics2.email_signups = 1
+        analytics2.save()
+        EmailSignup.objects.create(
+            user_profile=self.profile,
+            email="first@example.com",
+        )
+        EmailSignup.objects.create(
+            user_profile=self.profile,
+            email="second@example.com",
+        )
+
+    def _get(self):
+        return self.client.get(
+            reverse("my_specials"),
+            HTTP_X_ANONYMOUS_TOKEN=str(self.profile.anonymous_token),
+        )
+
+    def test_page_includes_specials_list(self):
+        response = self._get()
+        self.assertContains(response, "A")
+        self.assertContains(response, "B")
+
+    def test_page_shows_aggregated_stats(self):
+        response = self._get()
+        self.assertContains(response, "Total Opens")
+        self.assertContains(response, "5")
+        self.assertContains(response, "CTA Clicks")
+        self.assertContains(response, "5")
+        self.assertContains(response, "Email Signups")
+        self.assertContains(response, "3")
+
+    def test_page_lists_email_subscribers(self):
+        response = self._get()
+        self.assertContains(response, "first@example.com")
+        self.assertContains(response, "second@example.com")
+
+    def test_page_has_billing_section(self):
+        response = self._get()
+        self.assertContains(response, "Billing")
+
+    def test_page_has_integration_toggles(self):
+        response = self._get()
+        self.assertContains(response, "POS Integration")
+        self.assertContains(response, "Website Integration")
+        self.assertContains(response, "Marketing Integration")
 
 
