@@ -113,7 +113,7 @@ class ConnectionPartialTests(TestCase):
 
 class DashboardTemplateTests(TestCase):
     def test_connections_partial_included(self):
-        html = render_to_string("app/dashboard.html", {"specials": [], "form": None})
+        html = render_to_string("app/dashboard.html", {"specials": []})
         self.assertIn("integration-connections", html)
 
 
@@ -124,8 +124,8 @@ class SpecialsListTemplateTests(TestCase):
     def test_management_buttons_present(self):
         sp = Special(title="Test")
         html = self.render([sp])
-        self.assertIn("bi-pencil", html)
-        self.assertIn("bi-x-lg", html)
+        self.assertIn("fa-pen", html)
+        self.assertIn("fa-circle-minus", html)
         self.assertIn("Sold Out", html)
         self.assertIn("Make Active", html)
 
@@ -206,6 +206,15 @@ class SpecialWorkflowTests(TestCase):
         data = self._valid_data()
         self.client.post(reverse("special_create"), data)
         self.assertFalse(mock_enhance.called)
+
+    def test_get_create_page_displays_form(self):
+        response = self.client.get(reverse("special_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="special-form"')
+
+    def test_dashboard_has_no_create_form(self):
+        response = self.client.get(reverse("dashboard"))
+        self.assertNotContains(response, 'id="special-form"')
 
 
 

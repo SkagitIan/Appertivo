@@ -22,17 +22,9 @@ from dotenv import load_dotenv
 load_dotenv()  # take environment variables
 
 def dashboard(request):
-    """
-    Renders the main dashboard: 
-    - full-page list of specials 
-    - form is included via HTMX fragment
-    """
+    """Renders the main dashboard."""
     specials = Special.objects.order_by("-start_date", "-created_at")
-    form     = SpecialForm()
-    return render(request, "app/dashboard.html", {
-        "specials": specials,
-        "form": form,
-    })
+    return render(request, "app/dashboard.html", {"specials": specials})
 
 
 
@@ -139,7 +131,7 @@ def specials_api(request):
 
 
 def special_create(request):
-    user_profile = getattr(request, 'user_profile', None)
+    user_profile = getattr(request, "user_profile", None)
 
     if request.method == "POST":
         form = SpecialForm(request.POST, request.FILES)
@@ -151,9 +143,11 @@ def special_create(request):
             if form.cleaned_data.get("ai_enhance"):
                 enhance_special_content(special)
             return redirect("special_preview", pk=special.pk)
-        specials = Special.objects.order_by("-start_date", "-created_at")
-        return render(request, "app/dashboard.html", {"specials": specials, "form": form})
-    return redirect("dashboard")
+        return render(request, "app/special_step1.html", {"form": form})
+
+    form = SpecialForm()
+    return render(request, "app/special_step1.html", {"form": form})
+
 
 
 def special_preview(request, pk):
