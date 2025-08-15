@@ -20,6 +20,11 @@
             <a href="" class="btn btn-teal btn-sm text-white">Make Active</a>
           </div>
         </div>
+        <div class="card-footer small text-secondary">
+          👁 {{ sp.analytics.opens|default:0 }} |
+          🔗 {{ sp.analytics.cta_clicks|default:0 }} |
+          ✉ {{ sp.analytics.email_signups|default:0 }}
+        </div>
       </div>
     </div>
   {% empty %}

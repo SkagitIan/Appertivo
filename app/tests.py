@@ -1,4 +1,5 @@
 import datetime
+import json
 import re
 from unittest.mock import patch
 from django.template.loader import render_to_string
@@ -200,5 +201,48 @@ class SpecialWorkflowTests(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertNotContains(response, 'id="special-form"')
 
+
+
+class SpecialAnalyticsTests(TestCase):
+    def setUp(self):
+        self.profile = UserProfile.objects.create()
+        self.special = Special.objects.create(title="A", user_profile=self.profile)
+
+    def test_track_open_increments(self):
+        url = reverse("track_open", args=[self.special.pk])
+        self.client.post(url)
+        self.special.refresh_from_db()
+        self.assertEqual(self.special.analytics.opens, 1)
+
+    def test_track_cta_increments(self):
+        url = reverse("track_cta", args=[self.special.pk])
+        self.client.post(url)
+        self.special.refresh_from_db()
+        self.assertEqual(self.special.analytics.cta_clicks, 1)
+
+    def test_subscribe_increments_email_signups(self):
+        url = reverse("subscribe_email")
+        payload = {
+            "email": "a@example.com",
+            "restaurant_id": self.profile.pk,
+            "special_id": self.special.pk,
+        }
+        self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        self.special.refresh_from_db()
+        self.assertEqual(self.special.analytics.email_signups, 1)
+
+    def test_specials_list_shows_stats(self):
+        analytics = self.special.analytics
+        analytics.opens = 5
+        analytics.cta_clicks = 2
+        analytics.email_signups = 3
+        analytics.save()
+        html = render_to_string(
+            "app/partials/specials_list.html", {"specials": [self.special]}
+        )
+        self.assertIn("card-footer", html)
+        self.assertIn("5", html)
+        self.assertIn("2", html)
+        self.assertIn("3", html)
 
 
