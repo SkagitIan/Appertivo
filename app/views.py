@@ -261,3 +261,11 @@ def special_update(request, pk):
         },
         status=422,
     )
+
+
+@require_http_methods(["DELETE"])
+def special_delete(request, pk):
+    profile = getattr(request, "user_profile", None)
+    sp = get_object_or_404(Special, pk=pk, user_profile=profile)
+    sp.delete()
+    return HttpResponse(status=204)

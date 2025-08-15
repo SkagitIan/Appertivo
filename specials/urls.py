@@ -15,6 +15,7 @@ urlpatterns = [
     path("specials/<int:pk>/preview/", views.special_preview, name="special_preview"),
     # urls.py
     path("specials/<int:pk>/update/", views.special_update, name="special_update"),
+    path("specials/<int:pk>/delete/", views.special_delete, name="special_delete"),
     path("specials/<int:pk>/publish/", views.special_publish, name="special_publish"),
     
     path("api/specials.js", views.specials_api, name="specials_api"),
