@@ -32,14 +32,28 @@ class Special(models.Model):
 
     def __str__(self):
         return self.title
-
+     
     @property
     def is_expired(self):
         """Return True if the special's end date has passed."""
         return bool(self.end_date and self.end_date < timezone.now().date())
 
+
+class SpecialAnalytics(models.Model):
+    """Aggregate interaction counts for a Special."""
+    special = models.OneToOneField(Special, on_delete=models.CASCADE, related_name='analytics')
+    opens = models.PositiveIntegerField(default=0)
+    cta_clicks = models.PositiveIntegerField(default=0)
+    email_signups = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Analytics for {self.special}"
+
 class EmailSignup(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='email_signups')
+    special = models.ForeignKey(Special, on_delete=models.CASCADE, related_name='email_signups', null=True, blank=True)
     email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
 

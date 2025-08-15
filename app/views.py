@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
-from .models import Special, EmailSignup
+from .models import Special, EmailSignup, SpecialAnalytics
 from .forms import SpecialForm
 from .ai import enhance_special_content
 from django.db import models
@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST
 from profiles.models import UserProfile
 import json
 import logging
-from django.db.models import Q
+from django.db.models import Q, F
 from django.urls import reverse
 logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
@@ -185,6 +185,7 @@ def subscribe_email(request):
 
     email = data.get("email")
     restaurant_id = data.get("restaurant_id")
+    special_id = data.get("special_id")
     if not email or not restaurant_id:
         return JsonResponse({"success": False}, status=400)
 
@@ -193,7 +194,34 @@ def subscribe_email(request):
     except UserProfile.DoesNotExist:
         return JsonResponse({"success": False}, status=404)
 
-    EmailSignup.objects.create(user_profile=profile, email=email)
+    special = None
+    if special_id:
+        try:
+            special = Special.objects.get(pk=special_id)
+        except Special.DoesNotExist:
+            special = None
+
+    EmailSignup.objects.create(user_profile=profile, email=email, special=special)
+    return JsonResponse({"success": True})
+
+
+@csrf_exempt
+@require_POST
+def track_open(request, pk):
+    """Record that a special was opened in the widget."""
+    sp = get_object_or_404(Special, pk=pk)
+    analytics, _ = SpecialAnalytics.objects.get_or_create(special=sp)
+    SpecialAnalytics.objects.filter(pk=analytics.pk).update(opens=F("opens") + 1)
+    return JsonResponse({"success": True})
+
+
+@csrf_exempt
+@require_POST
+def track_cta(request, pk):
+    """Record a click on a special's call-to-action."""
+    sp = get_object_or_404(Special, pk=pk)
+    analytics, _ = SpecialAnalytics.objects.get_or_create(special=sp)
+    SpecialAnalytics.objects.filter(pk=analytics.pk).update(cta_clicks=F("cta_clicks") + 1)
     return JsonResponse({"success": True})
 
 def my_specials(request):
