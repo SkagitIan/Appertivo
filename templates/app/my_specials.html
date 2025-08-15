@@ -99,7 +99,8 @@
           {% include "app/partials/specials_list.html" with specials=specials %}
   
     </div>
-
+</div>
+<div class="row g-4 mt-4 align-items-top">
     <div class="col-lg-6">
       <div class="card">
         <div class="card-header">Billing</div>
@@ -108,14 +109,15 @@
           <!-- Placeholder: plan details / usage -->
           <div class="small text-muted">You’ll see plan, usage, and invoices here.</div>
         </div>
-      </div></div>
+      </div>
+    </div>
 <div class="col-lg-6">
       <!-- Email Subscribers (kept nearby since it relates to growth) -->
-      <div class="card mt-4">
+      <div class="card">
         <div class="card-header">Email Subscribers</div>
         <ul class="list-group list-group-flush">
           {% for sub in subscribers %}
-            <li class="list-group-item">{{ sub.email }}</li>
+            <li class="list-group-item border-1 border-bottom">{{ sub.email }}</li>
           {% empty %}
             <li class="list-group-item text-secondary">No subscribers yet</li>
           {% endfor %}
