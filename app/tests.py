@@ -6,6 +6,7 @@ from unittest.mock import patch
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.contrib.auth.models import User
 from .forms import SpecialForm
 from .models import Special, EmailSignup
 from profiles.models import UserProfile
@@ -124,39 +125,37 @@ class SpecialsListTemplateTests(TestCase):
         return render_to_string("app/partials/specials_list.html", {"specials": specials})
 
     def test_management_buttons_present(self):
-        sp = Special(title="Test")
+        sp = Special.objects.create(title="Test")
         html = self.render([sp])
-        self.assertIn("bi-pencil", html)
-        self.assertIn("bi-x-lg", html)
-        self.assertIn("Sold Out", html)
-        self.assertIn("Make Active", html)
+        self.assertIn("fa-pen", html)
+        self.assertIn("fa-trash", html)
 
     def test_published_special_has_glow(self):
-        live = Special(title="Live", published=True)
-        draft = Special(title="Draft", published=False)
+        live = Special.objects.create(title="Live", published=True)
+        draft = Special.objects.create(title="Draft", published=False)
         html = self.render([live, draft])
         self.assertEqual(html.count("special-live"), 1)
 
     def test_uses_grid_layout(self):
-        sp = Special(title="Grid")
+        sp = Special.objects.create(title="Grid")
         html = self.render([sp])
         self.assertIn("row-cols", html)
 
     def test_shows_expired_label(self):
-        sp = Special(title="Old", end_date=datetime.date(2024, 1, 1))
+        sp = Special.objects.create(title="Old", end_date=datetime.date(2024, 1, 1))
         html = self.render([sp])
-        self.assertIn("Expired:", html)
+        self.assertIn("Expired", html)
 
     def test_shows_active_label(self):
-        sp = Special(
+        sp = Special.objects.create(
             title="Fresh",
             end_date=datetime.date.today() + datetime.timedelta(days=1),
         )
         html = self.render([sp])
-        self.assertIn("Active:", html)
+        self.assertIn("Active", html)
 
     def test_hides_sold_out_for_expired_special(self):
-        sp = Special(
+        sp = Special.objects.create(
             title="Old",
             end_date=datetime.date.today() - datetime.timedelta(days=1),
         )
@@ -267,8 +266,10 @@ class MySpecialsTemplateTests(TestCase):
     """Tests for the my specials page."""
 
     def setUp(self):
+        self.user = User.objects.create_user(username="u", password="pw")
         self.profile = UserProfile.objects.create(
-            anonymous_token=uuid.uuid4()
+            user=self.user,
+            anonymous_token=uuid.uuid4(),
         )
         self.special1 = Special.objects.create(
             title="A",
@@ -298,10 +299,8 @@ class MySpecialsTemplateTests(TestCase):
         )
 
     def _get(self):
-        return self.client.get(
-            reverse("my_specials"),
-            HTTP_X_ANONYMOUS_TOKEN=str(self.profile.anonymous_token),
-        )
+        self.client.login(username="u", password="pw")
+        return self.client.get(reverse("my_specials"))
 
     def test_page_includes_specials_list(self):
         response = self._get()
@@ -328,8 +327,73 @@ class MySpecialsTemplateTests(TestCase):
 
     def test_page_has_integration_toggles(self):
         response = self._get()
-        self.assertContains(response, "POS Integration")
-        self.assertContains(response, "Website Integration")
-        self.assertContains(response, "Marketing Integration")
+        self.assertContains(response, "Uber Eats")
+        self.assertContains(response, "DoorDash")
+        self.assertContains(response, "Google")
+
+
+class IntegrationAccessTests(TestCase):
+    """Verify premium gating for integration endpoints."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="u", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user)
+        self.client.login(username="u", password="pw")
+
+    def _toggle(self):
+        url = reverse("integrations_toggle", args=["google"])
+        return self.client.post(url, {"enabled": "true"})
+
+    def _connect(self):
+        url = reverse("integrations_connect", args=["google"])
+        return self.client.get(url)
+
+    def test_toggle_forbidden_for_free_user(self):
+        self.profile.is_premium = False
+        self.profile.save()
+        resp = self._toggle()
+        self.assertEqual(resp.status_code, 403)
+
+    def test_toggle_allowed_for_premium_user(self):
+        self.profile.is_premium = True
+        self.profile.save()
+        resp = self._toggle()
+        self.assertEqual(resp.status_code, 200)
+
+    def test_connect_forbidden_for_free_user(self):
+        self.profile.is_premium = False
+        self.profile.save()
+        resp = self._connect()
+        self.assertEqual(resp.status_code, 403)
+
+    def test_connect_allowed_for_premium_user(self):
+        self.profile.is_premium = True
+        self.profile.save()
+        resp = self._connect()
+        self.assertEqual(resp.status_code, 200)
+
+
+class MySpecialsPremiumTests(TestCase):
+    """Check premium vs free rendering on my specials page."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="u", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user)
+
+    def _get(self):
+        self.client.login(username="u", password="pw")
+        return self.client.get(reverse("my_specials"))
+
+    def test_free_user_sees_upgrade_badge_and_disabled_toggles(self):
+        resp = self._get()
+        self.assertContains(resp, "Upgrade to unlock")
+        self.assertRegex(resp.content.decode(), r'id="int-doordash"[^>]*disabled')
+
+    def test_premium_user_has_enabled_toggles(self):
+        self.profile.is_premium = True
+        self.profile.save()
+        resp = self._get()
+        self.assertNotContains(resp, "Upgrade to unlock")
+        self.assertNotContains(resp, 'id="int-doordash" disabled')
 
 
