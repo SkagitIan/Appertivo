@@ -9,7 +9,8 @@
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-center mx-auto rounded shadow" style="width: 21rem;margin-top:10px;">
-  <div id="inactive-{{ data.id }}"class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
+  <div id="inactive-{{ data.id }}" class="border row p-3 w-100 rounded shadow"
+       style="position:relative;background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);">
 
 
 <h1>{% trans "Sign Up" %}</h1>
@@ -22,7 +23,8 @@
   {% if redirect_field_value %}
   <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
   {% endif %}
-  <button class="btn btn-lg border w-100 text-white" type="submit" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);">Signup</button>
+  <button class="btn btn-lg border w-100 text-white" type="submit"
+          style="background-color:#f08000; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px); background-size: 8px 8px;">Signup</button>
 </form>
 </div></div>
 {% endblock %}
