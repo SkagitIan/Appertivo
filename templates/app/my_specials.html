@@ -213,7 +213,11 @@
                   {% if integration_status.google %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
               </div>
-              <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'google' %}">Configure</a>
+              {% if integration_status.google %}
+                <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'google' %}">Configure</a>
+              {% else %}
+                <a class="btn btn-sm btn-outline-primary mt-2" href="{% url 'integrations_connect' 'google' %}">Connect</a>
+              {% endif %}
             </div>
           </div>
         </div>

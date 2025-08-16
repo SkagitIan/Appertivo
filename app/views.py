@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from django.utils import timezone
-from .models import Special, EmailSignup, SpecialAnalytics
+from .models import Special, EmailSignup, SpecialAnalytics, Integration
 from .forms import SpecialForm
 from .ai import enhance_special_content
 from django.db import models
@@ -18,6 +18,7 @@ from django.db.models import Q, F
 from django.urls import reverse
 logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
+from .integrations import google as google_integration
 
 load_dotenv()  # take environment variables
 
@@ -174,6 +175,10 @@ def special_publish(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     sp.published = True
     sp.save(update_fields=["published"])
+    integrations = Integration.objects.filter(user_profile=sp.user_profile, enabled=True)
+    for integration in integrations:
+        if integration.provider == "google":
+            google_integration.publish_special(sp)
     return redirect("my_specials")
 
 @csrf_exempt
@@ -257,13 +262,11 @@ def integrations_toggle(request, provider: str):
 
     if enabled is None:
         return HttpResponseBadRequest("Missing 'enabled'")
-
-    # TODO: persist this to your DB (e.g., Integration table linked to user/restaurant)
-    # Example pseudo-logic:
-    # Integration.objects.update_or_create(
-    #     user=request.user, provider=provider,
-    #     defaults={"enabled": enabled}
-    # )
+    integration, _ = Integration.objects.get_or_create(
+        user_profile=profile, provider=provider
+    )
+    integration.enabled = enabled
+    integration.save(update_fields=["enabled"])
 
     return JsonResponse({"provider": provider, "enabled": enabled})
 
@@ -276,8 +279,8 @@ def integrations_connect(request, provider: str):
     if not getattr(profile, "is_premium", False):
         return HttpResponseForbidden("Upgrade to premium to access integrations")
 
-    # For now just render a basic page or redirect to provider auth.
-    # return redirect(external_oauth_url)
+    if provider == "google":
+        return redirect(google_integration.get_authorization_url())
     return JsonResponse({"provider": provider, "action": "configure"})
 
 def my_specials(request):
@@ -304,6 +307,7 @@ def my_specials(request):
         "specials": specials.select_related("analytics"),  # fast access in templates
         "stats": agg,
         "subscribers": subscribers,
+        "integration_status": {i.provider: i.enabled for i in Integration.objects.filter(user_profile=profile)},
     }
     return render(request, "app/my_specials.html", context)
 
