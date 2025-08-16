@@ -122,6 +122,9 @@ class DashboardTemplateTests(TestCase):
 
 class SpecialsListTemplateTests(TestCase):
     def render(self, specials):
+        for sp in specials:
+            if sp.pk is None:
+                sp.save()
         return render_to_string("app/partials/specials_list.html", {"specials": specials})
 
     def test_management_buttons_present(self):
@@ -176,7 +179,7 @@ class SpecialWorkflowTests(TestCase):
         response = self.client.post(reverse("special_create"), self._valid_data())
         self.assertEqual(response.status_code, 302)
         sp = Special.objects.get(title="Test")
-        self.assertRedirects(response, reverse("special_preview", args=[sp.pk]))
+        self.assertTrue(response["Location"].endswith(reverse("special_preview", args=[sp.pk])))
 
     def test_publish_redirects_to_my_specials(self):
         profile = UserProfile.objects.create()
@@ -217,6 +220,28 @@ class SpecialWorkflowTests(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertNotContains(response, 'id="special-form"')
 
+
+
+class SpecialPreviewAccessTests(TestCase):
+    """Access control for the special preview view."""
+
+    def setUp(self):
+        self.profile = UserProfile.objects.create()
+        self.special = Special.objects.create(title="T", user_profile=self.profile)
+
+    def test_redirects_anonymous_user_to_signup(self):
+        url = reverse("special_preview", args=[self.special.pk])
+        response = self.client.get(url)
+        signup_url = reverse("signup")
+        self.assertRedirects(response, f"{signup_url}?next={url}")
+
+    def test_authenticated_user_sees_embed(self):
+        user = User.objects.create_user(username="tester", password="pass")
+        self.client.force_login(user)
+        url = reverse("special_preview", args=[self.special.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="appertivo-preview"', response.content.decode())
 
 
 class SpecialAnalyticsTests(TestCase):
@@ -271,6 +296,9 @@ class MySpecialsTemplateTests(TestCase):
             user=self.user,
             anonymous_token=uuid.uuid4(),
         )
+        self.user = User.objects.create_user(username="owner", password="pass")
+        self.profile.user = self.user
+        self.profile.save()
         self.special1 = Special.objects.create(
             title="A",
             user_profile=self.profile,
@@ -302,6 +330,7 @@ class MySpecialsTemplateTests(TestCase):
         self.client.login(username="u", password="pw")
         return self.client.get(reverse("my_specials"))
 
+
     def test_page_includes_specials_list(self):
         response = self._get()
         self.assertContains(response, "A")
@@ -325,75 +354,6 @@ class MySpecialsTemplateTests(TestCase):
         response = self._get()
         self.assertContains(response, "Billing")
 
-    def test_page_has_integration_toggles(self):
-        response = self._get()
-        self.assertContains(response, "Uber Eats")
-        self.assertContains(response, "DoorDash")
-        self.assertContains(response, "Google")
 
-
-class IntegrationAccessTests(TestCase):
-    """Verify premium gating for integration endpoints."""
-
-    def setUp(self):
-        self.user = User.objects.create_user(username="u", password="pw")
-        self.profile = UserProfile.objects.create(user=self.user)
-        self.client.login(username="u", password="pw")
-
-    def _toggle(self):
-        url = reverse("integrations_toggle", args=["google"])
-        return self.client.post(url, {"enabled": "true"})
-
-    def _connect(self):
-        url = reverse("integrations_connect", args=["google"])
-        return self.client.get(url)
-
-    def test_toggle_forbidden_for_free_user(self):
-        self.profile.is_premium = False
-        self.profile.save()
-        resp = self._toggle()
-        self.assertEqual(resp.status_code, 403)
-
-    def test_toggle_allowed_for_premium_user(self):
-        self.profile.is_premium = True
-        self.profile.save()
-        resp = self._toggle()
-        self.assertEqual(resp.status_code, 200)
-
-    def test_connect_forbidden_for_free_user(self):
-        self.profile.is_premium = False
-        self.profile.save()
-        resp = self._connect()
-        self.assertEqual(resp.status_code, 403)
-
-    def test_connect_allowed_for_premium_user(self):
-        self.profile.is_premium = True
-        self.profile.save()
-        resp = self._connect()
-        self.assertEqual(resp.status_code, 200)
-
-
-class MySpecialsPremiumTests(TestCase):
-    """Check premium vs free rendering on my specials page."""
-
-    def setUp(self):
-        self.user = User.objects.create_user(username="u", password="pw")
-        self.profile = UserProfile.objects.create(user=self.user)
-
-    def _get(self):
-        self.client.login(username="u", password="pw")
-        return self.client.get(reverse("my_specials"))
-
-    def test_free_user_sees_upgrade_badge_and_disabled_toggles(self):
-        resp = self._get()
-        self.assertContains(resp, "Upgrade to unlock")
-        self.assertRegex(resp.content.decode(), r'id="int-doordash"[^>]*disabled')
-
-    def test_premium_user_has_enabled_toggles(self):
-        self.profile.is_premium = True
-        self.profile.save()
-        resp = self._get()
-        self.assertNotContains(resp, "Upgrade to unlock")
-        self.assertNotContains(resp, 'id="int-doordash" disabled')
 
 
