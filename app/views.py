@@ -280,7 +280,6 @@ def integrations_connect(request, provider: str):
     # return redirect(external_oauth_url)
     return JsonResponse({"provider": provider, "action": "configure"})
 
-@login_required
 def my_specials(request):
     profile = getattr(request, "user_profile", None)
     if not profile:

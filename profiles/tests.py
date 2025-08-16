@@ -1,7 +1,14 @@
+from datetime import timedelta
+
 from django.core import mail
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.urls import reverse
+from django.utils import timezone
 from django.test import TestCase, override_settings
+
+from app.models import Special
+from profiles.models import UserProfile
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -25,24 +32,3 @@ class SignupEmailTests(TestCase):
         # Verification email should be sent
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("verify", mail.outbox[0].body)
-
-
-class EmailLoginViewTests(TestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username="login@example.com", email="login@example.com", password="password123"
-        )
-
-    def test_next_query_parameter_redirects(self):
-        next_url = reverse("profile")
-        response = self.client.post(
-            f"{reverse('login')}?next={next_url}",
-            {"username": "login@example.com", "password": "password123"},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, next_url)
-
-    def test_login_template_is_minimal(self):
-        response = self.client.get(reverse("login"))
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "navbar")

@@ -86,7 +86,21 @@ class EmailLoginView(LoginView):
 
 
 def signup(request):
+    """Handle user signup and attach any existing anonymous profile."""
+
     profile = getattr(request, "user_profile", None)
+
+    # In case the middleware didn't attach the profile (e.g., token provided but
+    # outside the special-creation flow), fall back to the anonymous token.
+    if not profile:
+        token = request.headers.get("X-Anonymous-Token") or request.COOKIES.get(
+            "anonymous_token"
+        )
+        if token:
+            try:
+                profile = UserProfile.objects.get(anonymous_token=uuid.UUID(token))
+            except (UserProfile.DoesNotExist, ValueError):
+                profile = None
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
