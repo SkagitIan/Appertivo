@@ -9,7 +9,8 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from .forms import SpecialForm
-from .models import Special, EmailSignup
+from .models import Special, EmailSignup, Integration
+from .integrations import google
 from profiles.models import UserProfile
 
 
@@ -328,7 +329,7 @@ class MySpecialsTemplateTests(TestCase):
         )
 
     def _get(self):
-        self.client.login(username="u", password="pw")
+        self.client.login(username="owner", password="pass")
         return self.client.get(reverse("my_specials"))
 
 
@@ -355,6 +356,114 @@ class MySpecialsTemplateTests(TestCase):
         response = self._get()
         self.assertContains(response, "Billing")
 
+
+class IntegrationModelTests(TestCase):
+    def test_create_integration(self):
+        profile = UserProfile.objects.create()
+        Integration.objects.create(user_profile=profile, provider="google", enabled=True)
+        self.assertTrue(
+            Integration.objects.filter(user_profile=profile, provider="google", enabled=True).exists()
+        )
+
+
+class IntegrationToggleViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="u", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user, is_premium=True)
+
+    def test_toggle_enables_integration(self):
+        self.client.force_login(self.user)
+        url = reverse("integrations_toggle", args=["google"])
+        response = self.client.post(url, {"enabled": "true"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            Integration.objects.filter(user_profile=self.profile, provider="google", enabled=True).exists()
+        )
+
+
+class GoogleIntegrationsConnectTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="conn", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user, is_premium=True)
+
+    @override_settings(GOOGLE_CLIENT_ID="cid", GOOGLE_REDIRECT_URI="https://redir")
+    def test_connect_redirects_to_google(self):
+        self.client.force_login(self.user)
+        url = reverse("integrations_connect", args=["google"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("accounts.google.com", response["Location"])
+
+
+class GoogleIntegrationTemplateTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="temp", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user, is_premium=True)
+
+    def _get(self):
+        self.client.login(username="temp", password="pw")
+        return self.client.get(reverse("my_specials"))
+
+    def test_connect_button_shown_when_not_connected(self):
+        response = self._get()
+        connect_url = reverse("integrations_connect", args=["google"])
+        self.assertContains(response, f'href="{connect_url}"')
+        self.assertContains(response, ">Connect<")
+
+    def test_configure_button_when_connected(self):
+        Integration.objects.create(user_profile=self.profile, provider="google", enabled=True)
+        response = self._get()
+        connect_url = reverse("integrations_connect", args=["google"])
+        self.assertContains(response, f'href="{connect_url}"')
+        self.assertContains(response, "Configure")
+        self.assertNotContains(response, ">Connect<")
+
+
+
+class GooglePublishTests(TestCase):
+    """Tests for posting specials to Google Business Profile."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="gpub", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user)
+        self.special = Special.objects.create(
+            title="Title",
+            description="Desc",
+            user_profile=self.profile,
+            order_url="https://example.com",
+        )
+
+    @override_settings(GOOGLE_API_KEY="key")
+    @patch("app.integrations.google.requests.post")
+    def test_publish_special_posts_offer(self, mock_post):
+        Integration.objects.create(
+            user_profile=self.profile,
+            provider="google",
+            enabled=True,
+            access_token="tok",
+            account_id="acc",
+            location_id="loc",
+        )
+        google.publish_special(self.special)
+        self.assertTrue(mock_post.called)
+        url = mock_post.call_args[0][0]
+        self.assertIn("accounts/acc/locations/loc/localPosts", url)
+
+    @override_settings(GOOGLE_CLIENT_ID="cid", GOOGLE_REDIRECT_URI="https://redir")
+    @patch("app.integrations.google.publish_special")
+    def test_special_publish_triggers_google(self, mock_publish):
+        self.client.force_login(self.user)
+        Integration.objects.create(
+            user_profile=self.profile,
+            provider="google",
+            enabled=True,
+            access_token="tok",
+            account_id="acc",
+            location_id="loc",
+        )
+        response = self.client.post(reverse("special_publish", args=[self.special.pk]))
+        self.assertEqual(response.status_code, 302)
+        mock_publish.assert_called_once_with(self.special)
 
 
 

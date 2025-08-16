@@ -59,3 +59,27 @@ class EmailSignup(models.Model):
 
     def __str__(self):
         return f"{self.email} - {self.user_profile}"
+
+
+class Integration(models.Model):
+    """External service connection (e.g., Google, Doordash)."""
+    PROVIDER_CHOICES = [
+        ("google", "Google Business Profile"),
+    ]
+
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="integrations")
+    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES)
+    enabled = models.BooleanField(default=False)
+    access_token = models.CharField(max_length=255, blank=True)
+    refresh_token = models.CharField(max_length=255, blank=True)
+    token_expires = models.DateTimeField(null=True, blank=True)
+    account_id = models.CharField(max_length=100, blank=True)
+    location_id = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user_profile", "provider")
+
+    def __str__(self):
+        return f"{self.user_profile} - {self.provider}"
