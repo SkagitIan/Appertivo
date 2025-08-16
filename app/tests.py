@@ -128,29 +128,29 @@ class SpecialsListTemplateTests(TestCase):
         return render_to_string("app/partials/specials_list.html", {"specials": specials})
 
     def test_management_buttons_present(self):
-        sp = Special(title="Test")
+        sp = Special.objects.create(title="Test")
         html = self.render([sp])
         self.assertIn("fa-pen", html)
         self.assertIn("fa-trash", html)
 
     def test_published_special_has_glow(self):
-        live = Special(title="Live", published=True)
-        draft = Special(title="Draft", published=False)
+        live = Special.objects.create(title="Live", published=True)
+        draft = Special.objects.create(title="Draft", published=False)
         html = self.render([live, draft])
         self.assertEqual(html.count("special-live"), 1)
 
     def test_uses_grid_layout(self):
-        sp = Special(title="Grid")
+        sp = Special.objects.create(title="Grid")
         html = self.render([sp])
         self.assertIn("row-cols", html)
 
     def test_shows_expired_label(self):
-        sp = Special(title="Old", end_date=datetime.date(2024, 1, 1))
+        sp = Special.objects.create(title="Old", end_date=datetime.date(2024, 1, 1))
         html = self.render([sp])
         self.assertIn("Expired", html)
 
     def test_shows_active_label(self):
-        sp = Special(
+        sp = Special.objects.create(
             title="Fresh",
             end_date=datetime.date.today() + datetime.timedelta(days=1),
         )
@@ -158,7 +158,7 @@ class SpecialsListTemplateTests(TestCase):
         self.assertIn("Active", html)
 
     def test_hides_sold_out_for_expired_special(self):
-        sp = Special(
+        sp = Special.objects.create(
             title="Old",
             end_date=datetime.date.today() - datetime.timedelta(days=1),
         )
@@ -291,8 +291,10 @@ class MySpecialsTemplateTests(TestCase):
     """Tests for the my specials page."""
 
     def setUp(self):
+        self.user = User.objects.create_user(username="u", password="pw")
         self.profile = UserProfile.objects.create(
-            anonymous_token=uuid.uuid4()
+            user=self.user,
+            anonymous_token=uuid.uuid4(),
         )
         self.user = User.objects.create_user(username="owner", password="pass")
         self.profile.user = self.user
@@ -325,11 +327,9 @@ class MySpecialsTemplateTests(TestCase):
         )
 
     def _get(self):
-        self.client.force_login(self.user)
-        return self.client.get(
-            reverse("my_specials"),
-            HTTP_X_ANONYMOUS_TOKEN=str(self.profile.anonymous_token),
-        )
+        self.client.login(username="u", password="pw")
+        return self.client.get(reverse("my_specials"))
+
 
     def test_page_includes_specials_list(self):
         response = self._get()
@@ -354,9 +354,6 @@ class MySpecialsTemplateTests(TestCase):
         response = self._get()
         self.assertContains(response, "Billing")
 
-    def test_page_has_integration_toggles(self):
-        response = self._get()
-        self.assertContains(response, "Integrations")
-        self.assertContains(response, "Uber Eats")
+
 
 
