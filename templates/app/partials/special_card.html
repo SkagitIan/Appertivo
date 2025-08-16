@@ -1,0 +1,50 @@
+<div class="card h-100 border-0 shadow-sm position-relative {% if sp.published %}special-live{% endif %}">
+  {% if sp.image %}<img src="{{ sp.image }}" class="card-img-top object-cover" style="max-height:160px;">{% endif %}
+
+  {% if sp.pk %}
+    <div class="position-absolute top-0 start-0 m-1">
+      <a href="{% url 'special_preview' sp.pk %}" class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Edit"><i class="fa-solid fa-pen"></i></a>
+    </div>
+    <div class="position-absolute top-0 end-0 m-1">
+      <a hx-delete="{% url 'special_delete' sp.pk %}" hx-confirm="Delete this special?" hx-target="closest .col" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Delete"><i class="fa-solid fa-trash"></i></a>
+    </div>
+  {% else %}
+    <div class="position-absolute top-0 start-0 m-1">
+      <a href="#" class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+    </div>
+    <div class="position-absolute top-0 end-0 m-1">
+      <a href="#" class="btn btn-sm rounded-circle bg-light p-2 shadow" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
+    </div>
+  {% endif %}
+
+  <div class="card-body p-2" style="position: relative;">
+    <h3 class="h6 mb-1 px-2 pt-1">{{ sp.title }}</h3>
+    <p class="small text-secondary mb-1 px-2 pb-4">{{ sp.description|truncatechars:100 }}</p>
+    {% if not sp.pk %}
+    <div class="d-flex flex-wrap gap-1 px-2 pb-2">
+      <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
+    </div>
+    {% endif %}
+    {% if sp.end_date %}
+      <p class="small mb-2 align-items-end px-2" style="position: absolute; bottom: 0;">
+        {% if sp.is_expired %}
+          <span class="badge bg-secondary me-1">Expired:</span>
+        {% else %}
+          <span class="badge bg-teal text-white me-1">Active:</span>
+        {% endif %}
+        <span class="text-secondary">{{ sp.end_date|date:"Y-m-d" }}</span>
+      </p>
+    {% endif %}
+  </div>
+  {% if sp.pk %}
+  <div class="card-footer small text-secondary">
+    👁 {{ sp.analytics.opens|default:0 }} |
+    🔗 {{ sp.analytics.cta_clicks|default:0 }} |
+    ✉ {{ sp.analytics.email_signups|default:0 }}
+  </div>
+  {% else %}
+  <div class="card-footer small text-secondary">
+    👁 0 | 🔗 0 | ✉ 0
+  </div>
+  {% endif %}
+</div>
