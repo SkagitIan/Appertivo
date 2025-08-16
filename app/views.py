@@ -8,7 +8,7 @@ from django.db import models
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, HttpResponseBadRequest, QueryDict
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, QueryDict
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from profiles.models import UserProfile
@@ -150,6 +150,7 @@ def special_create(request):
 
 
 
+@login_required(login_url="signup")
 def special_preview(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     if request.method == "POST":
@@ -236,6 +237,10 @@ def integrations_toggle(request, provider: str):
     HTMX endpoint to enable/disable an integration.
     Expects form or JSON field 'enabled' -> true/false.
     """
+    profile = getattr(request, "user_profile", None)
+    if not getattr(profile, "is_premium", False):
+        return HttpResponseForbidden("Upgrade to premium to access integrations")
+
     # Accept either form-encoded (hx-vals) or raw JSON
     enabled = None
     if request.content_type == "application/json":
@@ -267,6 +272,10 @@ def integrations_connect(request, provider: str):
     """
     A simple stub page (or start an OAuth flow).
     """
+    profile = getattr(request, "user_profile", None)
+    if not getattr(profile, "is_premium", False):
+        return HttpResponseForbidden("Upgrade to premium to access integrations")
+
     # For now just render a basic page or redirect to provider auth.
     # return redirect(external_oauth_url)
     return JsonResponse({"provider": provider, "action": "configure"})

@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, url_has_allowed_host_and_scheme
 from django.contrib.auth.tokens import default_token_generator
 from .models import UserProfile
 from .forms import SignUpForm, EmailAuthenticationForm
@@ -72,6 +72,17 @@ class EmailLoginView(LoginView):
         if not remember:
             self.request.session.set_expiry(0)
         return super().form_valid(form)
+
+    def get_success_url(self):
+        """Redirect to `next` if provided and safe."""
+        redirect_to = self.request.POST.get(self.redirect_field_name) or self.request.GET.get(
+            self.redirect_field_name
+        )
+        if redirect_to and url_has_allowed_host_and_scheme(
+            redirect_to, allowed_hosts={self.request.get_host()}
+        ):
+            return redirect_to
+        return super().get_success_url()
 
 
 def signup(request):
