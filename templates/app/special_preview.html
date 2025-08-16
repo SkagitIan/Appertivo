@@ -1,6 +1,16 @@
 {% extends 'app/base.html' %}
 {% block title %}Preview Special · Appertivo{% endblock %}
 {% block content %}
+{% if request.user.is_anonymous %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+      <h2 class="mb-3">Create an account to preview your special</h2>
+      <a class="btn btn-primary" href="{% url 'signup' %}">Sign up</a>
+    </div>
+  </div>
+</div>
+{% else %}
 <div class="container py-5">
   <div class="row g-4 align-items-top">
     <!-- LEFT: Widget-style preview (sticky) -->
@@ -11,7 +21,7 @@
               <div id="special-preview-container"
                hx-target="#special-preview-container"
                hx-swap="innerHTML" style="position: relative;">
-        
+
             <div class="p-2 text-center text-secondary">
                 <div id="appertivo-preview"></div>
 
@@ -55,4 +65,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+{% endif %}
 {% endblock %}

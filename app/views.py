@@ -150,6 +150,7 @@ def special_create(request):
 
 
 
+@login_required(login_url="signup")
 def special_preview(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     if request.method == "POST":

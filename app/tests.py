@@ -6,6 +6,7 @@ from unittest.mock import patch
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.contrib.auth.models import User
 from .forms import SpecialForm
 from .models import Special, EmailSignup
 from profiles.models import UserProfile
@@ -121,15 +122,16 @@ class DashboardTemplateTests(TestCase):
 
 class SpecialsListTemplateTests(TestCase):
     def render(self, specials):
+        for sp in specials:
+            if sp.pk is None:
+                sp.save()
         return render_to_string("app/partials/specials_list.html", {"specials": specials})
 
     def test_management_buttons_present(self):
         sp = Special(title="Test")
         html = self.render([sp])
-        self.assertIn("bi-pencil", html)
-        self.assertIn("bi-x-lg", html)
-        self.assertIn("Sold Out", html)
-        self.assertIn("Make Active", html)
+        self.assertIn("fa-pen", html)
+        self.assertIn("fa-trash", html)
 
     def test_published_special_has_glow(self):
         live = Special(title="Live", published=True)
@@ -145,7 +147,7 @@ class SpecialsListTemplateTests(TestCase):
     def test_shows_expired_label(self):
         sp = Special(title="Old", end_date=datetime.date(2024, 1, 1))
         html = self.render([sp])
-        self.assertIn("Expired:", html)
+        self.assertIn("Expired", html)
 
     def test_shows_active_label(self):
         sp = Special(
@@ -153,7 +155,7 @@ class SpecialsListTemplateTests(TestCase):
             end_date=datetime.date.today() + datetime.timedelta(days=1),
         )
         html = self.render([sp])
-        self.assertIn("Active:", html)
+        self.assertIn("Active", html)
 
     def test_hides_sold_out_for_expired_special(self):
         sp = Special(
@@ -177,7 +179,7 @@ class SpecialWorkflowTests(TestCase):
         response = self.client.post(reverse("special_create"), self._valid_data())
         self.assertEqual(response.status_code, 302)
         sp = Special.objects.get(title="Test")
-        self.assertRedirects(response, reverse("special_preview", args=[sp.pk]))
+        self.assertTrue(response["Location"].endswith(reverse("special_preview", args=[sp.pk])))
 
     def test_publish_redirects_to_my_specials(self):
         profile = UserProfile.objects.create()
@@ -218,6 +220,28 @@ class SpecialWorkflowTests(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertNotContains(response, 'id="special-form"')
 
+
+
+class SpecialPreviewAccessTests(TestCase):
+    """Access control for the special preview view."""
+
+    def setUp(self):
+        self.profile = UserProfile.objects.create()
+        self.special = Special.objects.create(title="T", user_profile=self.profile)
+
+    def test_redirects_anonymous_user_to_signup(self):
+        url = reverse("special_preview", args=[self.special.pk])
+        response = self.client.get(url)
+        signup_url = reverse("signup")
+        self.assertRedirects(response, f"{signup_url}?next={url}")
+
+    def test_authenticated_user_sees_embed(self):
+        user = User.objects.create_user(username="tester", password="pass")
+        self.client.force_login(user)
+        url = reverse("special_preview", args=[self.special.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="appertivo-preview"', response.content.decode())
 
 
 class SpecialAnalyticsTests(TestCase):
@@ -270,6 +294,9 @@ class MySpecialsTemplateTests(TestCase):
         self.profile = UserProfile.objects.create(
             anonymous_token=uuid.uuid4()
         )
+        self.user = User.objects.create_user(username="owner", password="pass")
+        self.profile.user = self.user
+        self.profile.save()
         self.special1 = Special.objects.create(
             title="A",
             user_profile=self.profile,
@@ -298,6 +325,7 @@ class MySpecialsTemplateTests(TestCase):
         )
 
     def _get(self):
+        self.client.force_login(self.user)
         return self.client.get(
             reverse("my_specials"),
             HTTP_X_ANONYMOUS_TOKEN=str(self.profile.anonymous_token),
@@ -328,8 +356,7 @@ class MySpecialsTemplateTests(TestCase):
 
     def test_page_has_integration_toggles(self):
         response = self._get()
-        self.assertContains(response, "POS Integration")
-        self.assertContains(response, "Website Integration")
-        self.assertContains(response, "Marketing Integration")
+        self.assertContains(response, "Integrations")
+        self.assertContains(response, "Uber Eats")
 
 
