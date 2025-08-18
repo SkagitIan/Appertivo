@@ -130,7 +130,7 @@
   <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span>Integrations</span>
-      {% if not request.user_profile.is_premium %}
+      {% if not request.user.userprofile.is_premium %}
         <span class="badge bg-warning text-dark">Upgrade to unlock</span>
       {% endif %}
     </div>
@@ -158,7 +158,7 @@
                        hx-post="{% url 'integrations_toggle' 'uber_eats' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-uber">
                   {% if integration_status.uber_eats %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -183,7 +183,7 @@
                        hx-post="{% url 'integrations_toggle' 'doordash' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-doordash">
                   {% if integration_status.doordash %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -208,7 +208,7 @@
                        hx-post="{% url 'integrations_toggle' 'google' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-google">
                   {% if integration_status.google %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -237,7 +237,7 @@
                        hx-post="{% url 'integrations_toggle' 'apple' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-apple">
                   {% if integration_status.apple %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -262,7 +262,7 @@
                        hx-post="{% url 'integrations_toggle' 'square' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-square">
                   {% if integration_status.square %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -286,7 +286,7 @@
                        hx-post="{% url 'integrations_toggle' 'toast' %}"
                        hx-trigger="change"
                        hx-vals='{"enabled": this.checked}'
-                       {% if not request.user_profile.is_premium %}disabled{% endif %}>
+                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-toast">
                   {% if integration_status.toast %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>

@@ -1,8 +1,6 @@
 import datetime
 import json
 import re
-import uuid
-import datetime
 from unittest.mock import patch
 from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
@@ -169,6 +167,10 @@ class SpecialsListTemplateTests(TestCase):
 
 
 class SpecialWorkflowTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="owner", password="pw")
+        self.profile = UserProfile.objects.create(user=self.user)
+
     def _valid_data(self):
         return {
             "title": "Test",
@@ -178,20 +180,21 @@ class SpecialWorkflowTests(TestCase):
         }
 
     def test_create_redirects_to_preview(self):
+        self.client.force_login(self.user)
         response = self.client.post(reverse("special_create"), self._valid_data())
         self.assertEqual(response.status_code, 302)
         sp = Special.objects.get(title="Test")
         self.assertTrue(response["Location"].endswith(reverse("special_preview", args=[sp.pk])))
 
     def test_publish_redirects_to_my_specials(self):
-        profile = UserProfile.objects.create()
         sp = Special.objects.create(
             title="T",
             description="D",
             order_url="https://e.com",
             cta_choices=["order"],
-            user_profile=profile,
+            user_profile=self.profile,
         )
+        self.client.force_login(self.user)
         response = self.client.post(reverse("special_publish", args=[sp.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response["Location"].endswith(reverse("my_specials")))
@@ -203,6 +206,7 @@ class SpecialWorkflowTests(TestCase):
     def test_create_calls_ai_when_enabled(self, mock_enhance):
         data = self._valid_data()
         data["ai_enhance"] = "on"
+        self.client.force_login(self.user)
         self.client.post(reverse("special_create"), data)
         self.assertTrue(mock_enhance.called)
 
@@ -210,10 +214,12 @@ class SpecialWorkflowTests(TestCase):
     @patch("app.views.enhance_special_content")
     def test_create_skips_ai_when_disabled(self, mock_enhance):
         data = self._valid_data()
+        self.client.force_login(self.user)
         self.client.post(reverse("special_create"), data)
         self.assertFalse(mock_enhance.called)
 
     def test_get_create_page_displays_form(self):
+        self.client.force_login(self.user)
         response = self.client.get(reverse("special_create"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'id="special-form"')
@@ -293,14 +299,8 @@ class MySpecialsTemplateTests(TestCase):
     """Tests for the my specials page."""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="u", password="pw")
-        self.profile = UserProfile.objects.create(
-            user=self.user,
-            anonymous_token=uuid.uuid4(),
-        )
         self.user = User.objects.create_user(username="owner", password="pass")
-        self.profile.user = self.user
-        self.profile.save()
+        self.profile = UserProfile.objects.create(user=self.user)
         self.special1 = Special.objects.create(
             title="A",
             user_profile=self.profile,

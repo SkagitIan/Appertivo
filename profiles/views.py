@@ -1,9 +1,5 @@
-import uuid
-import json
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.utils import timezone
@@ -16,51 +12,6 @@ from django.contrib.auth.tokens import default_token_generator
 from .models import UserProfile
 from .forms import SignUpForm, EmailAuthenticationForm
 from app.models import Special
-
-@csrf_exempt
-def create_or_update_profile(request):
-    if request.method != "POST":
-        return HttpResponseBadRequest("Invalid method")
-
-    token = request.headers.get('X-Anonymous-Token')
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return HttpResponseBadRequest("Invalid JSON")
-
-    if token:
-        try:
-            profile = UserProfile.objects.get(anonymous_token=uuid.UUID(token))
-        except UserProfile.DoesNotExist:
-            profile = UserProfile.objects.create(anonymous_token=uuid.uuid4())
-    else:
-        profile = UserProfile.objects.create(anonymous_token=uuid.uuid4())
-
-    website = data.get('website')
-    email = data.get('email')
-    business_name = data.get('business_name')
-    phone = data.get('phone')
-
-    if website:
-        profile.website = website
-    if email:
-        profile.email = email
-    if business_name:
-        profile.business_name = business_name
-    if phone:
-        profile.phone = phone
-
-    profile.save()
-
-    response_data = {
-        "anonymous_token": str(profile.anonymous_token),
-        "email": profile.email,
-        "business_name": profile.business_name,
-        "website": profile.website,
-        "phone": profile.phone,
-        "is_premium": profile.is_premium,
-    }
-    return JsonResponse(response_data)
 
 
 class EmailLoginView(LoginView):
@@ -86,29 +37,13 @@ class EmailLoginView(LoginView):
 
 
 def signup(request):
-    """Handle user signup and attach any existing anonymous profile."""
+    """Handle user signup."""
 
-    profile = getattr(request, "user_profile", None)
-
-    # In case the middleware didn't attach the profile (e.g., token provided but
-    # outside the special-creation flow), fall back to the anonymous token.
-    if not profile:
-        token = request.headers.get("X-Anonymous-Token") or request.COOKIES.get(
-            "anonymous_token"
-        )
-        if token:
-            try:
-                profile = UserProfile.objects.get(anonymous_token=uuid.UUID(token))
-            except (UserProfile.DoesNotExist, ValueError):
-                profile = None
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            if profile:
-                profile.user = user
-                profile.email = user.email
-                profile.save()
+            UserProfile.objects.get_or_create(user=user, defaults={"email": user.email})
             from .emails import send_verification_email
 
             send_verification_email(user)
@@ -137,7 +72,7 @@ def verify_email(request, uidb64, token):
 
 @login_required
 def profile_view(request):
-    profile = request.user_profile
+    profile = request.user.userprofile
     today = timezone.localdate()
     active_specials = Special.objects.filter(
         user_profile=profile,
