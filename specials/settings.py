@@ -69,6 +69,25 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'specials.urls'
 
+# CSRF origin checking (must include scheme; wildcard ok for subdomains)
+CSRF_TRUSTED_ORIGINS = [
+    "https://appertivo.com",
+    "https://www.appertivo.com",
+    "https://*.appertivo.com",
+]
+
+# If you want cookies valid across subdomains (optional)
+CSRF_COOKIE_DOMAIN = ".appertivo.com"
+SESSION_COOKIE_DOMAIN = ".appertivo.com"
+
+# If you're behind Cloudflare/Tunnel or any proxy
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+# Security best practices in prod
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

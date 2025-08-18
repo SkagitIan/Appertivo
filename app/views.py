@@ -24,7 +24,7 @@ load_dotenv()  # take environment variables
 
 def dashboard(request):
     """Renders the main dashboard."""
-    specials = Special.objects.order_by("-start_date", "-created_at")
+    specials = Special.objects.filter(user_profile=request.user.profile).order_by("-start_date", "-created_at")
     return render(request, "app/dashboard.html", {"specials": specials})
 
 
