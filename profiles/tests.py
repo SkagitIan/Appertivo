@@ -32,3 +32,15 @@ class SignupEmailTests(TestCase):
         # Verification email should be sent
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("verify", mail.outbox[0].body)
+
+
+class SocialLoginButtonTests(TestCase):
+    def test_login_page_contains_social_buttons(self):
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, "/accounts/google/login/")
+        self.assertContains(response, "/accounts/apple/login/")
+
+    def test_signup_page_contains_social_buttons(self):
+        response = self.client.get(reverse("signup"))
+        self.assertContains(response, "/accounts/google/login/")
+        self.assertContains(response, "/accounts/apple/login/")
