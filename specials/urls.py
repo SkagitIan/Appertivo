@@ -24,8 +24,8 @@ urlpatterns = [
     path("api/subscribe/", views.subscribe_email, name="subscribe_email"),
     path("api/specials/<int:pk>/open/", views.track_open, name="track_open"),
     path("api/specials/<int:pk>/cta/", views.track_cta, name="track_cta"),
-    path('api/create-profile/', profiles_views.create_or_update_profile, name='create_or_update_profile'),
-    path("create-profile/", profiles_views.create_or_update_profile, name="create_profile"),
+    #path('api/create-profile/', profiles_views.create_or_update_profile, name='create_or_update_profile'),
+    #path("create-profile/", profiles_views.create_or_update_profile, name="create_profile"),
 
     path("integrations/<slug:provider>/toggle/", views.integrations_toggle, name="integrations_toggle"),
     path("integrations/<slug:provider>/connect/", views.integrations_connect, name="integrations_connect"),
