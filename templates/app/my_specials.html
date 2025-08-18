@@ -37,6 +37,12 @@
                   {% if active_special.end_date %}&nbsp;· Ends {{ active_special.end_date }}{% endif %}
                 </div>
 
+                <div class="small text-muted mb-3">
+                  Opens: {{ active_special.analytics.opens|default:0 }} ·
+                  CTA Clicks: {{ active_special.analytics.cta_clicks|default:0 }} ·
+                  Email Signups: {{ active_special.analytics.email_signups|default:0 }}
+                </div>
+
                 <!-- CTA buttons shown only if present -->
                 <div class="d-flex flex-wrap gap-2">
                   {% if active_special.order_url %}
