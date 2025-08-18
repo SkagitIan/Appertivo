@@ -6,6 +6,8 @@ from django.template.loader import render_to_string
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import timedelta
 from .forms import SpecialForm
 from .models import Special, EmailSignup, Integration
 from .integrations import google
@@ -355,6 +357,17 @@ class MySpecialsTemplateTests(TestCase):
     def test_page_has_billing_section(self):
         response = self._get()
         self.assertContains(response, "Billing")
+
+    def test_page_shows_active_special_stats(self):
+        self.special1.published = True
+        self.special1.end_date = timezone.localdate() + timedelta(days=1)
+        self.special1.save()
+        response = self._get()
+        self.assertContains(response, "Active Special")
+        self.assertContains(response, self.special1.title)
+        self.assertContains(response, "Opens: 3")
+        self.assertContains(response, "CTA Clicks: 1")
+        self.assertContains(response, "Email Signups: 2")
 
 
 class IntegrationModelTests(TestCase):

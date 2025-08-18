@@ -293,6 +293,13 @@ def my_specials(request):
                 .filter(user_profile=profile)
                 .order_by("-created_at"))
 
+    today = timezone.localdate()
+    active_special = (specials
+                      .filter(published=True)
+                      .filter(Q(end_date__gte=today) | Q(end_date__isnull=True))
+                      .select_related("analytics")
+                      .first())
+
     # Aggregate across related analytics, defaulting to 0 when none exist
     agg = specials.aggregate(
         opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
@@ -306,6 +313,7 @@ def my_specials(request):
 
     context = {
         "specials": specials.select_related("analytics"),  # fast access in templates
+        "active_special": active_special,
         "stats": agg,
         "subscribers": subscribers,
         "integration_status": {i.provider: i.enabled for i in Integration.objects.filter(user_profile=profile)},
