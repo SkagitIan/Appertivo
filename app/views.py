@@ -131,8 +131,9 @@ def specials_api(request):
 
 
 
+@login_required
 def special_create(request):
-    user_profile = getattr(request, "user_profile", None)
+    user_profile = request.user.userprofile
 
     if request.method == "POST":
         form = SpecialForm(request.POST, request.FILES)
@@ -170,6 +171,7 @@ def special_preview(request, pk):
     }
     return render(request, "app/special_preview.html", ctx)
 
+@login_required
 @require_POST
 def special_publish(request, pk):
     sp = get_object_or_404(Special, pk=pk)
@@ -242,7 +244,7 @@ def integrations_toggle(request, provider: str):
     HTMX endpoint to enable/disable an integration.
     Expects form or JSON field 'enabled' -> true/false.
     """
-    profile = getattr(request, "user_profile", None)
+    profile = request.user.userprofile
     if not getattr(profile, "is_premium", False):
         return HttpResponseForbidden("Upgrade to premium to access integrations")
 
@@ -275,7 +277,7 @@ def integrations_connect(request, provider: str):
     """
     A simple stub page (or start an OAuth flow).
     """
-    profile = getattr(request, "user_profile", None)
+    profile = request.user.userprofile
     if not getattr(profile, "is_premium", False):
         return HttpResponseForbidden("Upgrade to premium to access integrations")
 
@@ -283,10 +285,9 @@ def integrations_connect(request, provider: str):
         return redirect(google_integration.get_authorization_url())
     return JsonResponse({"provider": provider, "action": "configure"})
 
+@login_required
 def my_specials(request):
-    profile = getattr(request, "user_profile", None)
-    if not profile:
-        return redirect("home")
+    profile = request.user.userprofile
 
     specials = (Special.objects
                 .filter(user_profile=profile)
@@ -313,6 +314,7 @@ def my_specials(request):
 
 
 @require_POST
+@login_required
 def special_update(request, pk):
     sp = get_object_or_404(Special, pk=pk)
     form = SpecialForm(request.POST, request.FILES, instance=sp)
@@ -343,9 +345,10 @@ def special_update(request, pk):
     )
 
 
+@login_required
 @require_http_methods(["DELETE"])
 def special_delete(request, pk):
-    profile = getattr(request, "user_profile", None)
+    profile = request.user.userprofile
     sp = get_object_or_404(Special, pk=pk, user_profile=profile)
     sp.delete()
     return HttpResponse("")
