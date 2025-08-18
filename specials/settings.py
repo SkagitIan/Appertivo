@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.apple',
 ]
 
 STRIPE_API_KEY = 'your_stripe_secret_key_here'
@@ -70,6 +69,7 @@ MIDDLEWARE = [
     'profiles.middleware.AnonymousTokenMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
