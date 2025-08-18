@@ -33,11 +33,23 @@ This single canvas contains multiple Django-ready files. Copy each into your pro
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="nav">
-          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-            <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'my_specials' %}">My Specials</a></li>
-            <li class="nav-item"><a class="btn btn-teal ms-lg-2" href="{% url 'special_create' %}">Create a Special</a></li>
-          </ul>
+<ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'my_specials' %}">My Specials</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
+          </li>
+        {% endif %}
+      </ul>
         </div>
       </div>
     </nav>

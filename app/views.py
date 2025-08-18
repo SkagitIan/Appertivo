@@ -30,7 +30,7 @@ def dashboard(request):
 
 
 def appertivo_widget(request):
-    api_url = request.build_absolute_uri("/api/specials.js")
+    api_url = "https://appertivo.com/api/specials.js"
     subscribe_url = request.build_absolute_uri("/api/subscribe/")
     restaurant_id = request.GET.get('restaurant', '')
     special_id = request.GET.get('special', '')
