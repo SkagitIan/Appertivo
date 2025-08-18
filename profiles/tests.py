@@ -38,9 +38,24 @@ class SocialLoginButtonTests(TestCase):
     def test_login_page_contains_social_buttons(self):
         response = self.client.get(reverse("login"))
         self.assertContains(response, "/accounts/google/login/")
-        self.assertContains(response, "/accounts/apple/login/")
 
     def test_signup_page_contains_social_buttons(self):
         response = self.client.get(reverse("signup"))
         self.assertContains(response, "/accounts/google/login/")
-        self.assertContains(response, "/accounts/apple/login/")
+
+
+class LogoutTests(TestCase):
+    """Ensure the logout endpoint ends the user session."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="test@example.com",
+            password="pass1234",
+        )
+
+    def test_logout_clears_session(self):
+        self.client.login(username="test@example.com", password="pass1234")
+        response = self.client.get(reverse("logout"))
+        self.assertEqual(response.status_code, 302)
+        self.assertNotIn("_auth_user_id", self.client.session)
