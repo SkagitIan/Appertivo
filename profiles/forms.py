@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
+from profiles.models import UserProfile
 
 
 class SignUpForm(forms.ModelForm):
@@ -8,9 +9,23 @@ class SignUpForm(forms.ModelForm):
     password1 = forms.CharField(label="Password", widget=forms.PasswordInput(attrs={"class": "form-control"}))
     password2 = forms.CharField(label="Confirm Password", widget=forms.PasswordInput(attrs={"class": "form-control"}))
 
+    # UserProfile fields
+    business_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Business Name"}),
+    )
+    website = forms.URLField(
+        required=False,
+        widget=forms.URLInput(attrs={"class": "form-control", "placeholder": "Website"}),
+    )
+    phone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Phone"}),
+    )
+
     class Meta:
         model = User
-        fields = ("email",)
+        fields = ("email", "password1", "password2", "business_name", "website", "phone")
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -32,13 +47,30 @@ class SignUpForm(forms.ModelForm):
         user.username = email
         user.email = email
         user.set_password(self.cleaned_data["password1"])
-        user.is_active = False
+        user.is_active = True
         if commit:
             user.save()
+            # create UserProfile with additional fields
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    "email": email,
+                    "business_name": self.cleaned_data.get("business_name", ""),
+                    "website": self.cleaned_data.get("website", ""),
+                    "phone": self.cleaned_data.get("phone", ""),
+                },
+            )
         return user
 
 
 class EmailAuthenticationForm(AuthenticationForm):
-    username = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={"autofocus": True, "class": "form-control"}))
-    password = forms.CharField(label="Password", strip=False, widget=forms.PasswordInput(attrs={"class": "form-control"}))
+    username = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={"autofocus": True, "class": "form-control"}),
+    )
+    password = forms.CharField(
+        label="Password",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control"}),
+    )
     remember_me = forms.BooleanField(required=False, initial=False, label="Remember me")

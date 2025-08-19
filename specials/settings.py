@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'anymail',
 ]
 
 STRIPE_API_KEY = 'your_stripe_secret_key_here'
@@ -148,8 +149,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_LOGOUT_ON_GET = True
 
@@ -207,16 +208,14 @@ LOGGING = {
         },
     },
 }
-
-LOGIN_REDIRECT_URL = 'profile'
+SERVER_EMAIL = 'ian.larsen.1976@gmail.com'
+DEFAULT_FROM_EMAIL = 'ian@appertivo.com'
+LOGIN_REDIRECT_URL = 'my_specials'
 LOGOUT_REDIRECT_URL = 'dashboard'
-DEFAULT_FROM_EMAIL = 'no-reply@example.com'
-BREVO_KEY = os.environ.get('BREVO_API_KEY')
-if BREVO_KEY:
-    EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
-    ANYMAIL = {
-        'BREVO_API_KEY': BREVO_KEY,
-    }
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    ANYMAIL = {}
+
+BREVO_API_KEY = os.getenv('BREVO_API_KEY')
+print(f"BREVO_API_KEY: {BREVO_API_KEY}")  # Debugging line to check if the key is loaded
+# if BREVO_API_KEY:
+EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
+ANYMAIL = {'BREVO_API_KEY': BREVO_API_KEY}
+

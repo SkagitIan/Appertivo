@@ -12,7 +12,15 @@ from django.contrib.auth.tokens import default_token_generator
 from .models import UserProfile
 from .forms import SignUpForm, EmailAuthenticationForm
 from app.models import Special
-
+from .emails import send_verification_email
+from django.contrib.auth import login, authenticate
+# app/views_auth.py
+from django.contrib import messages
+from django.contrib.auth import login, get_user_model
+from django.shortcuts import redirect, render
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+User = get_user_model()
 
 class EmailLoginView(LoginView):
     form_class = EmailAuthenticationForm
@@ -36,22 +44,45 @@ class EmailLoginView(LoginView):
         return super().get_success_url()
 
 
-def signup(request):
-    """Handle user signup."""
 
+def signup(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            UserProfile.objects.get_or_create(user=user, defaults={"email": user.email})
-            from .emails import send_verification_email
-
-            send_verification_email(user)
+            user = form.save(commit=False)
+            user.is_active = False  # require email verify
+            user.save()
+            send_verification_email(request, user)
             messages.info(request, "Check your email to verify your account.")
             return redirect("login")
     else:
         form = SignUpForm()
     return render(request, "registration/signup.html", {"form": form})
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except Exception:
+        user = None
+
+    if user is None:
+        messages.error(request, "Invalid activation link.")
+        return render(request, "registration/activation_invalid.html", status=400)
+
+    if user.is_active:
+        messages.info(request, "Your account is already active. You can log in.")
+        return redirect("login")
+
+    if activation_token.check_token(user, token):
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        login(request, user)  # instantly log them in
+        messages.success(request, "Your account is confirmed. Welcome!")
+        return redirect("my_specials")  # or wherever you want to land them
+    else:
+        # Token is invalid or expired
+        return render(request, "registration/activation_invalid.html", status=400)
 
 
 def verify_email(request, uidb64, token):
@@ -69,29 +100,3 @@ def verify_email(request, uidb64, token):
 
     return HttpResponse("Invalid verification link", status=400)
 
-
-@login_required
-def profile_view(request):
-    profile = request.user.userprofile
-    today = timezone.localdate()
-    active_specials = Special.objects.filter(
-        user_profile=profile,
-        published=True,
-    ).filter(Q(end_date__gte=today) | Q(end_date__isnull=True))
-    expired_specials = Special.objects.filter(
-        user_profile=profile,
-        published=True,
-        end_date__lt=today,
-    )
-    email_signups = profile.email_signups.order_by("-created_at")
-    embed_code = f'<script src="{request.build_absolute_uri(reverse("appertivo_widget"))}?restaurant={profile.id}"></script>'
-    return render(
-        request,
-        "profiles/profile.html",
-        {
-            "active_specials": active_specials,
-            "expired_specials": expired_specials,
-            "email_signups": email_signups,
-            "embed_code": embed_code,
-        },
-    )
