@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.contrib.messages import constants as message_constants
 
 load_dotenv()
 
@@ -56,6 +57,15 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'anymail',
 ]
+
+# Map Django message levels to Bootstrap alert classes
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'secondary',
+    message_constants.INFO: 'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR: 'danger',
+}
 
 STRIPE_API_KEY = 'your_stripe_secret_key_here'
 
