@@ -34,6 +34,28 @@ class SignupEmailTests(TestCase):
         self.assertIn("verify", mail.outbox[0].body)
 
 
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class MessageToastTests(TestCase):
+    """Verify Django messages render as Bootstrap toasts."""
+
+    def test_signup_displays_info_message_as_toast(self):
+        """Posting a valid signup shows a toast with the info message."""
+        response = self.client.post(
+            reverse("signup"),
+            {
+                "email": "toast@example.com",
+                "password1": "complexpass123",
+                "password2": "complexpass123",
+            },
+            follow=True,
+        )
+
+        # Final response should be the login page with a toast container
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "toast-container")
+        self.assertContains(response, "Check your email to verify your account.")
+
+
 class SocialLoginButtonTests(TestCase):
     def test_login_page_contains_social_buttons(self):
         response = self.client.get(reverse("login"))
