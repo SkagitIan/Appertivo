@@ -1,4 +1,13 @@
-Hi {{ user.email }},
-
-Please verify your email by clicking the link below:
-{{ verification_link }}
+<!-- templates/emails/verify_email.html -->
+<p>Hi {{ user.get_full_name|default:user.username }},</p>
+<p>Confirm your account by clicking the button below:</p>
+<p>
+  <a href="{{ verification_link }}" 
+     style="display:inline-block;padding:12px 18px;border-radius:8px;text-decoration:none;
+            background:#f08000;color:#ffffff;font-weight:700;">
+     Verify my email
+  </a>
+</p>
+<p>If the button doesn’t work, copy and paste this URL into your browser:<br>
+  <span style="word-break:break-all">{{ verification_link }}</span>
+</p>
