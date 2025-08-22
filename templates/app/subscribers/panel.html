@@ -1,22 +1,5 @@
 {# templates/app/subscribers/panel.html #}
 <div class="card">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <span><i class="fa-solid fa-envelope-open-text me-2"></i>Email Subscribers</span>
-
-    <div class="d-flex gap-2 align-items-center">
-      <label class="text-muted small me-1">Sort</label>
-      <select
-        class="form-select form-select-sm w-auto"
-        hx-get="{% url 'subscribers_list' profile.id %}"
-        hx-target="#subscribers-list"
-        hx-swap="outerHTML"
-        name="sort">
-        <option value="special" {% if sort_key == 'special' %}selected{% endif %}>By Special</option>
-        <option value="newest"  {% if sort_key == 'newest' %}selected{% endif %}>Newest</option>
-        <option value="oldest"  {% if sort_key == 'oldest' %}selected{% endif %}>Oldest</option>
-      </select>
-    </div>
-  </div>
 
   {% include "app/subscribers/_list.html" with subscribers=subscribers profile=profile %}
 </div>

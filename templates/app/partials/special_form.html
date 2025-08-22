@@ -1,6 +1,6 @@
 {% load form_tags %}{% load extras %}
 {% url 'special_create' as default_create_url %}
-
+{% load static %}
 <!-- {# ===================================== #}
 {# /templates/partials/special_form.html #}
 {# Reusable create/edit form (HTMX-ready) #}
@@ -11,12 +11,23 @@
    - hide_submit: truthy to hide the submit button
 #}
 {# ===================================== #} -->
-
+<style>
+/* Force all CTA radios to behave as hidden bootstrap toggle inputs */
+.btn-check {
+  position: absolute !important;
+  left: -9999px !important; /* off-screen */
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+}
+</style>
 <form method="POST"
       enctype="multipart/form-data"
       action="{{ action_url|default:default_create_url }}"
       id="special-form"
-      class="card card-glass overflow-hidden">
+      class="card card-glass overflow-hidden bg-light p-3">
 
   {% csrf_token %}
 
@@ -131,21 +142,23 @@
   <div class="row g-3 align-items-start mt-3">
     <div class="col-md-12 text-center">
       {# Radios rendered from choices so values are correct #}
-      <div class="btn-group w-100" role="group">
-        {% for val, label in form.cta_choices.field.choices %}
-          <input
-            type="radio"
-            class="btn-check"
-            name="{{ form.cta_choices.name }}"
-            id="cta_{{ forloop.counter }}"
-            value="{{ val }}"
-            {% if form.cta_choices.value and val in form.cta_choices.value %}checked{% endif %}
-          >
-          <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ val }}">
-            {{ label }}
-          </label>
-        {% endfor %}
-      </div>
+<div class="btn-group w-100 mb-3" role="group">
+  {% for val, label in form.cta_choices.field.choices %}
+    <input
+      type="radio"
+      class="btn-check"
+      name="{{ form.cta_choices.name }}"
+      id="cta_{{ forloop.counter }}"
+      value="{{ val }}"
+      {% if form.cta_choices.value == val %}checked{% endif %}
+    >
+    <label class="btn btn-outline-ink" for="cta_{{ forloop.counter }}" data-cta="{{ val }}">
+      {{ label }}
+    </label>
+  {% endfor %}
+</div>
+
+
 
       {% if form.cta_choices.errors %}
         <div class="invalid-feedback d-block">{{ form.cta_choices.errors }}</div>

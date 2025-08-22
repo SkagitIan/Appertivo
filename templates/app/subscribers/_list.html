@@ -1,5 +1,18 @@
 {# templates/app/subscribers/_list.html #}
 <ul id="subscribers-list" class="list-group list-group-flush subs-scroll">
+    <div class="d-flex gap-2 align-items-center ms-4 mt-2">
+      <label class="text-muted small me-1">Sort</label>
+      <select
+        class="form-select form-select-sm w-auto"
+        hx-get="{% url 'subscribers_list' profile.id %}"
+        hx-target="#subscribers-list"
+        hx-swap="outerHTML"
+        name="sort">
+        <option value="special" {% if sort_key == 'special' %}selected{% endif %}>By Special</option>
+        <option value="newest"  {% if sort_key == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="oldest"  {% if sort_key == 'oldest' %}selected{% endif %}>Oldest</option>
+      </select>
+    </div>
   {% for sub in subscribers %}
     <li class="list-group-item d-flex align-items-center justify-content-between">
       <div class="d-flex flex-column">

@@ -1,9 +1,7 @@
 {# Even grid for all cards, with a hook for the first item #}
-        <div class="cta-section mb-3">
-            <h3 class="gradient-text fs-3">Publish your specials & limited offers on the fly, manage till you sell out!</h3>
-        </div>
+
 {% if specials %}
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
+  <div class="row">
     {% for sp in specials %}
       <div class="col">
         {# Hook: pass is_featured to the partial; currently does nothing different #}
@@ -11,67 +9,5 @@
       </div>
     {% endfor %}
   </div>
-{% else %}
-  {# Empty state with sample placeholders #}
-  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4">
-    <div class="col">
-      <div class="card h-100 border-0 shadow-sm position-relative">
-        <div class="card-img-top bg-secondary" style="height:160px;"></div>
-        <div class="position-absolute top-0 start-0 m-1">
-          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="fa-solid fa-pencil"></i></a>
-        </div>
-        <div class="position-absolute top-0 end-0 m-1">
-          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="text-warning fa-solid fa-trash"></i></a>
-        </div>
-        <div class="card-body p-2">
-          <h3 class="h6 mb-1">Sample Special 1</h3>
-          <p class="small text-secondary mb-1">A tasty placeholder item.</p>
-          <p class="small mb-2"><span class="badge bg-secondary me-1">Expired</span> <span class="text-secondary">2024-01-01</span></p>
-          <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card h-100 border-0 shadow-sm position-relative">
-        <div class="card-img-top bg-secondary" style="height:160px;"></div>
-        <div class="position-absolute top-0 start-0 m-1">
-          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
-        </div>
-        <div class="position-absolute top-0 end-0 m-1">
-          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
-        </div>
-        <div class="card-body p-2">
-          <h3 class="h6 mb-1">Sample Special 2</h3>
-          <p class="small text-secondary mb-1">Another delicious placeholder.</p>
-          <p class="small mb-2"><span class="badge bg-secondary me-1">Expired</span> <span class="text-secondary">2024-01-01</span></p>
-          <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
-            <a href="#" class="btn btn-teal btn-sm">Make Active</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card h-100 border-0 shadow-sm position-relative">
-        <div class="card-img-top bg-secondary" style="height:160px;"></div>
-        <div class="position-absolute top-0 start-0 m-1">
-          <a href="#" class="btn btn-sm btn-purple" aria-label="Edit"><i class="bi bi-pencil"></i></a>
-        </div>
-        <div class="position-absolute top-0 end-0 m-1">
-          <a href="#" class="btn btn-sm btn-outline-ink" aria-label="Delete"><i class="bi bi-x-lg"></i></a>
-        </div>
-        <div class="card-body p-2">
-          <h3 class="h6 mb-1">Sample Special 3</h3>
-          <p class="small text-secondary mb-1">Fill in your own amazing deal.</p>
-          <p class="small mb-2"><span class="badge bg-secondary me-1">Expired</span> <span class="text-secondary">2024-01-01</span></p>
-          <div class="d-flex flex-wrap gap-1">
-            <a href="#" class="btn btn-orange btn-sm">Sold Out</a>
-            <a href="#" class="btn btn-teal btn-sm">Make Active</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+
 {% endif %}
