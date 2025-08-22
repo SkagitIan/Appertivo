@@ -3,7 +3,7 @@ import json
 import re
 from unittest.mock import patch
 from django.template.loader import render_to_string
-from django.test import TestCase, override_settings
+from django.test import TestCase, override_settings, RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -12,6 +12,23 @@ from .forms import SpecialForm
 from .models import Special, EmailSignup, Integration
 from .integrations import google
 from profiles.models import UserProfile
+
+
+class AllauthTemplateTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def _render(self, template):
+        request = self.factory.get("/")
+        return render_to_string(template, request=request)
+
+    def test_account_login_template(self):
+        html = self._render("account/login.html")
+        self.assertIn("Connecting to Google", html)
+
+    def test_account_signup_template(self):
+        html = self._render("account/signup.html")
+        self.assertIn("Connecting to Google", html)
 
 
 class SpecialFormTemplateTests(TestCase):

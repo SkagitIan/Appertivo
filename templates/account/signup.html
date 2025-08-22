@@ -1,13 +1,17 @@
 {% extends "app/base.html" %}
+<<<<<<< HEAD
 {% load static %}
 {% load form_tags %}
 {% load extras %}
+=======
+>>>>>>> 6d0d08f6c04aa83ef6089a2c9b50ff2d66877b6b
 {% load socialaccount %}
 
 {% block content %}
 <div class="container py-4 mt-4" style="min-height: 100vh;">
   <div class="row justify-content-center">
     <div class="col-lg-7">
+<<<<<<< HEAD
 
       <div class="card shadow-lg border-0 rounded-3 fs-2">
         <!-- Header -->
@@ -103,6 +107,26 @@
         icon.classList.replace("fa-eye-slash", "fa-eye");
       }
     });
+=======
+      <div class="card shadow-lg border-0 rounded-3 fs-2">
+        <div class="card-header gradient-text fs-2 fw-extrabold text-center">
+          Create Your Free Account
+        </div>
+        <div class="card-body text-center">
+          <p class="fs-4">Connecting to Google...</p>
+          <a href="{% provider_login_url 'google' process='signup' %}" id="google-signup" class="btn btn-orange mt-3 text-white">Continue with Google</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const link = document.getElementById('google-signup');
+    if (link) {
+      window.location.href = link.href;
+    }
+>>>>>>> 6d0d08f6c04aa83ef6089a2c9b50ff2d66877b6b
   });
 </script>
 {% endblock %}
