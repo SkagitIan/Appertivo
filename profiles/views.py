@@ -53,7 +53,7 @@ def signup(request):
             user = form.save(commit=False)
             user.is_active = False  # require email verify
             user.save()
-            send_verification_email(request, user)
+            send_verification_email(user)
             messages.info(request, "Check your email to verify your account.")
             return redirect("login")
     else:
