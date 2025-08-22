@@ -1,0 +1,86 @@
+{% load static %}
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-gradient-dark text-light">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Settings</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-4 border-end border-ink-700">
+            <div class="nav flex-column nav-pills" id="settings-tabs" role="tablist" aria-orientation="vertical">
+              <button class="nav-link active" id="settings-profile-tab" data-bs-toggle="pill" data-bs-target="#settings-profile" type="button" role="tab">Profile</button>
+              <button class="nav-link" id="settings-stats-tab" data-bs-toggle="pill" data-bs-target="#settings-stats" type="button" role="tab">Stats</button>
+              <button class="nav-link" id="settings-billing-tab" data-bs-toggle="pill" data-bs-target="#settings-billing" type="button" role="tab">Billing</button>
+              <button class="nav-link" id="settings-integrations-tab" data-bs-toggle="pill" data-bs-target="#settings-integrations" type="button" role="tab">Integrations</button>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="tab-content" id="settings-tabContent">
+              <div class="tab-pane fade show active" id="settings-profile" role="tabpanel">
+                {% include "profiles/card.html" with profile=profile %}
+              </div>
+              <div class="tab-pane fade" id="settings-stats" role="tabpanel">
+                {% include "app/stats/widget.html" with profile=profile specials=specials top_special=top_special stats=stats selected_special=None %}
+              </div>
+              <div class="tab-pane fade" id="settings-billing" role="tabpanel">
+                <div class="card h-100">
+                  <div class="card-header">Billing</div>
+                  <div class="card-body">
+                    <!-- Free Plan -->
+                    <div class="card mb-3 border-success shadow-sm">
+                      <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                          <div class="fw-bold text-success">
+                            <i class="fa-solid fa-circle-check me-2"></i>
+                            Free Plan
+                          </div>
+                          <div class="small text-muted">Currently subscribed</div>
+                        </div>
+                        <span class="badge bg-success-subtle text-success fw-semibold">Active</span>
+                      </div>
+                    </div>
+                    <!-- Pro Plan -->
+                    <div class="card mb-3 border-secondary">
+                      <div class="card-body">
+                        <div class="fw-bold">
+                          <i class="fa-solid fa-rocket me-2 text-secondary"></i>
+                          Pro Plan
+                        </div>
+                        <div class="small text-muted">Coming soon</div>
+                      </div>
+                    </div>
+                    <!-- Enterprise Plan -->
+                    <div class="card border-secondary">
+                      <div class="card-body">
+                        <div class="fw-bold">
+                          <i class="fa-solid fa-building me-2 text-secondary"></i>
+                          Enterprise Plan
+                        </div>
+                        <div class="small text-muted">Coming soon</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="settings-integrations" role="tabpanel">
+                <div class="card mt-4">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Integrations</span>
+                  </div>
+                  <div class="card-body">
+                    <p class="text-secondary">Connect platforms to auto-post specials, sync menus, and track conversions.</p>
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                      {% include "app/integrations/rows.html" %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

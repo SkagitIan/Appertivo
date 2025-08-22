@@ -39,6 +39,11 @@ This single canvas contains multiple Django-ready files. Copy each into your pro
             <a class="nav-link" href="{% url 'my_specials' %}">My Specials</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#settingsModal">
+              <i class="fa-solid fa-gear"></i>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
         {% else %}
@@ -96,6 +101,7 @@ This single canvas contains multiple Django-ready files. Copy each into your pro
     </script>
     {% endif %}
 
+    {% include "app/settings_modal.html" %}
     {% block body_extra %}{% endblock %}
   </body>
 </html>
