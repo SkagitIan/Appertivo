@@ -1,0 +1,62 @@
+
+
+<!-- All-time totals -->
+<div class="d-flex justify-content-between mb-2">
+  <span>
+    Total Opens
+    <a href="#" class="text-muted ms-1" data-bs-toggle="dropdown">
+      <i class="fa-regular fa-circle-question"></i>
+    </a>
+    <div class="dropdown-menu p-2 small">
+      Sum of <code>analytics.opens</code> (all-time) for the current selection.
+    </div>
+  </span>
+  <strong>{{ stats.opens|default:0 }}</strong>
+</div>
+
+<div class="d-flex justify-content-between mb-2">
+  <span>
+    CTA Clicks
+    <a href="#" class="text-muted ms-1" data-bs-toggle="dropdown">
+      <i class="fa-regular fa-circle-question"></i>
+    </a>
+    <div class="dropdown-menu p-2 small">
+      Sum of <code>analytics.cta_clicks</code> (all-time).
+    </div>
+  </span>
+  <strong>{{ stats.cta_clicks|default:0 }}</strong>
+</div>
+
+<div class="d-flex justify-content-between mb-3">
+  <span>
+    CTR
+    <a href="#" class="text-muted ms-1" data-bs-toggle="dropdown">
+      <i class="fa-regular fa-circle-question"></i>
+    </a>
+    <div class="dropdown-menu p-2 small">
+      Click-through rate = clicks ÷ opens (all-time).
+    </div>
+  </span>
+  <strong>{{ stats.ctr }}%</strong>
+</div>
+
+<hr class="text-muted">
+
+<!-- Email Signup windows (timestamped data) -->
+<div class="small text-uppercase text-muted mb-2">Email Signups</div>
+
+<div class="d-flex justify-content-between mb-2">
+  <span>Today</span>
+  <strong>{{ stats.signups_today|default:0 }}</strong>
+</div>
+<div class="d-flex justify-content-between mb-2">
+  <span>Last 7 days</span>
+  <strong>{{ stats.signups_7d|default:0 }}</strong>
+</div>
+<div class="d-flex justify-content-between">
+  <span>Last 30 days</span>
+  <strong>{{ stats.signups_30d|default:0 }}</strong>
+</div>
+
+<!-- reserved for a tiny sparkline later -->
+<div id="stats-sparkline" class="mt-3"></div>

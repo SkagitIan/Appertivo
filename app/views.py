@@ -19,6 +19,11 @@ from django.urls import reverse
 logger = logging.getLogger(__name__)
 from dotenv import load_dotenv
 from .integrations import google as google_integration
+from datetime import timedelta
+from django.db.models import Sum, Value, IntegerField
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from django.db.models import Q
 
 load_dotenv()  # take environment variables
 
@@ -300,26 +305,49 @@ def my_specials(request):
                       .select_related("analytics")
                       .first())
 
-    # Aggregate across related analytics, defaulting to 0 when none exist
+    # All-time aggregates from SpecialAnalytics (fits your current model)
     agg = specials.aggregate(
         opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
         cta_clicks=Coalesce(Sum("analytics__cta_clicks"), Value(0), output_field=IntegerField()),
         email_signups=Coalesce(Sum("analytics__email_signups"), Value(0), output_field=IntegerField()),
     )
+    # All-time CTR (clicks ÷ opens)
+    opens = agg["opens"] or 0
+    clicks = agg["cta_clicks"] or 0
+    agg["ctr"] = round((clicks / opens) * 100, 1) if opens else 0.0
+
+    # Recent windows for EmailSignup only (timestamped rows)
+    start_7d = today - timedelta(days=6)     # inclusive last 7 calendar days
+    start_30d = today - timedelta(days=29)   # inclusive last 30 calendar days
+
+    qs_signups = EmailSignup.objects.filter(user_profile=profile)
+    signups_today = qs_signups.filter(created_at__date=today).count()
+    signups_7d = qs_signups.filter(created_at__date__gte=start_7d).count()
+    signups_30d = qs_signups.filter(created_at__date__gte=start_30d).count()
+
+    # Optional: highlight top-performing special (all-time, by clicks then opens)
+    top_special = (specials
+                   .exclude(analytics__isnull=True)
+                   .order_by("-analytics__cta_clicks", "-analytics__opens")
+                   .first())
 
     subscribers = (EmailSignup.objects
                    .filter(user_profile=profile)
                    .order_by("-created_at"))
 
     context = {
-        "specials": specials.select_related("analytics"),  # fast access in templates
+        "specials": specials.select_related("analytics"),
         "active_special": active_special,
         "stats": agg,
+        "signups_today": signups_today,
+        "signups_7d": signups_7d,
+        "signups_30d": signups_30d,
+        "top_special": top_special,
         "subscribers": subscribers,
+        "profile": profile,
         "integration_status": {i.provider: i.enabled for i in Integration.objects.filter(user_profile=profile)},
     }
     return render(request, "app/my_specials.html", context)
-
 
 @require_POST
 @login_required
@@ -360,3 +388,143 @@ def special_delete(request, pk):
     sp = get_object_or_404(Special, pk=pk, user_profile=profile)
     sp.delete()
     return HttpResponse("")
+
+
+
+SORTS = {
+    "special": ["special__title__isnull", "special__title", "-created_at"],  # groups by special
+    "newest": ["-created_at"],
+    "oldest": ["created_at"],
+}
+
+@login_required
+def subscribers_panel(request, profile_id):
+    profile = get_object_or_404(UserProfile, id=profile_id)
+    if request.user != profile.user:
+        return HttpResponseForbidden()
+
+    sort_key = request.GET.get("sort", "special")
+    order_by = SORTS.get(sort_key, SORTS["special"])
+    subscribers = (EmailSignup.objects
+                   .filter(user_profile=profile)
+                   .select_related("special")
+                   .order_by(*order_by))
+
+    return render(request, "app/subscribers/panel.html", {
+        "profile": profile,
+        "subscribers": subscribers,
+        "sort_key": sort_key,
+    })
+
+
+@login_required
+def subscribers_list(request, profile_id):
+    """HTMX endpoint that returns just the <ul> list."""
+    profile = get_object_or_404(UserProfile, id=profile_id)
+    if request.user != profile.user:
+        return HttpResponseForbidden()
+
+    sort_key = request.GET.get("sort", "special")
+    order_by = SORTS.get(sort_key, SORTS["special"])
+    subscribers = (EmailSignup.objects
+                   .filter(user_profile=profile)
+                   .select_related("special")
+                   .order_by(*order_by))
+
+    return render(request, "app/subscribers/_list.html", {
+        "subscribers": subscribers,
+        "profile": profile,
+    })
+
+
+@login_required
+@require_POST
+def subscriber_delete(request, pk):
+    """Delete a signup and return 204 so HTMX swaps the <li> away."""
+    sub = get_object_or_404(EmailSignup, pk=pk)
+    if request.user != sub.user_profile.user:
+        return HttpResponseForbidden()
+    sub.delete()
+    return HttpResponse(status=204)
+
+
+def _compute_stats(profile, special_id=None):
+    """
+    Computes:
+      - All-time: opens, cta_clicks, email_signups (from Special.analytics totals)
+      - CTR (clicks / opens)
+      - Date windows for EmailSignup: today, 7d, 30d (from EmailSignup.created_at)
+    """
+    specials_qs = Special.objects.filter(user_profile=profile)
+    if special_id:
+        specials_qs = specials_qs.filter(pk=int(special_id))
+
+    agg = specials_qs.aggregate(
+        opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
+        clicks=Coalesce(Sum("analytics__cta_clicks"), Value(0), output_field=IntegerField()),
+        signups=Coalesce(Sum("analytics__email_signups"), Value(0), output_field=IntegerField()),
+    )
+    opens = agg["opens"] or 0
+    clicks = agg["clicks"] or 0
+    ctr = round((clicks / opens) * 100, 1) if opens else 0.0
+
+    today = timezone.localdate()
+    start_7d = today - timedelta(days=6)      # inclusive 7 days
+    start_30d = today - timedelta(days=29)    # inclusive 30 days
+
+    signups_qs = EmailSignup.objects.filter(user_profile=profile)
+    if special_id:
+        signups_qs = signups_qs.filter(special_id=int(special_id))
+
+    stats = {
+        "opens": opens,
+        "cta_clicks": clicks,
+        "email_signups": agg["signups"] or 0,
+        "ctr": ctr,
+        "signups_today": signups_qs.filter(created_at__date=today).count(),
+        "signups_7d":    signups_qs.filter(created_at__date__gte=start_7d).count(),
+        "signups_30d":   signups_qs.filter(created_at__date__gte=start_30d).count(),
+    }
+    return stats
+
+@login_required
+def stats_widget(request, profile_id):
+    """Full card (shell + initial body)."""
+    profile = get_object_or_404(UserProfile, pk=profile_id)
+    if request.user != profile.user:
+        return render(request, "app/403.html", status=403)
+
+    specials = Special.objects.filter(user_profile=profile).select_related("analytics").order_by("-created_at")
+    stats = _compute_stats(profile, special_id=None)
+
+    # nice-to-have: show a “top” special by clicks then opens (all-time)
+    top_special = specials.exclude(analytics__isnull=True).order_by("-analytics__cta_clicks", "-analytics__opens").first()
+
+    return render(request, "app/stats/widget.html", {
+        "profile": profile,
+        "specials": specials,
+        "top_special": top_special,
+        "stats": stats,             # initial = ALL specials
+        "selected_special": None,   # initial
+    })
+
+@login_required
+def stats_fragment(request, profile_id):
+    """HTMX fragment that swaps the card body based on ?special=ID (or empty for all)."""
+    profile = get_object_or_404(UserProfile, pk=profile_id)
+    if request.user != profile.user:
+        return render(request, "app/403.html", status=403)
+
+    special_id = request.GET.get("special") or None
+    stats = _compute_stats(profile, special_id=special_id)
+
+    selected_special = None
+    if special_id:
+        selected_special = Special.objects.filter(user_profile=profile, pk=int(special_id)).first()
+
+    return render(request, "app/stats/_card_body.html", {
+        "stats": stats,
+        "selected_special": selected_special,
+    })
+
+

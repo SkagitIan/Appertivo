@@ -1,0 +1,26 @@
+<!-- templates/app/profile/card.html -->
+<div class="card h-100">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Profile</span>
+    <!-- subtle brand accent -->
+  </div>
+
+  <div id="profile-card-body"
+       class="card-body"
+       hx-get="{% url 'profile_card' profile.id %}?fragment=display"
+       hx-trigger="load"
+       hx-target="#profile-card-body"
+       hx-swap="innerHTML">
+    <!-- HTMX loads the display fragment into here -->
+    <div class="text-secondary small">Loading…</div>
+  </div>
+</div>
+
+{# CSRF header helper for HTMX #}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script>
+  document.addEventListener("htmx:configRequest", (e) => {
+    const t = document.querySelector('meta[name="csrf-token"]');
+    if (t) e.detail.headers['X-CSRFToken'] = t.getAttribute('content');
+  });
+</script>

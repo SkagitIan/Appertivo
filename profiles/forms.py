@@ -74,3 +74,18 @@ class EmailAuthenticationForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
     )
     remember_me = forms.BooleanField(required=False, initial=False, label="Remember me")
+
+# app/forms.py
+from django import forms
+from .models import UserProfile
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ["email", "business_name", "website", "phone"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "you@business.com"}),
+            "business_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Business Name"}),
+            "website": forms.URLInput(attrs={"class": "form-control", "placeholder": "https://"}),
+            "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": "(555) 123-4567"}),
+        }

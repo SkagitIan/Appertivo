@@ -5,8 +5,8 @@
 <style>
     .appertivo-launcher {
       position: absolute;
-      bottom: -30px;
-      right: -30px;
+      bottom: -40px;
+      right: -40px;
       width: 70px;
       height: 70px;
       background: linear-gradient(135deg, #B993D6, #f08000);
@@ -28,18 +28,20 @@
     }
 
 </style>
-  <section class="hero container py-5 py-lg-6">
-    <div class="row align-items-top g-4">
-      <div class="col-lg-8 px-0">
-
-   <section class="text-white">
+   <section class="text-white mt-5">
   <div class="container text-left">
-    <h1 class="display-4 fw-extrabold gradient-text mb-3" data-animate="reveal">
+    <div class="row">
+      <div class="col-lg-8 pe-3">
+        <h1 class="display-4 fw-extrabold gradient-text mb-3" data-animate="reveal">
       From Your Specials to Everywhere
     </h1>
+    <h2 class="h3 font-orange mb-4">
+                        Start Winning with AI enhanced tools that get the job done.
+                    </h2>
     <p class="lead mb-4">
-      <strong>One simple post. Live on Maps, social, wallets, and your site — instantly.</strong>
-    </p>
+                        <strong>One photo. One click. Every platform.</strong><br>
+                        Your daily specials everywhere diners are looking—automatically.
+                    </p>
     <p class="mb-4">
       Appertivo’s Specials Rail lets independent restaurants publish a limited-time offer once
       and push it to every major channel where diners make decisions — Google & Apple Maps, Instagram & Facebook,
@@ -53,17 +55,12 @@
       <li class="mb-2">✅ <strong>Channel-Optimized:</strong> Appertivo adapts your content for each platform’s image sizes, copy limits, and policies.</li>
       <li class="mb-2">✅ <strong>Track & Improve:</strong> See impressions, clicks, and redemptions by channel — know what’s driving covers.</li>
     </ul>
-  </div>
-</section>
-
-
-        <div class="d-flex gap-3">
+    <div class="d-flex gap-3">
           <a href="{% url 'special_create' %}" class="btn btn-orange btn-lg px-4 text-white" data-animate="pop">Create a Special</a>
           
         </div>
-      </div>
-      <div class="col-lg-4 pe-3">
-        <!-- Live preview frame with HTMX swap -->
+        </div>  
+       <div class="col-lg-4 p-5">
         <div class="card card-glass shadow-lg p-0" data-animate="float">
           <div id="special-preview-container"
                hx-target="#special-preview-container"
@@ -84,11 +81,56 @@
                 <script src="https://appertivo.com/appertivo-widget.js?restaurant=13&special=83"></script>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
+        </div>    
+       
+    
+  </div>
+</section>
 
+<section class="py-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-md-4" data-animate="lift">
+                    <div class="feature-card rounded-3 p-4 h-100">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fa-solid fa-triangle-exclamation fs-3 font-teal"></i>
+                            <div>
+                                <p class="mb-2 fst-italic">"Independent restaurateurs operate on razor-thin margins and feel these stresses acutely."</p>
+                                <small class="text-light">— James Beard Foundation 2025 Report</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-animate="lift">
+                    <div class="feature-card rounded-3 p-4 h-100">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fa-solid fa-road-circle-exclamation fs-3 font-teal"></i>
+                            <div>
+                                <p class="mb-2 fst-italic">"Over 70% of independent restaurants reported a drop in customer traffic compared to the prior year."</p>
+                                <small class="text-light">— Restaurant Business Online</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4" data-animate="lift">
+                    <div class="feature-card rounded-3 p-4 h-100">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fa-solid fa-wheat-awn-circle-exclamation fs-3 font-teal"></i>
+                            <div>
+                                <p class="mb-2 fst-italic">"Independent operators are struggling with the fragmented nature of restaurant technology... juggling a half-dozen tablets and software platforms."</p>
+                                <small class="text-light">— Industry Analysis Report</small>
+                            </div>
+                        </div>
+                    </div> 
+                </div>            <div class="text-center" data-animate="reveal">
+                <p class="lead text-warning"><strong>The bottom line:</strong> You're fighting rising costs, fewer customers, and technology that makes life harder, not easier.</p>
+            </div>
+            </div>
+
+        </div>
+    </section>
+<!-- Features List -->
+    
 
     <section class="container pb-6">
       <div class="row">

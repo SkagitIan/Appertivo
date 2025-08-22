@@ -39,6 +39,17 @@ urlpatterns = [
     path("accounts/reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(template_name="registration/password_reset_confirm.html"), name="password_reset_confirm"),
     path("accounts/reset/done/", auth_views.PasswordResetCompleteView.as_view(template_name="registration/password_reset_complete.html"), name="password_reset_complete"),
     path("accounts/", include("allauth.urls")),
+    path("profile/<int:profile_id>/card/", profiles_views.profile_card, name="profile_card"),
+    path("profile/<int:profile_id>/edit/", profiles_views.profile_edit, name="profile_edit"),
+    path("profile/<int:profile_id>/save/", profiles_views.profile_save, name="profile_save"),
+
+    path("dash/<int:profile_id>/stats/", views.stats_widget, name="stats_widget"),
+    path("dash/<int:profile_id>/stats/fragment/", views.stats_fragment, name="stats_fragment"),
+
+    path("subscribers/<int:profile_id>/", views.subscribers_panel, name="subscribers_panel"),
+    path("subscribers/<int:profile_id>/list/", views.subscribers_list, name="subscribers_list"),
+    path("subscribers/delete/<int:pk>/", views.subscriber_delete, name="subscriber_delete"),
+
 
     path("my-specials/", views.my_specials, name="my_specials"),
 

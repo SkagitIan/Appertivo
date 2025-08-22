@@ -1,0 +1,48 @@
+{# templates/app/subscribers/_list.html #}
+<ul id="subscribers-list" class="list-group list-group-flush subs-scroll">
+  {% for sub in subscribers %}
+    <li class="list-group-item d-flex align-items-center justify-content-between">
+      <div class="d-flex flex-column">
+        <span class="fw-semibold">
+          <i class="fa-regular fa-user me-2"></i>{{ sub.email }}
+        </span>
+
+        <div class="small text-muted">
+          <i class="fa-regular fa-calendar me-1"></i>
+          {{ sub.created_at|date:"M j, Y" }}
+          {% if sub.special %}
+            <span class="badge text-bg-secondary ms-2">
+              <i class="fa-solid fa-tag me-1"></i>{{ sub.special.title }}
+            </span>
+          {% else %}
+            <span class="badge text-bg-light ms-2">
+              <i class="fa-regular fa-circle-question me-1"></i>No special
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        {# future: add icon to open a modal of all signups for that special #}
+        {% if sub.special %}
+          <a class="btn btn-sm btn-outline-secondary"
+             title="View special subscribers">
+             <i class="fa-solid fa-list"></i>
+          </a>
+        {% endif %}
+
+        <button
+          class="btn btn-sm btn-outline-danger"
+          title="Delete subscriber"
+          hx-post="{% url 'subscriber_delete' sub.id %}"
+          hx-target="closest li"
+          hx-swap="outerHTML"
+          hx-confirm="Delete this subscriber?">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-secondary">No subscribers yet</li>
+  {% endfor %}
+</ul>

@@ -17,7 +17,7 @@
         
         .integration-header p {
             color: #6c757d;
-            font-size: 1.1rem;
+            font-size: 1.4rem;
             margin: 0;
         }
         
@@ -202,12 +202,10 @@
             }
         }
     </style>
-</head>
-<body>
+
     <div id="integration-connections" class="container">
         <div class="integration-header">
-            <h2>Platform Integrations</h2>
-            <p>Seamlessly connect with your favorite platforms and services</p>
+            <h2 class="gradient-text fs-1">Seamlessly connect with your favorite platforms and services</h2>
         </div>
         
         <div class="integration-grid">
@@ -317,12 +315,23 @@
                     <p>Add an Embed element to your Webflow project and include the widget's script snippet. (If more platform-specific enhancements arrive in the future, we'll update here—Coming Soon.)</p>
                 </div>
             </div>
+                        <!-- Coming SOon -->
+            <div class="integration-card"">
+                <h3 class="integration-title">
+                    <i class="fa-solid fa-spoon"></i>
+                    Coming Soon
+                </h3>
+                <button class="integration-button text-dark border" onclick="toggleDetails('coming-soon')">
+                    <i class="fas fa-code"></i>
+                    View Integration Guide
+                </button>
+                <div class="integration-details text-dark" id="coming-soon">
+                    <p>We are working on integrating many other distribution systems.</p>
+                </div>
+            </div>
         </div>
         
-        <div class="cta-section">
-            <h3>Need Help with Integration?</h3>
-            <p>Our support team is ready to help you get connected with any platform</p>
-        </div>
+
     </div>
     
     <script>

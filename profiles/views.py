@@ -21,6 +21,7 @@ from django.shortcuts import redirect, render
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 User = get_user_model()
+from django.shortcuts import get_object_or_404, render
 
 class EmailLoginView(LoginView):
     form_class = EmailAuthenticationForm
@@ -100,3 +101,38 @@ def verify_email(request, uidb64, token):
 
     return HttpResponse("Invalid verification link", status=400)
 
+from .forms import ProfileForm
+
+@login_required
+def profile_card(request, profile_id):
+    profile = get_object_or_404(UserProfile, pk=profile_id)
+    if request.user != profile.user:
+        return HttpResponseForbidden()
+    if request.GET.get("fragment") == "display":
+        return render(request, "profiles/_display.html", {"profile": profile})
+
+
+@login_required
+def profile_edit(request, profile_id):
+    profile = get_object_or_404(UserProfile, pk=profile_id)
+    if request.user != profile.user:
+        return HttpResponseForbidden()
+    form = ProfileForm(instance=profile)
+    return render(request, "profiles/_form.html", {"profile": profile, "form": form})
+
+@login_required
+def profile_save(request, profile_id):
+    profile = get_object_or_404(UserProfile, pk=profile_id)
+    if request.user != profile.user:
+        return HttpResponseForbidden()
+    if request.method != "POST":
+        # Return display if someone GETs the save URL
+        return render(request, "profiles/_display.html", {"profile": profile})
+
+    form = ProfileForm(request.POST, instance=profile)
+    if form.is_valid():
+        form.save()
+        # Return the display fragment on success
+        return render(request, "profiles/_display.html", {"profile": profile})
+    # Return the form with errors if invalid
+    return render(request, "profiles/_form.html", {"profile": profile, "form": form}, status=400)

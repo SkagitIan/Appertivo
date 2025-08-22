@@ -2,128 +2,110 @@
 {% load static %}
 {% block title %}My Specials{% endblock %}
 {% block content %}
+<style>
+  /* show-only-10-items, but scrollable; hide scrollbar */
+  .subs-scroll {
+    --row-h:60px;
+    /* tweak to your actual <li> height */
+    max-height: calc(var(--row-h) * 10);
+    overflow: auto;
 
-<div class="container py-4">
-  <div class="row g-4">
-    <div class="col-lg-7">
-      {% if active_special %}
-        <!-- Active special featured card (slightly larger than list items) -->
-        <div class="card shadow-sm border-0">
-          <div class="card-header d-flex justify-content-between align-items-center" style="background:#49475B; color:white;">
-            <span class="fw-semibold">Active Special</span>
-            <span class="badge" style="background-color:#58B09C;">Live</span>
-          </div>
-          <div class="card-body">
-            <div class="row g-3 align-items-center">
-              <div class="col-md-4">
-                {% if active_special.image_url %}
-                  <img src="{{ active_special.image_url }}" alt="{{ active_special.title }}" class="img-fluid rounded">
-                {% else %}
-                  <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height:140px;">
-                    <span class="text-muted">No Image</span>
-                  </div>
-                {% endif %}
-              </div>
-              <div class="col-md-8">
-                <h3 class="h5 mb-1">{{ active_special.title }}</h3>
-                <p class="mb-2 text-secondary">{{ active_special.description }}</p>
-                <div class="small text-muted mb-3">
-                  {% if active_special.start_date %}Starts {{ active_special.start_date }}{% endif %}
-                  {% if active_special.end_date %}&nbsp;· Ends {{ active_special.end_date }}{% endif %}
-                </div>
+    /* hide scrollbar (Firefox/IE/Edge Legacy) */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-                <div class="small text-muted mb-3">
-                  Opens: {{ active_special.analytics.opens|default:0 }} ·
-                  CTA Clicks: {{ active_special.analytics.cta_clicks|default:0 }} ·
-                  Email Signups: {{ active_special.analytics.email_signups|default:0 }}
-                </div>
+  .subs-scroll::-webkit-scrollbar {
+    /* hide scrollbar (WebKit) */
+    width: 0;
+    height: 0;
+  }
+</style>
+<style>
+  /* subtle top border accent using your #f08000 */
+  .card-header {
+    border-top: 4px solid #f08000;
+  }
+</style>
+<div class="container py-4 px-2">
 
-                <!-- CTA buttons shown only if present -->
-                <div class="d-flex flex-wrap gap-2">
-                  {% if active_special.order_url %}
-                    <a href="{{ active_special.order_url }}" target="_blank" class="btn btn-sm text-white" style="background-color:#f08000;">Order Online</a>
-                  {% endif %}
-                  {% if active_special.mobile_order_url %}
-                    <a href="{{ active_special.mobile_order_url }}" target="_blank" class="btn btn-sm btn-outline-dark">Mobile Order</a>
-                  {% endif %}
-                  {% if active_special.phone_number %}
-                    <a href="tel:{{ active_special.phone_number }}" class="btn btn-sm btn-outline-secondary">Call</a>
-                  {% endif %}
-                  <a href="{% url 'special_edit' active_special.id %}" class="btn btn-sm btn-light border">Edit</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      {% else %}
-        <!-- No active special: clear CTA -->
-        <div class="card border-0 shadow-sm">
-          <div class="card-body d-flex flex-column flex-md-row align-items-md-center">
-            <div class="flex-grow-1">
-              <h3 class="h5 mb-1">No active special</h3>
-              <p class="text-secondary mb-2">Create a special to start collecting opens, clicks, and signups.</p>
-            </div>
-            <a href="{% url 'special_create' %}" class="btn text-white mt-2 mt-md-0" style="background-color:#f08000;">Create Special</a>
-          </div>
-        </div>
-      {% endif %}
-    </div>
 
-    <!-- Aggregated Stats -->
-    <div class="col-lg-5">
-      <div class="card h-100">
-        <div class="card-header">Stats (All Time)</div>
-        <div class="card-body">
-          <!-- Use defaults so template never blows up if stats is missing/None -->
-          <div class="d-flex justify-content-between mb-2">
-            <span>Total Opens</span>
-            <strong>{{ stats.opens|default:0 }}</strong>
-          </div>
-          <div class="d-flex justify-content-between mb-2">
-            <span>CTA Clicks</span>
-            <strong>{{ stats.cta_clicks|default:0 }}</strong>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span>Email Signups</span>
-            <strong>{{ stats.email_signups|default:0 }}</strong>
-          </div>
-          <div id="stats-sparkline" class="mt-3"></div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row g-4 mt-1">
+  <div class="row g-4 my-3">
     <div class="col-lg-12">
 
-          {% include "app/partials/specials_list.html" with specials=specials %}
+      {% include "app/partials/specials_list.html" with specials=specials %}
   
     </div>
-</div>
-<div class="row g-4 mt-4 align-items-top">
+  </div>
+    <div class="row g-4">
     <div class="col-lg-6">
-      <div class="card">
+    
+      {% include "profiles/card.html" with profile=profile %}
+  
+    </div>
+    <!-- Aggregated Stats -->
+
+    <div class="col-lg-6">
+   
+      {% include "app/stats/widget.html" with profile=profile specials=specials top_special=top_special stats=stats selected_special=None %}
+  
+    </div>
+
+  </div>
+  <div class="row g-4 mt-4 align-items-top">
+
+
+
+
+    <div class="col-lg-6">
+      <div class="card h-100">
         <div class="card-header">Billing</div>
         <div class="card-body">
-          <p class="text-secondary mb-2">Coming soon.</p>
-          <!-- Placeholder: plan details / usage -->
-          <div class="small text-muted">You’ll see plan, usage, and invoices here.</div>
+
+          <!-- Free Plan -->
+          <div class="card mb-3 border-success shadow-sm">
+            <div class="card-body d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold text-success">
+                  <i class="fa-solid fa-circle-check me-2"></i>
+                  Free Plan
+                </div>
+                <div class="small text-muted">Currently subscribed</div>
+              </div>
+              <span class="badge bg-success-subtle text-success fw-semibold">Active</span>
+            </div>
+          </div>
+
+          <!-- Pro Plan -->
+          <div class="card mb-3 border-secondary">
+            <div class="card-body">
+              <div class="fw-bold">
+                <i class="fa-solid fa-rocket me-2 text-secondary"></i>
+                Pro Plan
+              </div>
+              <div class="small text-muted">Coming soon</div>
+            </div>
+          </div>
+
+          <!-- Enterprise Plan -->
+          <div class="card border-secondary">
+            <div class="card-body">
+              <div class="fw-bold">
+                <i class="fa-solid fa-building me-2 text-secondary"></i>
+                Enterprise Plan
+              </div>
+              <div class="small text-muted">Coming soon</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
-<div class="col-lg-6">
-      <!-- Email Subscribers (kept nearby since it relates to growth) -->
-      <div class="card">
-        <div class="card-header">Email Subscribers</div>
-        <ul class="list-group list-group-flush">
-          {% for sub in subscribers %}
-            <li class="list-group-item border-1 border-bottom">{{ sub.email }}</li>
-          {% empty %}
-            <li class="list-group-item text-secondary">No subscribers yet</li>
-          {% endfor %}
-        </ul>
-      </div>
+
+    <div class="col-lg-6">
+      {% include "app/subscribers/panel.html" with profile=request.user.userprofile %}
+
+
     </div>
   </div>
 
@@ -147,18 +129,15 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-uber"
-                       {% if integration_status.uber_eats %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'uber_eats' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-uber" {% if integration_status.uber_eats %}checked{% endif %} 
+                hx-post="{% url 'integrations_toggle' 'uber_eats' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-uber">
                   {% if integration_status.uber_eats %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
               </div>
-              <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'uber_eats' %}">Configure</a>
+              <a class="btn btn-sm btn-outline-dark mt-2"
+                href="{% url 'integrations_connect' 'uber_eats' %}">Configure</a>
             </div>
           </div>
         </div>
@@ -172,18 +151,15 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-doordash"
-                       {% if integration_status.doordash %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'doordash' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-doordash" {% if integration_status.doordash %}checked{% endif %}
+                 hx-post="{% url 'integrations_toggle' 'doordash' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-doordash">
                   {% if integration_status.doordash %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
               </div>
-              <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'doordash' %}">Configure</a>
+              <a class="btn btn-sm btn-outline-dark mt-2"
+                href="{% url 'integrations_connect' 'doordash' %}">Configure</a>
             </div>
           </div>
         </div>
@@ -197,21 +173,18 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-google"
-                       {% if integration_status.google %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'google' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-google" {% if integration_status.google %}checked{% endif %}
+                 hx-post="{% url 'integrations_toggle' 'google' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-google">
                   {% if integration_status.google %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
               </div>
               {% if integration_status.google %}
-                <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'google' %}">Configure</a>
+              <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'google' %}">Configure</a>
               {% else %}
-                <a class="btn btn-sm btn-outline-primary mt-2" href="{% url 'integrations_connect' 'google' %}">Connect</a>
+              <a class="btn btn-sm btn-outline-primary mt-2"
+                href="{% url 'integrations_connect' 'google' %}">Connect</a>
               {% endif %}
             </div>
           </div>
@@ -226,13 +199,9 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-apple"
-                       {% if integration_status.apple %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'apple' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-apple" {% if integration_status.apple %}checked{% endif %} 
+                hx-post="{% url 'integrations_toggle' 'apple' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-apple">
                   {% if integration_status.apple %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -251,13 +220,8 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-square"
-                       {% if integration_status.square %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'square' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-square" {% if integration_status.square %}checked{% endif %} hx-post="{% url 'integrations_toggle' 'square' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-square">
                   {% if integration_status.square %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
@@ -275,13 +239,9 @@
             </div>
             <div class="text-end">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                       id="int-toast"
-                       {% if integration_status.toast %}checked{% endif %}
-                       hx-post="{% url 'integrations_toggle' 'toast' %}"
-                       hx-trigger="change"
-                       hx-vals='{"enabled": this.checked}'
-                       {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+                <input class="form-check-input" type="checkbox" id="int-toast" {% if integration_status.toast %}checked{% endif %} 
+                hx-post="{% url 'integrations_toggle' 'toast' %}" hx-trigger="change"
+                  hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
                 <label class="form-check-label small" for="int-toast">
                   {% if integration_status.toast %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
                 </label>
