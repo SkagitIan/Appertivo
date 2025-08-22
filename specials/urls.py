@@ -15,6 +15,7 @@ urlpatterns = [
     path("specials/<int:pk>/preview/", views.special_preview, name="special_preview"),
     # urls.py
     path("specials/<int:pk>/update/", views.special_update, name="special_update"),
+    path("specials/<int:pk>/edit/", views.special_update, name="special_edit"),
     path("specials/<int:pk>/delete/", views.special_delete, name="special_delete"),
     path("specials/<int:pk>/publish/", views.special_publish, name="special_publish"),
     
@@ -41,6 +42,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
 
     path("my-specials/", views.my_specials, name="my_specials"),
+    path("", include("contentgen.urls")),
 
 ]
 
