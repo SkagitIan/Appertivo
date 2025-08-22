@@ -1,0 +1,130 @@
+{# Uber Eats #}
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">Uber Eats</div>
+      <div class="small text-secondary">Auto-post specials to your Uber Eats storefront.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-uber" {% if integration_status.uber_eats %}checked{% endif %}
+        hx-post="{% url 'integrations_toggle' 'uber_eats' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-uber">
+          {% if integration_status.uber_eats %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      <a class="btn btn-sm btn-outline-dark mt-2"
+        href="{% url 'integrations_connect' 'uber_eats' %}">Configure</a>
+    </div>
+  </div>
+</div>
+
+{# DoorDash #}
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">DoorDash</div>
+      <div class="small text-secondary">Sync specials to promotions and menu highlights.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-doordash" {% if integration_status.doordash %}checked{% endif %}
+         hx-post="{% url 'integrations_toggle' 'doordash' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-doordash">
+          {% if integration_status.doordash %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      <a class="btn btn-sm btn-outline-dark mt-2"
+        href="{% url 'integrations_connect' 'doordash' %}">Configure</a>
+    </div>
+  </div>
+</div>
+
+{# Google Business Profile #}
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">Google</div>
+      <div class="small text-secondary">Post updates to Google Business Profile.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-google" {% if integration_status.google %}checked{% endif %}
+         hx-post="{% url 'integrations_toggle' 'google' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-google">
+          {% if integration_status.google %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      {% if integration_status.google %}
+      <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'google' %}">Configure</a>
+      {% else %}
+      <a class="btn btn-sm btn-outline-primary mt-2"
+        href="{% url 'integrations_connect' 'google' %}">Connect</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{# Apple Maps / Apple Business #}
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">Apple</div>
+      <div class="small text-secondary">Share promos via Apple Business Connect.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-apple" {% if integration_status.apple %}checked{% endif %}
+        hx-post="{% url 'integrations_toggle' 'apple' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-apple">
+          {% if integration_status.apple %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'apple' %}">Configure</a>
+    </div>
+  </div>
+</div>
+
+{# POS examples: Square, Toast (toggle whichever you support) #}
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">Square POS</div>
+      <div class="small text-secondary">Pull items; push “Special” tags to POS.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-square" {% if integration_status.square %}checked{% endif %} hx-post="{% url 'integrations_toggle' 'square' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-square">
+          {% if integration_status.square %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'square' %}">Configure</a>
+    </div>
+  </div>
+</div>
+
+<div class="col">
+  <div class="border rounded p-3 d-flex align-items-center justify-content-between">
+    <div>
+      <div class="fw-semibold">Toast POS</div>
+      <div class="small text-secondary">Sync specials with Toast menus.</div>
+    </div>
+    <div class="text-end">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="int-toast" {% if integration_status.toast %}checked{% endif %}
+        hx-post="{% url 'integrations_toggle' 'toast' %}" hx-trigger="change"
+          hx-vals='{"enabled": this.checked}' {% if not request.user.userprofile.is_premium %}disabled{% endif %}>
+        <label class="form-check-label small" for="int-toast">
+          {% if integration_status.toast %}<span class="text-success">Connected</span>{% else %}Off{% endif %}
+        </label>
+      </div>
+      <a class="btn btn-sm btn-outline-dark mt-2" href="{% url 'integrations_connect' 'toast' %}">Configure</a>
+    </div>
+  </div>
+</div>
