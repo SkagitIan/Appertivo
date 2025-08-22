@@ -100,6 +100,16 @@ class SpecialFormTemplateTests(TestCase):
         self.assertIn('id="id_ai_enhance"', html)
         self.assertIsNotNone(re.search(r'id="id_ai_enhance"[^>]*checked', html))
 
+    def test_ai_enhance_label_present(self):
+        html = self.render()
+        self.assertIn('AI Enhance', html)
+
+    def test_cta_buttons_present(self):
+        html = self.render()
+        self.assertIn('data-cta="order"', html)
+        self.assertIn('data-cta="call"', html)
+        self.assertIn('data-cta="mobile_order"', html)
+
 
 class ConnectionPartialTests(TestCase):
     def render(self):
