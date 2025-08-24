@@ -1,530 +1,835 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string
-from django.utils import timezone
-from .models import Special, EmailSignup, SpecialAnalytics, Integration
-from .forms import SpecialForm
-from .ai import enhance_special_content
-from django.db import models
-from django.http import JsonResponse
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, QueryDict
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from profiles.models import UserProfile
+from django.views.decorators.http import require_http_methods
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 import json
-import logging
-from django.db.models import Q, F
-from django.urls import reverse
-logger = logging.getLogger(__name__)
-from dotenv import load_dotenv
-from .integrations import google as google_integration
-from datetime import timedelta
-from django.db.models import Sum, Value, IntegerField
-from django.db.models.functions import Coalesce
-from django.utils import timezone
-from django.db.models import Q
+import openai
+import requests
+from .models import Special, Restaurant, Connection, UserProfile, EmailSignup
 
-load_dotenv()  # take environment variables
+def home(request):
+    """Home page view"""
+    return render(request, 'app/home.html')
 
-def dashboard(request):
-    """Renders the main dashboard."""
-    specials = Special.objects.filter().order_by("-start_date", "-created_at")
-    return render(request, "app/dashboard.html", {"specials": specials})
-
-
-
-def appertivo_widget(request):
-    api_url = "https://appertivo.com/api/specials.js"
-    subscribe_url = request.build_absolute_uri("/api/subscribe/")
-    restaurant_id = request.GET.get('restaurant', '')
-    special_id = request.GET.get('special', '')
-
-    response = render(request, "app/widget_template.html", {
-        "api_url": api_url,
-        "subscribe_url": subscribe_url,
-        "restaurant_id": restaurant_id,
-        "special_id": special_id,
-    })
-    response['Content-Type'] = 'application/javascript'
-    return response
-
-
-DEMO_SPECIALS = [
-    {
-        "title": "Try Me — Daily Special",
-        "description": "This is a demo special from Appertivo. Add a photo and a CTA to see how it looks on your site.",
-        "image_url": "",  # leave blank or host a small demo image in /static and use request.build_absolute_uri in view
-        "cta_choices": [
-            {"type": "order", "url": "https://example.com/order"},
-            {"type": "call", "phone": "+1-555-0100"},
-        ],
-        "enable_email_signup": True,
-    }
-]
-
-def specials_api(request):
-    today = timezone.localdate()
-    requested_restaurant = request.GET.get("restaurant", 13)
-    special = request.GET.get("special", None)
-    demo_mode = False
-    restaurant_id = requested_restaurant
-
-    # Fallback to static demo
-    if not restaurant_id:
-        return JsonResponse({
-            "specials": DEMO_SPECIALS,
-            "meta": {"mode": "default_demo", "restaurant": None, "count": len(DEMO_SPECIALS)}
-        })
-
-    print("Restaurant ID:", restaurant_id)
-
-    # If specific special requested
-    if special:
-        qs = Special.objects.filter(pk=special)
-    else:
-        qs = Special.objects.filter(
-            Q(user_profile__pk=restaurant_id),
-            Q(published=True),
-            Q(start_date__lte=today) | Q(start_date__isnull=True),
-            Q(end_date__gte=today) | Q(end_date__isnull=True),
+def register_view(request):
+    """Registration page"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        restaurant_name = request.POST.get('restaurant_name')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'User with this email already exists.')
+            return render(request, 'registration/register.html')
+        
+        # Create user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password
         )
+        
+        # Create user profile
+        profile = UserProfile.objects.create(
+            user=user,
+            restaurant_name=restaurant_name,
+            is_email_verified=False
+        )
+        
+        # Send verification email (for now, just mark as verified)
+        profile.is_email_verified = True
+        profile.save()
+        
+        messages.success(request, 'Account created successfully! You can now sign in.')
+        return redirect('login')
+    
+    return render(request, 'registration/register.html')
 
-    latest = qs.last()
-
-    # No special found
-    if not latest:
-        return JsonResponse({
-            "specials": [],
-            "meta": {
-                "mode": "fallback_empty_restaurant",
-                "restaurant": restaurant_id,
-                "count": 0,
-            }
-        })
-    cta = []
-    if latest.order_url:
-        cta.append({"type": "order", "url": latest.order_url})
-    if latest.phone_number:
-        cta.append({"type": "call", "phone": latest.phone_number})
-    if latest.mobile_order_url:
-        cta.append({"type": "mobile_order", "url": latest.mobile_order_url})
-
-    payload = {
-        "title": latest.title or "",
-        "description": latest.description or "",
-        "image_url": latest.image or "",
-        "order_url": latest.order_url or "",
-        "phone_number": latest.phone_number or "",
-        "mobile_order_url": latest.mobile_order_url or "",
-        "cta_choices": latest.cta_choices,
-        "cta": cta,
-        "enable_email_signup": bool(latest.enable_email_signup),
-        "start_date": latest.start_date,
-        "end_date": latest.end_date,
-        "published": bool(latest.published),
-    }
-
-    return JsonResponse({
-        "specials": [payload],
-        "meta": {
-            "mode": "live",
-            "restaurant": restaurant_id,
-            "count": 1,
-        }
-    })
-
-
+def login_view(request):
+    """Login page"""
+    print("login page")
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=email, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Invalid email or password.')
+    
+    return render(request, 'registration/login.html')
 
 @login_required
-def special_create(request):
-    user_profile = request.user.userprofile
-
-    if request.method == "POST":
-        form = SpecialForm(request.POST, request.FILES)
-        if form.is_valid():
-            special = form.save(commit=False)
-            special.published = False
-            special.user_profile = user_profile
-            special.save()
-            if form.cleaned_data.get("ai_enhance"):
-                enhance_special_content(special)
-            return redirect("special_preview", pk=special.pk)
-        return render(request, "app/special_step1.html", {"form": form})
-
-    form = SpecialForm()
-    return render(request, "app/special_step1.html", {"form": form})
-
-
-
-@login_required(login_url="signup")
-def special_preview(request, pk):
-    sp = get_object_or_404(Special, pk=pk)
-    if request.method == "POST":
-        form = SpecialForm(request.POST, request.FILES, instance=sp)
-        if form.is_valid():
-            sp = form.save()
-            if form.cleaned_data.get("ai_enhance"):
-                enhance_special_content(sp)
-            form = SpecialForm(instance=sp)
-    else:
-        form = SpecialForm(instance=sp)
-    ctx = {
-        "special": sp,
-        "form": form,
-        "publish_url": reverse("special_publish", args=[sp.pk]),
-    }
-    return render(request, "app/special_preview.html", ctx)
-
-@login_required
-@require_POST
-def special_publish(request, pk):
-    sp = get_object_or_404(Special, pk=pk)
-    sp.published = True
-    sp.save(update_fields=["published"])
-    integrations = Integration.objects.filter(user_profile=sp.user_profile, enabled=True)
-    for integration in integrations:
-        if integration.provider == "google":
-            google_integration.publish_special(sp)
-    return redirect("my_specials")
-
-@csrf_exempt
-@require_POST
-def subscribe_email(request):
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False}, status=400)
-
-    email = data.get("email")
-    restaurant_id = data.get("restaurant_id")
-    special_id = data.get("special_id")
-    if not email or not restaurant_id:
-        return JsonResponse({"success": False}, status=400)
-
-    try:
-        profile = UserProfile.objects.get(id=restaurant_id)
-    except UserProfile.DoesNotExist:
-        return JsonResponse({"success": False}, status=404)
-
-    special = None
-    if special_id:
-        try:
-            special = Special.objects.get(pk=special_id)
-        except Special.DoesNotExist:
-            special = None
-
-    EmailSignup.objects.create(user_profile=profile, email=email, special=special)
-    return JsonResponse({"success": True})
-
-
-@csrf_exempt
-@require_POST
-def track_open(request, pk):
-    """Record that a special was opened in the widget."""
-    sp = get_object_or_404(Special, pk=pk)
-    analytics, _ = SpecialAnalytics.objects.get_or_create(special=sp)
-    SpecialAnalytics.objects.filter(pk=analytics.pk).update(opens=F("opens") + 1)
-    return JsonResponse({"success": True})
-
-
-@csrf_exempt
-@require_POST
-def track_cta(request, pk):
-    """Record a click on a special's call-to-action."""
-    sp = get_object_or_404(Special, pk=pk)
-    analytics, _ = SpecialAnalytics.objects.get_or_create(special=sp)
-    SpecialAnalytics.objects.filter(pk=analytics.pk).update(cta_clicks=F("cta_clicks") + 1)
-    return JsonResponse({"success": True})
-
-# views.py
-from django.db.models import Sum, Value, IntegerField
-from django.db.models.functions import Coalesce
-
-
-@login_required
-@require_http_methods(["POST"])
-def integrations_toggle(request, provider: str):
-    """
-    HTMX endpoint to enable/disable an integration.
-    Expects form or JSON field 'enabled' -> true/false.
-    """
-    profile = request.user.userprofile
-    if not getattr(profile, "is_premium", False):
-        return HttpResponseForbidden("Upgrade to premium to access integrations")
-
-    # Accept either form-encoded (hx-vals) or raw JSON
-    enabled = None
-    if request.content_type == "application/json":
-        try:
-            payload = json.loads(request.body.decode("utf-8"))
-            enabled = payload.get("enabled")
-        except Exception:
-            return HttpResponseBadRequest("Invalid JSON")
-    else:
-        # form-encoded
-        val = request.POST.get("enabled")
-        if val is not None:
-            enabled = (str(val).lower() in ("1", "true", "yes", "on"))
-
-    if enabled is None:
-        return HttpResponseBadRequest("Missing 'enabled'")
-    integration, _ = Integration.objects.get_or_create(
-        user_profile=profile, provider=provider
-    )
-    integration.enabled = enabled
-    integration.save(update_fields=["enabled"])
-
-    return JsonResponse({"provider": provider, "enabled": enabled})
-
-@login_required
-def integrations_connect(request, provider: str):
-    """
-    A simple stub page (or start an OAuth flow).
-    """
-    profile = request.user.userprofile
-    if not getattr(profile, "is_premium", False):
-        return HttpResponseForbidden("Upgrade to premium to access integrations")
-
-    if provider == "google":
-        return redirect(google_integration.get_authorization_url())
-    return JsonResponse({"provider": provider, "action": "configure"})
-
-@login_required
-def my_specials(request):
-    profile = request.user.userprofile
-
-    specials = (Special.objects
-                .filter(user_profile=profile)
-                .order_by("-created_at"))
-
-    today = timezone.localdate()
-    active_special = (specials
-                      .filter(published=True)
-                      .filter(Q(end_date__gte=today) | Q(end_date__isnull=True))
-                      .select_related("analytics")
-                      .first())
-
-    # All-time aggregates from SpecialAnalytics (fits your current model)
-    agg = specials.aggregate(
-        opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
-        cta_clicks=Coalesce(Sum("analytics__cta_clicks"), Value(0), output_field=IntegerField()),
-        email_signups=Coalesce(Sum("analytics__email_signups"), Value(0), output_field=IntegerField()),
-    )
-    # All-time CTR (clicks ÷ opens)
-    opens = agg["opens"] or 0
-    clicks = agg["cta_clicks"] or 0
-    agg["ctr"] = round((clicks / opens) * 100, 1) if opens else 0.0
-
-    # Recent windows for EmailSignup only (timestamped rows)
-    start_7d = today - timedelta(days=6)     # inclusive last 7 calendar days
-    start_30d = today - timedelta(days=29)   # inclusive last 30 calendar days
-
-    qs_signups = EmailSignup.objects.filter(user_profile=profile)
-    signups_today = qs_signups.filter(created_at__date=today).count()
-    signups_7d = qs_signups.filter(created_at__date__gte=start_7d).count()
-    signups_30d = qs_signups.filter(created_at__date__gte=start_30d).count()
-
-    # Optional: highlight top-performing special (all-time, by clicks then opens)
-    top_special = (specials
-                   .exclude(analytics__isnull=True)
-                   .order_by("-analytics__cta_clicks", "-analytics__opens")
-                   .first())
-
-    subscribers = (EmailSignup.objects
-                   .filter(user_profile=profile)
-                   .order_by("-created_at"))
-
-    context = {
-        "specials": specials.select_related("analytics"),
-        "active_special": active_special,
-        "stats": agg,
-        "signups_today": signups_today,
-        "signups_7d": signups_7d,
-        "signups_30d": signups_30d,
-        "top_special": top_special,
-        "subscribers": subscribers,
-        "profile": profile,
-        "integration_status": {i.provider: i.enabled for i in Integration.objects.filter(user_profile=profile)},
-    }
-    return render(request, "app/my_specials.html", context)
-
-@require_POST
-@login_required
-def special_update(request, pk):
-    sp = get_object_or_404(Special, pk=pk)
-    form = SpecialForm(request.POST, request.FILES, instance=sp)
-    if form.is_valid():
-        sp = form.save()
-        if form.cleaned_data.get("ai_enhance"):
-            enhance_special_content(sp)
-        ctx = {
-            "special": sp,
-            "form": SpecialForm(instance=sp),
-            "action_url": reverse("special_update", args=[sp.pk]),
-            "target_id": "#main",
-            "submit_label": "Save Changes",
-        }
-        return render(request, "app/partials/special_edit_panel.html", ctx)
-
-    # on errors: return the same form partial, configured for update
-    return render(
-        request,
-        "app/partials/special_form.html",
-        {
-            "form": form,
-            "action_url": reverse("special_update", args=[pk]),
-            "target_id": "#main",
-            "submit_label": "Save Changes",
-        },
-        status=422,
-    )
-
-
-@login_required
-@require_http_methods(["DELETE"])
-def special_delete(request, pk):
-    profile = request.user.userprofile
-    sp = get_object_or_404(Special, pk=pk, user_profile=profile)
-    sp.delete()
-    return HttpResponse("")
-
-
-
-SORTS = {
-    "special": ["special__title__isnull", "special__title", "-created_at"],  # groups by special
-    "newest": ["-created_at"],
-    "oldest": ["created_at"],
-}
-
-@login_required
-def subscribers_panel(request, profile_id):
-    profile = get_object_or_404(UserProfile, id=profile_id)
-    if request.user != profile.user:
-        return HttpResponseForbidden()
-
-    sort_key = request.GET.get("sort", "special")
-    order_by = SORTS.get(sort_key, SORTS["special"])
-    subscribers = (EmailSignup.objects
-                   .filter(user_profile=profile)
-                   .select_related("special")
-                   .order_by(*order_by))
-
-    return render(request, "app/subscribers/panel.html", {
-        "profile": profile,
-        "subscribers": subscribers,
-        "sort_key": sort_key,
-    })
-
-
-@login_required
-def subscribers_list(request, profile_id):
-    """HTMX endpoint that returns just the <ul> list."""
-    profile = get_object_or_404(UserProfile, id=profile_id)
-    if request.user != profile.user:
-        return HttpResponseForbidden()
-
-    sort_key = request.GET.get("sort", "special")
-    order_by = SORTS.get(sort_key, SORTS["special"])
-    subscribers = (EmailSignup.objects
-                   .filter(user_profile=profile)
-                   .select_related("special")
-                   .order_by(*order_by))
-
-    return render(request, "app/subscribers/_list.html", {
-        "subscribers": subscribers,
-        "profile": profile,
-    })
-
-
-@login_required
-@require_POST
-def subscriber_delete(request, pk):
-    """Delete a signup and return 204 so HTMX swaps the <li> away."""
-    sub = get_object_or_404(EmailSignup, pk=pk)
-    if request.user != sub.user_profile.user:
-        return HttpResponseForbidden()
-    sub.delete()
-    return HttpResponse(status=204)
-
-
-def _compute_stats(profile, special_id=None):
-    """
-    Computes:
-      - All-time: opens, cta_clicks, email_signups (from Special.analytics totals)
-      - CTR (clicks / opens)
-      - Date windows for EmailSignup: today, 7d, 30d (from EmailSignup.created_at)
-    """
-    specials_qs = Special.objects.filter(user_profile=profile)
-    if special_id:
-        specials_qs = specials_qs.filter(pk=int(special_id))
-
-    agg = specials_qs.aggregate(
-        opens=Coalesce(Sum("analytics__opens"), Value(0), output_field=IntegerField()),
-        clicks=Coalesce(Sum("analytics__cta_clicks"), Value(0), output_field=IntegerField()),
-        signups=Coalesce(Sum("analytics__email_signups"), Value(0), output_field=IntegerField()),
-    )
-    opens = agg["opens"] or 0
-    clicks = agg["clicks"] or 0
-    ctr = round((clicks / opens) * 100, 1) if opens else 0.0
-
-    today = timezone.localdate()
-    start_7d = today - timedelta(days=6)      # inclusive 7 days
-    start_30d = today - timedelta(days=29)    # inclusive 30 days
-
-    signups_qs = EmailSignup.objects.filter(user_profile=profile)
-    if special_id:
-        signups_qs = signups_qs.filter(special_id=int(special_id))
-
+def dashboard(request):
+    """Dashboard view"""
+    specials = Special.objects.filter(user=request.user)
+    active_specials = specials.filter(status='active')
+    
+    total_email_signups = EmailSignup.objects.filter(restaurant=request.user).count()
+    total_email_signups_from_specials = sum(special.email_signups for special in active_specials)
+    
     stats = {
-        "opens": opens,
-        "cta_clicks": clicks,
-        "email_signups": agg["signups"] or 0,
-        "ctr": ctr,
-        "signups_today": signups_qs.filter(created_at__date=today).count(),
-        "signups_7d":    signups_qs.filter(created_at__date__gte=start_7d).count(),
-        "signups_30d":   signups_qs.filter(created_at__date__gte=start_30d).count(),
+        'active': active_specials.count(),
+        'views': sum(special.views for special in active_specials),
+        'clicks': sum(special.clicks for special in active_specials),
+        'email_signups': total_email_signups,
     }
-    return stats
+    
+    context = {
+        'specials': specials[:3],  # Latest 3 for overview
+        'stats': stats,
+    }
+    return render(request, 'app/dashboard.html', context)
 
 @login_required
-def stats_widget(request, profile_id):
-    """Full card (shell + initial body)."""
-    profile = get_object_or_404(UserProfile, pk=profile_id)
-    if request.user != profile.user:
-        return render(request, "app/403.html", status=403)
-
-    specials = Special.objects.filter(user_profile=profile).select_related("analytics").order_by("-created_at")
-    stats = _compute_stats(profile, special_id=None)
-
-    # nice-to-have: show a “top” special by clicks then opens (all-time)
-    top_special = specials.exclude(analytics__isnull=True).order_by("-analytics__cta_clicks", "-analytics__opens").first()
-
-    return render(request, "app/stats/widget.html", {
-        "profile": profile,
-        "specials": specials,
-        "top_special": top_special,
-        "stats": stats,             # initial = ALL specials
-        "selected_special": None,   # initial
-    })
+def specials_list(request):
+    """List all specials"""
+    specials = Special.objects.filter(user=request.user)
+    return render(request, 'app/list.html', {'specials': specials})
 
 @login_required
-def stats_fragment(request, profile_id):
-    """HTMX fragment that swaps the card body based on ?special=ID (or empty for all)."""
-    profile = get_object_or_404(UserProfile, pk=profile_id)
-    if request.user != profile.user:
-        return render(request, "app/403.html", status=403)
+def create_special(request):
+    """Create a new special"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        cta_type = request.POST.get('cta_type', 'web')
+        cta_url = request.POST.get('cta_url', '') if cta_type == 'web' else None
+        cta_phone = request.POST.get('cta_phone', '') if cta_type == 'call' else None
+        image = request.FILES.get('image')
+        
+        special = Special.objects.create(
+            user=request.user,
+            title=title,
+            description=description,
+            price=price,
+            start_date=start_date,
+            end_date=end_date,
+            cta_type=cta_type,
+            cta_url=cta_url,
+            cta_phone=cta_phone,
+            image=image,
+            status='active'
+        )
+        
+        # Send email notifications to subscribers
+        send_special_notification(special)
+        
+        messages.success(request, 'Special created successfully!')
+        return redirect('specials_list')
+    
+    return render(request, 'app/create.html')
 
-    special_id = request.GET.get("special") or None
-    stats = _compute_stats(profile, special_id=special_id)
+@login_required
+@csrf_exempt
+def enhance_description(request):
+    """Enhance description using OpenAI"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        title = data.get('title')
+        description = data.get('description')
+        price = data.get('price')
+        
+        if not settings.OPENAI_API_KEY:
+            return JsonResponse({'error': 'OpenAI API key not configured'})
+        
+        try:
+            client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a restaurant marketing expert. Enhance the description of daily specials to be more appetizing and compelling while keeping them concise. Focus on sensory details, cooking methods, and what makes the dish special. Return only the enhanced description."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Enhance this restaurant special description:
+                        
+Title: {title}
+Current Description: {description}
+Price: ${price}
 
-    selected_special = None
-    if special_id:
-        selected_special = Special.objects.filter(user_profile=profile, pk=int(special_id)).first()
+Make it more appealing and mouth-watering while keeping it under 150 characters. Focus on ingredients, preparation, and what makes it special."""
+                    }
+                ],
+                max_tokens=200,
+                temperature=0.7,
+            )
+            
+            enhanced_description = response.choices[0].message.content.strip()
+            return JsonResponse({'description': enhanced_description})
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
+    
+    return JsonResponse({'error': 'Invalid request method'})
 
-    return render(request, "app/stats/_card_body.html", {
-        "stats": stats,
-        "selected_special": selected_special,
-    })
+@login_required
+def connections(request):
+    """Manage platform connections"""
+    user_connections = Connection.objects.filter(user=request.user)
+    
+    # Create default connections if they don't exist
+    platforms = ['website', 'google_business', 'pos', 'delivery']
+    for platform in platforms:
+        connection, created = Connection.objects.get_or_create(
+            user=request.user,
+            platform=platform,
+            defaults={'is_connected': platform == 'website'}  # Website is always connected
+        )
+    
+    connections_data = Connection.objects.filter(user=request.user)
+    return render(request, 'app/connections.html', {'connections': connections_data})
 
+def logout_view(request):
+    """Logout view"""
+    logout(request)
+    return redirect('home')
 
+# Widget System Views
+def widget_special(request, user_id):
+    """API endpoint for widget to get today's special"""
+    try:
+        user = get_object_or_404(User, id=user_id)
+        # Get today's active special
+        from django.utils import timezone
+        now = timezone.now()
+        special = Special.objects.filter(
+            user=user,
+            status='active',
+            start_date__lte=now,
+            end_date__gte=now
+        ).first()
+        
+        if special:
+            # Increment view count
+            special.views += 1
+            special.save()
+            
+            data = {
+                'id': str(special.id),
+                'title': special.title,
+                'description': special.description,
+                'price': str(special.price),
+                'image': special.image.url if special.image else None,
+                'cta_type': special.cta_type,
+                'cta_url': special.cta_url,
+                'cta_phone': special.cta_phone,
+                'restaurant_name': user.profile.restaurant_name if hasattr(user, 'profile') else user.username,
+            }
+            return JsonResponse({'special': data})
+        else:
+            return JsonResponse({'special': None})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def widget_signup(request, user_id):
+    """Email signup endpoint for widget"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            special_id = data.get('special_id')
+            
+            if not email:
+                return JsonResponse({'error': 'Email required'}, status=400)
+                
+            user = get_object_or_404(User, id=user_id)
+            special = None
+            if special_id:
+                special = Special.objects.filter(id=special_id, user=user).first()
+            
+            # Create or get email signup
+            signup, created = EmailSignup.objects.get_or_create(
+                restaurant=user,
+                email=email,
+                defaults={'special': special}
+            )
+            
+            if created and special:
+                # Increment email signup count on special
+                special.email_signups += 1
+                special.save()
+                
+            return JsonResponse({'success': True, 'created': created})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'POST required'}, status=405)
+
+def widget_js(request, user_id):
+    """Generate JavaScript widget code"""
+    user = get_object_or_404(User, id=user_id)
+    restaurant_name = user.profile.restaurant_name if hasattr(user, 'profile') else user.username
+    
+    widget_code = f"""
+(function() {{
+    const WIDGET_API_URL = '{request.build_absolute_uri("/widget/")}';
+    const USER_ID = '{user_id}';
+    const RESTAURANT_NAME = '{restaurant_name}';
+    
+    function createWidget() {{
+        const widgetContainer = document.getElementById('appertivo-widget');
+        if (!widgetContainer) return;
+        
+        // Widget styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .appertivo-widget {{
+                max-width: 400px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }}
+            .appertivo-header {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 16px;
+                text-align: center;
+            }}
+            .appertivo-content {{
+                padding: 20px;
+            }}
+            .appertivo-special {{
+                text-align: center;
+            }}
+            .appertivo-image {{
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 12px;
+            }}
+            .appertivo-title {{
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #1f2937;
+            }}
+            .appertivo-description {{
+                color: #6b7280;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }}
+            .appertivo-price {{
+                font-size: 24px;
+                font-weight: bold;
+                color: #059669;
+                margin-bottom: 16px;
+            }}
+            .appertivo-cta {{
+                display: inline-block;
+                background: #3b82f6;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 500;
+                margin-bottom: 16px;
+            }}
+            .appertivo-signup {{
+                border-top: 1px solid #e5e7eb;
+                padding-top: 16px;
+                margin-top: 16px;
+            }}
+            .appertivo-signup-form {{
+                display: flex;
+                gap: 8px;
+            }}
+            .appertivo-email {{
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+            }}
+            .appertivo-subscribe {{
+                background: #059669;
+                color: white;
+                border: none;
+                padding: 10px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+            }}
+            .appertivo-no-special {{
+                text-align: center;
+                padding: 40px 20px;
+                color: #6b7280;
+            }}
+        `;
+        document.head.appendChild(style);
+        
+        // Fetch today's special
+        fetch(WIDGET_API_URL + USER_ID + '/special/')
+            .then(response => response.json())
+            .then(data => {{
+                if (data.special) {{
+                    const special = data.special;
+                    widgetContainer.innerHTML = `
+                        <div class="appertivo-widget">
+                            <div class="appertivo-header">
+                                <h3>Today's Special at ${{special.restaurant_name}}</h3>
+                            </div>
+                            <div class="appertivo-content">
+                                <div class="appertivo-special">
+                                    ${{special.image ? `<img src="${{special.image}}" alt="${{special.title}}" class="appertivo-image">` : ''}}
+                                    <div class="appertivo-title">${{special.title}}</div>
+                                    <div class="appertivo-description">${{special.description}}</div>
+                                    <div class="appertivo-price">$${{special.price}}</div>
+                                    ${{special.cta_type === 'web' && special.cta_url ? 
+                                        `<a href="${{special.cta_url}}" class="appertivo-cta" target="_blank">Order Online</a>` :
+                                        special.cta_type === 'call' && special.cta_phone ? 
+                                        `<a href="tel:${{special.cta_phone}}" class="appertivo-cta">Call to Order</a>` : ''
+                                    }}
+                                </div>
+                                <div class="appertivo-signup">
+                                    <p style="margin-bottom: 8px; font-size: 14px; color: #6b7280;">
+                                        Get notified about future specials:
+                                    </p>
+                                    <form class="appertivo-signup-form" onsubmit="submitSignup(event, '${{special.id}}')">
+                                        <input type="email" class="appertivo-email" placeholder="Enter your email" required>
+                                        <button type="submit" class="appertivo-subscribe">Subscribe</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }} else {{
+                    widgetContainer.innerHTML = `
+                        <div class="appertivo-widget">
+                            <div class="appertivo-header">
+                                <h3>${{RESTAURANT_NAME}}</h3>
+                            </div>
+                            <div class="appertivo-no-special">
+                                <p>No special available today.</p>
+                                <p>Check back soon!</p>
+                            </div>
+                        </div>
+                    `;
+                }}
+            }})
+            .catch(err => {{
+                console.error('Widget error:', err);
+                widgetContainer.innerHTML = '<p>Unable to load special</p>';
+            }});
+    }}
+    
+    window.submitSignup = function(event, specialId) {{
+        event.preventDefault();
+        const email = event.target.querySelector('.appertivo-email').value;
+        
+        fetch(WIDGET_API_URL + USER_ID + '/signup/', {{
+            method: 'POST',
+            headers: {{
+                'Content-Type': 'application/json',
+            }},
+            body: JSON.stringify({{
+                email: email,
+                special_id: specialId
+            }})
+        }})
+        .then(response => response.json())
+        .then(data => {{
+            if (data.success) {{
+                event.target.innerHTML = `
+                    <div style="text-align: center; color: #059669; font-weight: 500;">
+                        ✓ Successfully subscribed!
+                    </div>
+                `;
+            }} else {{
+                alert('Signup failed: ' + (data.error || 'Unknown error'));
+            }}
+        }})
+        .catch(err => {{
+            console.error('Signup error:', err);
+            alert('Signup failed');
+        }});
+    }};
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {{
+        document.addEventListener('DOMContentLoaded', createWidget);
+    }} else {{
+        createWidget();
+    }}
+}})();
+"""
+    return JsonResponse({'code': widget_code}, safe=False)
+
+@login_required
+def widget_setup(request):
+    """Widget setup page"""
+    return render(request, 'app/widget_setup.html')
+
+def send_special_notification(special):
+    """Send email notifications to all subscribers when a new special is published"""
+    subscribers = EmailSignup.objects.filter(restaurant=special.user, is_active=True)
+    
+    if not subscribers.exists():
+        return
+    
+    restaurant_name = special.user.profile.restaurant_name if hasattr(special.user, 'profile') else special.user.username
+    
+    # Prepare email content
+    subject = f"🍽️ New Special at {restaurant_name}: {special.title}"
+    
+    # Create HTML email template
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+            .content {{ background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px; }}
+            .special-image {{ width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 20px; }}
+            .special-title {{ font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #1f2937; }}
+            .special-description {{ margin-bottom: 20px; color: #6b7280; }}
+            .special-price {{ font-size: 28px; font-weight: bold; color: #059669; margin-bottom: 25px; }}
+            .cta-button {{ display: inline-block; background: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 500; }}
+            .footer {{ text-align: center; margin-top: 30px; padding: 20px; color: #6b7280; font-size: 14px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>New Special at {restaurant_name}!</h1>
+                <p>Check out what's delicious today</p>
+            </div>
+            <div class="content">
+                {f'<img src="{special.image.url}" alt="{special.title}" class="special-image">' if special.image else ''}
+                <div class="special-title">{special.title}</div>
+                <div class="special-description">{special.description}</div>
+                <div class="special-price">${special.price}</div>
+                
+                {f'<a href="{special.cta_url}" class="cta-button">Order Online</a>' if special.cta_type == 'web' and special.cta_url else ''}
+                {f'<a href="tel:{special.cta_phone}" class="cta-button">Call to Order</a>' if special.cta_type == 'call' and special.cta_phone else ''}
+                
+                <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+                    Available from {special.start_date.strftime('%B %d')} until {special.end_date.strftime('%B %d, %Y')}
+                </p>
+            </div>
+            <div class="footer">
+                <p>You're receiving this because you subscribed to {restaurant_name}'s specials.</p>
+                <p style="font-size: 12px;">Powered by Appertivo</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Plain text version
+    text_content = f"""
+    New Special at {restaurant_name}!
+    
+    {special.title}
+    
+    {special.description}
+    
+    Price: ${special.price}
+    
+    {'Order online: ' + special.cta_url if special.cta_type == 'web' and special.cta_url else ''}
+    {'Call to order: ' + special.cta_phone if special.cta_type == 'call' and special.cta_phone else ''}
+    
+    Available from {special.start_date.strftime('%B %d')} until {special.end_date.strftime('%B %d, %Y')}
+    
+    ---
+    You're receiving this because you subscribed to {restaurant_name}'s specials.
+    Powered by Appertivo
+    """
+    
+    # Send emails to all subscribers
+    emails_sent = 0
+    for subscriber in subscribers:
+        try:
+            from django.core.mail import EmailMultiAlternatives
+            
+            msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@appertivo.com',
+                to=[subscriber.email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            emails_sent += 1
+        except Exception as e:
+            print(f"Failed to send email to {subscriber.email}: {e}")
+    
+    print(f"Sent {emails_sent} email notifications for special: {special.title}")
+
+@login_required
+def email_analytics(request):
+    """Email analytics page"""
+    signups = EmailSignup.objects.filter(restaurant=request.user)
+    total_signups = signups.count()
+    
+    # Get signup stats per special
+    specials_stats = []
+    specials = Special.objects.filter(user=request.user).order_by('-created_at')
+    
+    for special in specials:
+        special_signups = signups.filter(special=special).count()
+        specials_stats.append({
+            'special': special,
+            'signups': special_signups,
+            'total_signups': special.email_signups
+        })
+    
+    context = {
+        'total_signups': total_signups,
+        'recent_signups': signups.order_by('-signed_up_at')[:10],
+        'specials_stats': specials_stats,
+    }
+    
+    return render(request, 'app/email_analytics.html', context)
+
+def demo_widget(request):
+    """Demo widget endpoint for homepage visitors"""
+    # Create a sample special for demo purposes
+    demo_special = {
+        'id': 'demo-special',
+        'title': 'Truffle Mushroom Risotto',
+        'description': 'Creamy Arborio rice slow-cooked with wild mushrooms, finished with truffle oil and Parmesan. A rich, earthy flavor that melts in your mouth.',
+        'price': '28.50',
+        'image': None,  # Could add a demo image URL here
+        'cta_type': 'web',
+        'cta_url': 'https://example-restaurant.com/order',
+        'cta_phone': None,
+        'restaurant_name': 'Demo Restaurant',
+    }
+    
+    return JsonResponse({'special': demo_special})
+
+@csrf_exempt
+def demo_widget_signup(request):
+    """Demo email signup - doesn't actually save anything"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            
+            if not email:
+                return JsonResponse({'error': 'Email required'}, status=400)
+            
+            # For demo purposes, always return success
+            return JsonResponse({'success': True, 'created': True, 'demo': True})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'POST required'}, status=405)
+
+def demo_widget_js(request):
+    """Generate JavaScript for demo widget"""
+    widget_code = f"""
+(function() {{
+    const WIDGET_API_URL = '{request.build_absolute_uri("/demo-widget/")}';
+    const RESTAURANT_NAME = 'Demo Restaurant';
+    
+    function createDemoWidget() {{
+        const widgetContainer = document.getElementById('appertivo-demo-widget');
+        if (!widgetContainer) return;
+        
+        // Widget styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .appertivo-widget {{
+                max-width: 400px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                margin: 0 auto;
+            }}
+            .appertivo-header {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 16px;
+                text-align: center;
+            }}
+            .appertivo-content {{
+                padding: 20px;
+            }}
+            .appertivo-special {{
+                text-align: center;
+            }}
+            .appertivo-image {{
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+                border-radius: 8px;
+                margin-bottom: 12px;
+            }}
+            .appertivo-title {{
+                font-size: 20px;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #1f2937;
+            }}
+            .appertivo-description {{
+                color: #6b7280;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }}
+            .appertivo-price {{
+                font-size: 24px;
+                font-weight: bold;
+                color: #059669;
+                margin-bottom: 16px;
+            }}
+            .appertivo-cta {{
+                display: inline-block;
+                background: #3b82f6;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 500;
+                margin-bottom: 16px;
+            }}
+            .appertivo-signup {{
+                border-top: 1px solid #e5e7eb;
+                padding-top: 16px;
+                margin-top: 16px;
+            }}
+            .appertivo-signup-form {{
+                display: flex;
+                gap: 8px;
+            }}
+            .appertivo-email {{
+                flex: 1;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+            }}
+            .appertivo-subscribe {{
+                background: #059669;
+                color: white;
+                border: none;
+                padding: 10px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+            }}
+            .appertivo-demo-badge {{
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: #f59e0b;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+            }}
+        `;
+        document.head.appendChild(style);
+        
+        // Fetch demo special
+        fetch(WIDGET_API_URL + 'special/')
+            .then(response => response.json())
+            .then(data => {{
+                if (data.special) {{
+                    const special = data.special;
+                    widgetContainer.innerHTML = `
+                        <div class="appertivo-widget" style="position: relative;">
+                            <div class="appertivo-demo-badge">DEMO</div>
+                            <div class="appertivo-header">
+                                <h3>Today's Special at ${{special.restaurant_name}}</h3>
+                            </div>
+                            <div class="appertivo-content">
+                                <div class="appertivo-special">
+                                    ${{special.image ? `<img src="${{special.image}}" alt="${{special.title}}" class="appertivo-image">` : ''}}
+                                    <div class="appertivo-title">${{special.title}}</div>
+                                    <div class="appertivo-description">${{special.description}}</div>
+                                    <div class="appertivo-price">$${{special.price}}</div>
+                                    ${{special.cta_type === 'web' && special.cta_url ? 
+                                        `<a href="#" onclick="alert('This is a demo - button would normally link to ordering page'); return false;" class="appertivo-cta">Order Online</a>` :
+                                        special.cta_type === 'call' && special.cta_phone ? 
+                                        `<a href="#" onclick="alert('This is a demo - button would normally call restaurant'); return false;" class="appertivo-cta">Call to Order</a>` : ''
+                                    }}
+                                </div>
+                                <div class="appertivo-signup">
+                                    <p style="margin-bottom: 8px; font-size: 14px; color: #6b7280;">
+                                        Get notified about future specials:
+                                    </p>
+                                    <form class="appertivo-signup-form" onsubmit="submitDemoSignup(event, '${{special.id}}')">
+                                        <input type="email" class="appertivo-email" placeholder="Enter your email" required>
+                                        <button type="submit" class="appertivo-subscribe">Subscribe</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }}
+            }})
+            .catch(err => {{
+                console.error('Demo widget error:', err);
+                widgetContainer.innerHTML = '<p>Unable to load demo widget</p>';
+            }});
+    }}
+    
+    window.submitDemoSignup = function(event, specialId) {{
+        event.preventDefault();
+        const email = event.target.querySelector('.appertivo-email').value;
+        
+        fetch(WIDGET_API_URL + 'signup/', {{
+            method: 'POST',
+            headers: {{
+                'Content-Type': 'application/json',
+            }},
+            body: JSON.stringify({{
+                email: email,
+                special_id: specialId
+            }})
+        }})
+        .then(response => response.json())
+        .then(data => {{
+            if (data.success) {{
+                event.target.innerHTML = `
+                    <div style="text-align: center; color: #059669; font-weight: 500;">
+                        ✓ Demo signup successful! (Not actually saved)
+                    </div>
+                `;
+            }} else {{
+                alert('Demo signup failed');
+            }}
+        }})
+        .catch(err => {{
+            console.error('Demo signup error:', err);
+            alert('Demo signup failed');
+        }});
+    }};
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {{
+        document.addEventListener('DOMContentLoaded', createDemoWidget);
+    }} else {{
+        createDemoWidget();
+    }}
+}})();
+"""
+    return JsonResponse({'code': widget_code}, safe=False)

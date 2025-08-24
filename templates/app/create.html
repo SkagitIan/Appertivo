@@ -1,0 +1,333 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Create Special - Appertivo{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <span class="ml-3 text-xl font-semibold text-slate-900">Appertivo</span>
+                    </div>
+                    
+                    <div class="hidden md:flex ml-10 space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Dashboard</a>
+                        <a href="{% url 'specials_list' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Specials</a>
+                        <a href="{% url 'widget_setup' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Widget</a>
+                        <a href="{% url 'connections' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Connections</a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-slate-600">
+                        Welcome, {{ user.profile.restaurant_name|default:user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="text-slate-600 hover:text-slate-900 font-medium">Sign out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <div class="flex items-center">
+                <a href="{% url 'dashboard' %}" class="text-slate-500 hover:text-slate-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <nav class="ml-4">
+                    <ol class="flex items-center space-x-2 text-sm">
+                        <li><a href="{% url 'dashboard' %}" class="text-slate-500 hover:text-slate-700">Dashboard</a></li>
+                        <li class="text-slate-400">/</li>
+                        <li class="text-slate-900 font-medium">Create Special</li>
+                    </ol>
+                </nav>
+            </div>
+            
+            <div class="mt-4">
+                <h1 class="text-2xl font-bold text-slate-900">Create New Special</h1>
+                <p class="mt-2 text-slate-600">Add details about your special and let AI enhance your description.</p>
+            </div>
+        </div>
+
+        <div class="bg-white stripe-shadow rounded-lg">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mx-6 mt-6 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200{% else %}bg-green-50 border border-green-200{% endif %}">
+                        <p class="{% if message.tags == 'error' %}text-red-700{% else %}text-green-700{% endif %}">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="p-6 space-y-6">
+                {% csrf_token %}
+                
+                <!-- Image Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Special Image
+                    </label>
+                    <div id="image-upload-area" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-slate-400 transition-colors">
+                        <div id="upload-prompt" class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-slate-600">
+                                <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Upload a file</span>
+                                    <input id="image" name="image" type="file" class="sr-only" accept="image/*" data-testid="input-image">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                        <div id="image-preview" class="hidden">
+                            <img id="preview-img" class="max-h-48 rounded-lg" alt="Preview">
+                            <button type="button" id="remove-image" class="mt-2 text-sm text-red-600 hover:text-red-700">Remove image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-slate-700 mb-2">
+                        Special Title
+                    </label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        name="title" 
+                        required 
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="e.g., Truffle Mushroom Risotto"
+                        data-testid="input-title"
+                    >
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="description" class="block text-sm font-medium text-slate-700">
+                            Description
+                        </label>
+                        <button 
+                            type="button" 
+                            id="enhance-btn" 
+                            class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            data-testid="button-enhance-description"
+                        >
+                            ✨ Enhance with AI
+                        </button>
+                    </div>
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        rows="4" 
+                        required
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Describe your special dish..."
+                        data-testid="textarea-description"
+                    ></textarea>
+                    <p class="mt-1 text-sm text-slate-500">Describe the ingredients, cooking method, and what makes it special.</p>
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <label for="price" class="block text-sm font-medium text-slate-700 mb-2">
+                        Price
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-slate-500 sm:text-sm">$</span>
+                        </div>
+                        <input 
+                            type="number" 
+                            id="price" 
+                            name="price" 
+                            step="0.01" 
+                            min="0" 
+                            required
+                            class="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0.00"
+                            data-testid="input-price"
+                        >
+                    </div>
+                </div>
+
+                <!-- Date Range -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-slate-700 mb-2">
+                            Start Date
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="start_date" 
+                            name="start_date" 
+                            required
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            data-testid="input-start-date"
+                        >
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-slate-700 mb-2">
+                            End Date
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="end_date" 
+                            name="end_date" 
+                            required
+                            class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            data-testid="input-end-date"
+                        >
+                    </div>
+                </div>
+
+                <!-- Call to Action -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                        Call to Action
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <select 
+                                id="cta_type" 
+                                name="cta_type" 
+                                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                data-testid="select-cta-type"
+                                onchange="toggleCtaField(this.value)"
+                            >
+                                <option value="web">Order Online</option>
+                                <option value="call">Call to Order</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input 
+                                type="url" 
+                                id="cta_url" 
+                                name="cta_url"
+                                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="https://your-website.com/order"
+                                data-testid="input-cta-url"
+                            >
+                            <input 
+                                type="tel" 
+                                id="cta_phone" 
+                                name="cta_phone"
+                                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hidden"
+                                placeholder="+1 (555) 123-4567"
+                                data-testid="input-cta-phone"
+                                pattern="^\+?1?\d{9,15}$"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-200">
+                    <a href="{% url 'dashboard' %}" class="btn-outline" data-testid="button-cancel">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-primary" data-testid="button-create-special">
+                        Create Special
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<!-- Enhanced JavaScript -->
+<script>
+// Image preview functionality
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('upload-prompt').classList.add('hidden');
+            document.getElementById('image-preview').classList.remove('hidden');
+            document.getElementById('preview-img').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Remove image functionality
+document.getElementById('remove-image').addEventListener('click', function() {
+    document.getElementById('image').value = '';
+    document.getElementById('upload-prompt').classList.remove('hidden');
+    document.getElementById('image-preview').classList.add('hidden');
+});
+
+// Toggle CTA field based on type
+function toggleCtaField(type) {
+    const urlField = document.getElementById('cta_url');
+    const phoneField = document.getElementById('cta_phone');
+    
+    if (type === 'call') {
+        urlField.classList.add('hidden');
+        phoneField.classList.remove('hidden');
+        urlField.required = false;
+        phoneField.required = true;
+    } else {
+        urlField.classList.remove('hidden');
+        phoneField.classList.add('hidden');
+        urlField.required = true;
+        phoneField.required = false;
+    }
+}
+
+// AI Enhancement
+document.getElementById('enhance-btn').addEventListener('click', async function() {
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const price = document.getElementById('price').value;
+    
+    if (!title || !description) {
+        alert('Please fill in the title and description first.');
+        return;
+    }
+    
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Enhancing...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('{% url "enhance_description" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: JSON.stringify({ title, description, price })
+        });
+        
+        const data = await response.json();
+        
+        if (data.description) {
+            document.getElementById('description').value = data.description;
+        } else if (data.error) {
+            alert('Enhancement failed: ' + data.error);
+        }
+    } catch (error) {
+        alert('Enhancement failed: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

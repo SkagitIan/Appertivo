@@ -28,20 +28,25 @@
   }
 </style>
 <div class="container py-4 px-2">
-
-
-  <div class="row g-4 my-3">
-    <div class="col-lg-7">
-
-          {% include 'app/partials/special_form.html' %}
-    </div>
-
-    <div class="col-lg-5">
-
       {% include "app/partials/specials_list.html" with specials=specials %}
-  
-    </div>
+
+</div>
+
+
+<div class="container">
+<div class="row d-flex g-3">
+  <div class="col-6">
+
+                {% include "app/subscribers/panel.html" with profile=request.user.userprofile %}
+
   </div>
+  <div class="col-6">
+
+                {% include "app/stats/widget.html" with profile=profile specials=specials top_special=top_special stats=stats selected_special=None %}
+
+  </div>
+</div>
+
 
 </div>
 {% endblock %}

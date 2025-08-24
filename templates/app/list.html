@@ -1,0 +1,130 @@
+{% extends 'base/base.html' %}
+
+{% block title %}All Specials - Appertivo{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <span class="ml-3 text-xl font-semibold text-slate-900">Appertivo</span>
+                    </div>
+                    
+                    <div class="hidden md:flex ml-10 space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Dashboard</a>
+                        <a href="{% url 'specials_list' %}" class="text-blue-600 font-medium border-b-2 border-blue-600 py-4">Specials</a>
+                        <a href="{% url 'widget_setup' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Widget</a>
+                        <a href="{% url 'connections' %}" class="text-slate-600 hover:text-slate-900 font-medium py-4">Connections</a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-slate-600">
+                        Welcome, {{ user.profile.restaurant_name|default:user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="text-slate-600 hover:text-slate-900 font-medium">Sign out</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">All Specials</h1>
+                <p class="mt-2 text-slate-600">Manage your restaurant's daily specials and promotions.</p>
+            </div>
+            <a href="{% url 'create_special' %}" class="btn-primary" data-testid="button-create-special">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create Special
+            </a>
+        </div>
+
+        {% if specials %}
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {% for special in specials %}
+                    <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200" data-testid="card-special-{{ special.id }}">
+                        {% if special.image %}
+                            <div class="h-48 bg-slate-200 rounded-t-lg"></div>
+                        {% endif %}
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-slate-900" data-testid="text-special-title">{{ special.title }}</h3>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if special.status == 'active' %}bg-green-100 text-green-800{% elif special.status == 'draft' %}bg-yellow-100 text-yellow-800{% else %}bg-slate-100 text-slate-800{% endif %}">
+                                    {{ special.get_status_display }}
+                                </span>
+                            </div>
+                            
+                            <p class="text-slate-600 mb-4" data-testid="text-special-description">{{ special.description|truncatewords:20 }}</p>
+                            
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="text-2xl font-bold text-slate-900" data-testid="text-special-price">${{ special.price }}</div>
+                                <div class="text-sm text-slate-500">
+                                    Ends {{ special.end_date|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4 text-center text-sm text-slate-500 mb-4">
+                                <div>
+                                    <div class="font-medium text-slate-900" data-testid="stat-views">{{ special.views }}</div>
+                                    <div>Views</div>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-slate-900" data-testid="stat-clicks">{{ special.clicks }}</div>
+                                    <div>Clicks</div>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-slate-900" data-testid="stat-shares">{{ special.shares }}</div>
+                                    <div>Shares</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button class="flex-1 btn-outline text-sm py-2" data-testid="button-edit-special">
+                                    Edit
+                                </button>
+                                <button class="flex-1 btn-primary text-sm py-2" data-testid="button-view-special">
+                                    View
+                                </button>
+                                <button class="px-3 py-2 text-slate-400 hover:text-slate-600" data-testid="button-more-options">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-slate-900">No specials yet</h3>
+                <p class="mt-1 text-sm text-slate-500">Get started by creating your first special.</p>
+                <div class="mt-6">
+                    <a href="{% url 'create_special' %}" class="btn-primary" data-testid="button-create-first-special">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create your first special
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

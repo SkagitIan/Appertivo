@@ -47,15 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'cloudinary',
     'django_extensions',
-    'debug_toolbar',
     'corsheaders',
     'app.apps.AppConfig',
-    'profiles',
-    'contentgen',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
     'anymail',
 ]
 
@@ -80,7 +73,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
@@ -93,9 +85,9 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.appertivo.com",
 ]
 
-# If you want cookies valid across subdomains (optional)
-CSRF_COOKIE_DOMAIN = ".appertivo.com"
-SESSION_COOKIE_DOMAIN = ".appertivo.com"
+# # If you want cookies valid across subdomains (optional)
+# CSRF_COOKIE_DOMAIN = ".appertivo.com"
+# SESSION_COOKIE_DOMAIN = ".appertivo.com"
 
 # If you're behind Cloudflare/Tunnel or any proxy
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -121,7 +113,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'app.context_processors.settings_modal',
             ],
         },
     },
@@ -164,15 +155,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
-SITE_ID = 1
-ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_LOGOUT_ON_GET = True
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -229,9 +212,10 @@ LOGGING = {
 }
 SERVER_EMAIL = 'ian.larsen.1976@gmail.com'
 DEFAULT_FROM_EMAIL = 'ian@appertivo.com'
-LOGIN_REDIRECT_URL = 'my_specials'
-LOGOUT_REDIRECT_URL = 'dashboard'
-
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/dashboard/'
+LOGIN_URL = "/login/"
+SITE_ID=1
 BREVO_API_KEY = os.getenv('BREVO_API_KEY')
 print(f"BREVO_API_KEY: {BREVO_API_KEY}")  # Debugging line to check if the key is loaded
 # if BREVO_API_KEY:
