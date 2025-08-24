@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from urllib.parse import urlencode
 
 import requests
 from django.conf import settings
 
-from app.models import Integration
+from app.models import Connection
 
 AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
 SCOPES = ["https://www.googleapis.com/auth/business.manage"]
@@ -38,16 +38,20 @@ def _date_dict(dt) -> Dict[str, int]:
 def publish_special(special: Any) -> None:
     """Post a special to Google Business Profile as an Offer post."""
     try:
-        integration = Integration.objects.get(
-            user_profile=special.user_profile, provider="google", enabled=True
+        connection = Connection.objects.get(
+            user=special.user, platform="google_business", is_connected=True
         )
-    except Integration.DoesNotExist:  # pragma: no cover - defensive
+    except Connection.DoesNotExist:  # pragma: no cover - defensive
         return
 
-    if not (integration.access_token and integration.account_id and integration.location_id):
+    settings_data = connection.settings or {}
+    access_token = settings_data.get("access_token")
+    account_id = settings_data.get("account_id")
+    location_id = settings_data.get("location_id")
+    if not (access_token and account_id and location_id):
         return
 
-    parent = f"accounts/{integration.account_id}/locations/{integration.location_id}"
+    parent = f"accounts/{account_id}/locations/{location_id}"
     url = f"{API_BASE_URL}/{parent}/localPosts?key={settings.GOOGLE_API_KEY}"
 
     payload: Dict[str, Any] = {
@@ -56,21 +60,49 @@ def publish_special(special: Any) -> None:
         "topicType": "OFFER",
         "callToAction": {
             "actionType": "LEARN_MORE",
-            "url": special.order_url or special.mobile_order_url or "",
+            "url": getattr(special, "cta_url", ""),
         },
         "offer": {
             "couponCode": "",
-            "redeemOnlineUrl": special.order_url or special.mobile_order_url or "",
+            "redeemOnlineUrl": getattr(special, "cta_url", ""),
             "termsConditions": "",
         },
     }
-    if special.start_date:
+    if getattr(special, "start_date", None):
         payload["offer"]["startDate"] = _date_dict(special.start_date)
-    if special.end_date:
+    if getattr(special, "end_date", None):
         payload["offer"]["endDate"] = _date_dict(special.end_date)
 
-    headers = {"Authorization": f"Bearer {integration.access_token}"}
+    headers = {"Authorization": f"Bearer {access_token}"}
     try:
         requests.post(url, headers=headers, json=payload, timeout=10)
     except Exception:  # pragma: no cover - network failure shouldn't crash
         return
+
+
+TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
+
+
+def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
+    """Exchange an authorization code for access and refresh tokens."""
+    data = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+    }
+    response = requests.post(TOKEN_ENDPOINT, data=data, timeout=10)
+    return response.json()
+
+
+def get_account_and_location(access_token: str) -> Tuple[str, str]:
+    """Return the first account and location IDs for the authenticated user."""
+    headers = {"Authorization": f"Bearer {access_token}"}
+    accounts = requests.get(f"{API_BASE_URL}/accounts", headers=headers, timeout=10).json()
+    account_name = accounts["accounts"][0]["name"]
+    account_id = account_name.split("/")[1]
+    locations = requests.get(f"{API_BASE_URL}/{account_name}/locations", headers=headers, timeout=10).json()
+    location_name = locations["locations"][0]["name"]
+    location_id = location_name.split("/")[-1]
+    return account_id, location_id

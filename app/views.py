@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
@@ -15,6 +15,7 @@ import json
 import openai
 import requests
 from .models import Special, Restaurant, Connection, UserProfile, EmailSignup
+from app.integrations import google
 
 def home(request):
     """Home page view"""
@@ -126,9 +127,10 @@ def create_special(request):
             image=image,
             status='active'
         )
-        
         # Send email notifications to subscribers
         send_special_notification(special)
+        # Publish to Google if connected
+        google.publish_special(special)
         
         messages.success(request, 'Special created successfully!')
         return redirect('specials_list')
@@ -196,6 +198,37 @@ def connections(request):
     
     connections_data = Connection.objects.filter(user=request.user)
     return render(request, 'app/connections.html', {'connections': connections_data})
+
+
+@login_required
+def google_connect(request):
+    """Start the Google OAuth flow."""
+    auth_url = google.get_authorization_url()
+    return HttpResponseRedirect(auth_url)
+
+
+@login_required
+def google_callback(request):
+    """Handle Google OAuth callback and store credentials."""
+    code = request.GET.get("code")
+    if not code:
+        return redirect("connections")
+    token_data = google.exchange_code_for_tokens(code)
+    access_token = token_data.get("access_token")
+    refresh_token = token_data.get("refresh_token")
+    account_id, location_id = google.get_account_and_location(access_token)
+    connection, _ = Connection.objects.get_or_create(
+        user=request.user, platform="google_business"
+    )
+    connection.is_connected = True
+    connection.settings = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "account_id": account_id,
+        "location_id": location_id,
+    }
+    connection.save()
+    return redirect("connections")
 
 def logout_view(request):
     """Logout view"""

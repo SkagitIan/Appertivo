@@ -158,12 +158,22 @@
                                 >Not connected</span
                             >
                         </div>
+                        {% if connection.platform == 'google_business' %}
+                        <a
+                            href="{% url 'google_connect' %}"
+                            class="btn-primary text-sm py-2 px-4"
+                            data-testid="button-connect"
+                        >
+                            Connect
+                        </a>
+                        {% else %}
                         <button
                             class="btn-primary text-sm py-2 px-4"
                             data-testid="button-connect"
                         >
                             Connect
                         </button>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>

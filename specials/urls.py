@@ -17,6 +17,8 @@ urlpatterns = [
     path('specials/', views.specials_list, name='specials_list'),
     path('specials/create/', views.create_special, name='create_special'),
     path('connections/', views.connections, name='connections'),
+    path('connections/google/connect/', views.google_connect, name='google_connect'),
+    path('connections/google/callback/', views.google_callback, name='google_callback'),
     path('api/enhance-description/', views.enhance_description, name='enhance_description'),
     
     # Widget endpoints
