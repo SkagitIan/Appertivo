@@ -227,11 +227,11 @@ def widget_special(request, user_id):
                 'title': special.title,
                 'description': special.description,
                 'price': str(special.price),
-                'image': special.image.url if special.image else None,
+                'image': request.build_absolute_uri(special.image.url) if special.image else None,
                 'cta_type': special.cta_type,
                 'cta_url': special.cta_url,
                 'cta_phone': special.cta_phone,
-                'restaurant_name': user.profile.restaurant_name if hasattr(user, 'profile') else user.username,
+                'restaurant_name': user.username,
             }
             return JsonResponse({'special': data})
         else:
@@ -277,21 +277,45 @@ def widget_signup(request, user_id):
 def widget_js(request, user_id):
     """Generate JavaScript widget code"""
     user = get_object_or_404(User, id=user_id)
-    restaurant_name = user.profile.restaurant_name if hasattr(user, 'profile') else user.username
+    restaurant_name = user.username
 
     widget_code = f"""
 (function() {{
-    const WIDGET_API_URL = '{request.build_absolute_uri("/widget/")}';
+    const WIDGET_API_URL = 'https://appertivo.com/widget/';
     const USER_ID = '{user_id}';
     const RESTAURANT_NAME = '{restaurant_name}';
 
     function createWidget() {{
         const widgetContainer = document.getElementById('appertivo-widget');
         if (!widgetContainer) return;
-        
+
         // Widget styles
         const style = document.createElement('style');
         style.textContent = `
+            .appertivo-widget-button {{
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 9999px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+                z-index: 9999;
+            }}
+            .appertivo-widget-panel {{
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                width: 320px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 9999;
+            }}
             .appertivo-widget {{
                 max-width: 400px;
                 background: white;
@@ -378,7 +402,19 @@ def widget_js(request, user_id):
             }}
         `;
         document.head.appendChild(style);
-        
+
+        widgetContainer.className = 'appertivo-widget-panel';
+        widgetContainer.style.display = 'none';
+        document.body.appendChild(widgetContainer);
+
+        const launcher = document.createElement('button');
+        launcher.className = 'appertivo-widget-button';
+        launcher.textContent = "Today's Special";
+        launcher.addEventListener('click', () => {{
+            widgetContainer.style.display = widgetContainer.style.display === 'none' || !widgetContainer.style.display ? 'block' : 'none';
+        }});
+        document.body.appendChild(launcher);
+
         // Fetch today's special
         fetch(WIDGET_API_URL + USER_ID + '/special/')
             .then(response => response.json())
@@ -479,7 +515,7 @@ def widget_js(request, user_id):
 @login_required
 def widget_setup(request):
     """Widget setup page"""
-    widget_js_url = request.build_absolute_uri(reverse('widget_js', args=[request.user.id]))
+    widget_js_url = f"https://appertivo.com/widget/{request.user.id}/js/"
     return render(request, 'app/widget_setup.html', {'widget_js_url': widget_js_url})
 
 def send_special_notification(special):
