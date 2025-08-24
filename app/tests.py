@@ -506,4 +506,31 @@ class GooglePublishTests(TestCase):
         mock_publish.assert_called_once_with(self.special)
 
 
+class WidgetIntegrationTests(TestCase):
+    """Tests for widget JavaScript and setup."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="wuser", password="pw")
+
+    def test_widget_js_returns_javascript(self):
+        url = reverse("widget_js", args=[self.user.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/javascript")
+        self.assertIn("const WIDGET_API_URL", response.content.decode())
+
+    def test_demo_widget_js_returns_javascript(self):
+        url = reverse("demo_widget_js")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/javascript")
+        self.assertIn("const WIDGET_API_URL", response.content.decode())
+
+    def test_widget_setup_uses_absolute_script_url(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("widget_setup"))
+        expected_src = f"http://testserver{reverse('widget_js', args=[self.user.id])}"
+        self.assertIn(expected_src, response.content.decode())
+
+
 

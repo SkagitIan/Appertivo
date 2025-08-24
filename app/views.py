@@ -3,13 +3,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+from django.urls import reverse
 import json
 import openai
 import requests
@@ -277,13 +278,13 @@ def widget_js(request, user_id):
     """Generate JavaScript widget code"""
     user = get_object_or_404(User, id=user_id)
     restaurant_name = user.profile.restaurant_name if hasattr(user, 'profile') else user.username
-    
+
     widget_code = f"""
 (function() {{
     const WIDGET_API_URL = '{request.build_absolute_uri("/widget/")}';
     const USER_ID = '{user_id}';
     const RESTAURANT_NAME = '{restaurant_name}';
-    
+
     function createWidget() {{
         const widgetContainer = document.getElementById('appertivo-widget');
         if (!widgetContainer) return;
@@ -473,12 +474,13 @@ def widget_js(request, user_id):
     }}
 }})();
 """
-    return JsonResponse({'code': widget_code}, safe=False)
+    return HttpResponse(widget_code, content_type='application/javascript')
 
 @login_required
 def widget_setup(request):
     """Widget setup page"""
-    return render(request, 'app/widget_setup.html')
+    widget_js_url = request.build_absolute_uri(reverse('widget_js', args=[request.user.id]))
+    return render(request, 'app/widget_setup.html', {'widget_js_url': widget_js_url})
 
 def send_special_notification(special):
     """Send email notifications to all subscribers when a new special is published"""
@@ -646,7 +648,7 @@ def demo_widget_js(request):
 (function() {{
     const WIDGET_API_URL = '{request.build_absolute_uri("/demo-widget/")}';
     const RESTAURANT_NAME = 'Demo Restaurant';
-    
+
     function createDemoWidget() {{
         const widgetContainer = document.getElementById('appertivo-demo-widget');
         if (!widgetContainer) return;
@@ -832,4 +834,4 @@ def demo_widget_js(request):
     }}
 }})();
 """
-    return JsonResponse({'code': widget_code}, safe=False)
+    return HttpResponse(widget_code, content_type='application/javascript')
