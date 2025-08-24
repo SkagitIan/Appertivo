@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from django.core.files.uploadedfile import SimpleUploadedFile
 from .forms import SpecialForm
 from .models import Special, EmailSignup, Integration
 from .integrations import google
@@ -526,10 +527,32 @@ class WidgetIntegrationTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/javascript")
         self.assertIn("const WIDGET_API_URL", response.content.decode())
 
+    def test_widget_js_contains_launcher_button(self):
+        url = reverse("widget_js", args=[self.user.id])
+        response = self.client.get(url)
+        self.assertIn("appertivo-widget-button", response.content.decode())
+
+    def test_widget_special_returns_absolute_image_url(self):
+        now = timezone.now()
+        image = SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg")
+        Special.objects.create(
+            user=self.user,
+            title="Test",
+            description="Desc",
+            price=5,
+            start_date=now - timedelta(days=1),
+            end_date=now + timedelta(days=1),
+            status="active",
+            image=image,
+        )
+        response = self.client.get(reverse("widget_special", args=[self.user.id]))
+        data = response.json()
+        self.assertTrue(data["special"]["image"].startswith("http://testserver"))
+
     def test_widget_setup_uses_absolute_script_url(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("widget_setup"))
-        expected_src = f"http://testserver{reverse('widget_js', args=[self.user.id])}"
+        expected_src = f"https://appertivo.com/widget/{self.user.id}/js/"
         self.assertIn(expected_src, response.content.decode())
 
 

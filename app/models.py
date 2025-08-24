@@ -83,6 +83,14 @@ class Connection(models.Model):
     class Meta:
         unique_together = ['user', 'platform']
 
+
+class Integration(models.Model):
+    """Minimal stub model for test compatibility."""
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        app_label = 'app'
+
 # Extend User model
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
