@@ -563,10 +563,15 @@ def widget_setup(request):
     widget_js_url = f"https://appertivo.com/widget/{request.user.id}/js/"
     return render(request, 'app/widget_setup.html', {'widget_js_url': widget_js_url})
 
+from datetime import datetime
+
 def send_special_notification(special):
     """Send email notifications to all subscribers when a new special is published"""
     subscribers = EmailSignup.objects.filter(restaurant=special.user, is_active=True)
-    
+    from django.utils.dateparse import parse_datetime, parse_date
+
+    start = parse_datetime(special.start_date) or parse_date(special.start_date)
+    end = parse_datetime(special.end_date) or parse_date(special.end_date)
     if not subscribers.exists():
         return
     
@@ -610,7 +615,7 @@ def send_special_notification(special):
                 {f'<a href="tel:{special.cta_phone}" class="cta-button">Call to Order</a>' if special.cta_type == 'call' and special.cta_phone else ''}
                 
                 <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
-                    Available from {special.start_date.strftime('%B %d')} until {special.end_date.strftime('%B %d, %Y')}
+                    Available from {start} until {end}
                 </p>
             </div>
             <div class="footer">
@@ -635,7 +640,7 @@ def send_special_notification(special):
     {'Order online: ' + special.cta_url if special.cta_type == 'web' and special.cta_url else ''}
     {'Call to order: ' + special.cta_phone if special.cta_type == 'call' and special.cta_phone else ''}
     
-    Available from {special.start_date.strftime('%B %d')} until {special.end_date.strftime('%B %d, %Y')}
+    Available from {start} until {end}
     
     ---
     You're receiving this because you subscribed to {restaurant_name}'s specials.
