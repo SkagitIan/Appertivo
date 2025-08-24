@@ -5,12 +5,15 @@ from __future__ import annotations
 from typing import Any, Dict, Tuple, List
 from datetime import datetime
 from urllib.parse import urlencode
+import logging
 import os
 import requests
 from django.conf import settings
 from dotenv import load_dotenv
 load_dotenv()
 from app.models import Connection
+
+logger = logging.getLogger(__name__)
 
 AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
 SCOPES = ["https://www.googleapis.com/auth/business.manage"]
@@ -40,11 +43,13 @@ def _date_dict(dt) -> Dict[str, int]:
 
 def publish_special(special: Any) -> None:
     """Post a special to Google Business Profile as an Offer post."""
+    logger.info("Attempting to publish special to Google for user %s", special.user)
     try:
         connection = Connection.objects.get(
             user=special.user, platform="google_business", is_connected=True
         )
     except Connection.DoesNotExist:  # pragma: no cover - defensive
+        logger.warning("No Google connection found for user %s", special.user)
         return
 
     settings_data = connection.settings or {}
@@ -52,10 +57,14 @@ def publish_special(special: Any) -> None:
     account_id = settings_data.get("account_id")
     location_id = settings_data.get("location_id")
     if not (access_token and account_id and location_id):
+        logger.warning(
+            "Missing Google credentials for user %s; cannot publish", special.user
+        )
         return
 
     parent = f"accounts/{account_id}/locations/{location_id}"
     url = f"{API_BASE_URL}/{parent}/localPosts?key={settings.GOOGLE_API_KEY}"
+    logger.info("Posting special to Google for location %s", location_id)
 
     payload: Dict[str, Any] = {
         "summary": special.description or special.title,
@@ -78,8 +87,12 @@ def publish_special(special: Any) -> None:
 
     headers = {"Authorization": f"Bearer {access_token}"}
     try:
-        requests.post(url, headers=headers, json=payload, timeout=10)
-    except Exception:  # pragma: no cover - network failure shouldn't crash
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+        logger.info(
+            "Google response %s: %s", response.status_code, response.text
+        )
+    except Exception as exc:  # pragma: no cover - network failure shouldn't crash
+        logger.exception("Failed to publish special to Google: %s", exc)
         return
 
 
@@ -101,6 +114,7 @@ def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
 
 def get_accounts_and_locations(access_token: str) -> Tuple[str, List[Dict[str, str]]]:
     """Return account ID and all available locations for the authenticated user."""
+    logger.info("Fetching Google accounts and locations")
     headers = {"Authorization": f"Bearer {access_token}"}
     accounts = requests.get(
         f"{API_BASE_URL}/accounts", headers=headers, timeout=10
@@ -115,4 +129,7 @@ def get_accounts_and_locations(access_token: str) -> Tuple[str, List[Dict[str, s
         loc_name = loc["name"]
         loc_id = loc_name.split("/")[-1]
         locations.append({"id": loc_id, "name": loc.get("title", loc_id)})
+    logger.info("Found %d Google locations for account %s", len(locations), account_id)
+    if not locations:
+        logger.warning("No Google locations found for account %s", account_id)
     return account_id, locations
