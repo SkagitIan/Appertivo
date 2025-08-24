@@ -19,11 +19,21 @@ class GoogleConnectionFlowTests(TestCase):
     @override_settings(GOOGLE_CLIENT_ID="cid", GOOGLE_CLIENT_SECRET="sec", GOOGLE_REDIRECT_URI="https://redir")
     @patch("app.integrations.google.requests.get")
     @patch("app.integrations.google.requests.post")
-    def test_callback_marks_connection(self, mock_post, mock_get):
-        mock_post.return_value.json.return_value = {"access_token": "tok", "refresh_token": "ref"}
+    def test_callback_stores_tokens_and_locations(self, mock_post, mock_get):
+        mock_post.return_value.json.return_value = {
+            "access_token": "tok",
+            "refresh_token": "ref",
+        }
         mock_get.side_effect = [
             Mock(json=lambda: {"accounts": [{"name": "accounts/123"}]}),
-            Mock(json=lambda: {"locations": [{"name": "accounts/123/locations/456"}]})
+            Mock(
+                json=lambda: {
+                    "locations": [
+                        {"name": "accounts/123/locations/456", "title": "Loc A"},
+                        {"name": "accounts/123/locations/789", "title": "Loc B"},
+                    ]
+                }
+            ),
         ]
         self.client.force_login(self.user)
         response = self.client.get(reverse("google_callback"), {"code": "abc"})
@@ -31,7 +41,36 @@ class GoogleConnectionFlowTests(TestCase):
         conn = Connection.objects.get(user=self.user, platform="google_business")
         self.assertTrue(conn.is_connected)
         self.assertEqual(conn.settings["account_id"], "123")
+        self.assertEqual(
+            conn.settings["locations"],
+            [{"id": "456", "name": "Loc A"}, {"id": "789", "name": "Loc B"}],
+        )
+        self.assertTrue(conn.settings["delete_when_expired"])
+        self.assertNotIn("location_id", conn.settings)
+
+    def test_user_can_select_location_and_toggle_delete_setting(self):
+        conn = Connection.objects.get(user=self.user, platform="google_business")
+        conn.is_connected = True
+        conn.settings = {
+            "access_token": "tok",
+            "account_id": "acc",
+            "locations": [{"id": "456", "name": "Loc A"}],
+            "delete_when_expired": True,
+        }
+        conn.save()
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("connections"),
+            {
+                "platform": "google_business",
+                "location_id": "456",
+                # checkbox unchecked -> no value
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        conn.refresh_from_db()
         self.assertEqual(conn.settings["location_id"], "456")
+        self.assertFalse(conn.settings["delete_when_expired"])
     @override_settings(GOOGLE_API_KEY="key")
     @patch("app.integrations.google.requests.post")
     @patch("app.views.send_special_notification")

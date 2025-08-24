@@ -186,16 +186,27 @@ Make it more appealing and mouth-watering while keeping it under 150 characters.
 def connections(request):
     """Manage platform connections"""
     user_connections = Connection.objects.filter(user=request.user)
-    
+
     # Create default connections if they don't exist
     platforms = ['website', 'google_business', 'pos', 'delivery']
     for platform in platforms:
-        connection, created = Connection.objects.get_or_create(
+        Connection.objects.get_or_create(
             user=request.user,
             platform=platform,
             defaults={'is_connected': platform == 'website'}  # Website is always connected
         )
-    
+
+    if request.method == 'POST' and request.POST.get('platform') == 'google_business':
+        conn = Connection.objects.get(user=request.user, platform='google_business')
+        settings_data = conn.settings or {}
+        location_id = request.POST.get('location_id')
+        if location_id:
+            settings_data['location_id'] = location_id
+        settings_data['delete_when_expired'] = request.POST.get('delete_when_expired') == 'on'
+        conn.settings = settings_data
+        conn.save()
+        return redirect('connections')
+
     connections_data = Connection.objects.filter(user=request.user)
     return render(request, 'app/connections.html', {'connections': connections_data})
 
@@ -216,7 +227,7 @@ def google_callback(request):
     token_data = google.exchange_code_for_tokens(code)
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
-    account_id, location_id = google.get_account_and_location(access_token)
+    account_id, locations = google.get_accounts_and_locations(access_token)
     connection, _ = Connection.objects.get_or_create(
         user=request.user, platform="google_business"
     )
@@ -225,7 +236,8 @@ def google_callback(request):
         "access_token": access_token,
         "refresh_token": refresh_token,
         "account_id": account_id,
-        "location_id": location_id,
+        "locations": locations,
+        "delete_when_expired": True,
     }
     connection.save()
     return redirect("connections")
