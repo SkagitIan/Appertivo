@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
+from datetime import datetime
 from urllib.parse import urlencode
 import os
 import requests
 from django.conf import settings
 from dotenv import load_dotenv
-from specials import settings
 load_dotenv()
 from app.models import Connection
 
@@ -17,7 +17,6 @@ SCOPES = ["https://www.googleapis.com/auth/business.manage"]
 API_BASE_URL = "https://mybusiness.googleapis.com/v4"
 
 def get_authorization_url(state: str | None = None) -> str:
-    print(settings.GOOGLE_CLIENT_ID)
     """Return the URL to begin the Google OAuth flow."""
     params = {
         "client_id": os.getenv('GOOGLE_CLIENT_ID'),
@@ -34,6 +33,8 @@ def get_authorization_url(state: str | None = None) -> str:
 
 
 def _date_dict(dt) -> Dict[str, int]:
+    if isinstance(dt, str):
+        dt = datetime.fromisoformat(dt)
     return {"year": dt.year, "month": dt.month, "day": dt.day}
 
 
@@ -98,13 +99,20 @@ def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
     return response.json()
 
 
-def get_account_and_location(access_token: str) -> Tuple[str, str]:
-    """Return the first account and location IDs for the authenticated user."""
+def get_accounts_and_locations(access_token: str) -> Tuple[str, List[Dict[str, str]]]:
+    """Return account ID and all available locations for the authenticated user."""
     headers = {"Authorization": f"Bearer {access_token}"}
-    accounts = requests.get(f"{API_BASE_URL}/accounts", headers=headers, timeout=10).json()
+    accounts = requests.get(
+        f"{API_BASE_URL}/accounts", headers=headers, timeout=10
+    ).json()
     account_name = accounts["accounts"][0]["name"]
     account_id = account_name.split("/")[1]
-    locations = requests.get(f"{API_BASE_URL}/{account_name}/locations", headers=headers, timeout=10).json()
-    location_name = locations["locations"][0]["name"]
-    location_id = location_name.split("/")[-1]
-    return account_id, location_id
+    locations_resp = requests.get(
+        f"{API_BASE_URL}/{account_name}/locations", headers=headers, timeout=10
+    ).json()
+    locations: List[Dict[str, str]] = []
+    for loc in locations_resp.get("locations", []):
+        loc_name = loc["name"]
+        loc_id = loc_name.split("/")[-1]
+        locations.append({"id": loc_id, "name": loc.get("title", loc_id)})
+    return account_id, locations
