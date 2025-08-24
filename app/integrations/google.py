@@ -4,22 +4,24 @@ from __future__ import annotations
 
 from typing import Any, Dict, Tuple
 from urllib.parse import urlencode
-
+import os
 import requests
 from django.conf import settings
-
+from dotenv import load_dotenv
+from specials import settings
+load_dotenv()
 from app.models import Connection
 
 AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
 SCOPES = ["https://www.googleapis.com/auth/business.manage"]
 API_BASE_URL = "https://mybusiness.googleapis.com/v4"
 
-
 def get_authorization_url(state: str | None = None) -> str:
+    print(settings.GOOGLE_CLIENT_ID)
     """Return the URL to begin the Google OAuth flow."""
     params = {
-        "client_id": settings.GOOGLE_CLIENT_ID,
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "client_id": os.getenv('GOOGLE_CLIENT_ID'),
+        "redirect_uri": "https://appertivo.com/dashboard",
         "response_type": "code",
         "scope": " ".join(SCOPES),
         "access_type": "offline",
@@ -86,11 +88,11 @@ TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
     """Exchange an authorization code for access and refresh tokens."""
     data = {
-        "client_id": settings.GOOGLE_CLIENT_ID,
-        "client_secret": settings.GOOGLE_CLIENT_SECRET,
+        "client_id": os.getenv('GOOGLE_CLIENT_ID'),
+        "client_secret": os.getenv('GOOGLE_CLIENT_SECRET'),
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "redirect_uri": "https://appertivo.com/dashboard/",
     }
     response = requests.post(TOKEN_ENDPOINT, data=data, timeout=10)
     return response.json()

@@ -13,13 +13,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from django.contrib.messages import constants as message_constants
 
 load_dotenv()
+from django.contrib.messages import constants as message_constants
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+from dotenv import find_dotenv
+print(find_dotenv())
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
