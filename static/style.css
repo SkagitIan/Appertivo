@@ -1,340 +1,248 @@
-/* Root tokens */
-:root{
-  --purple:#B993D6; --orange:#f08000; --teal:#58B09C; --ink-900:#14080E; --ink-700:#2b2231; --ink-800:#1d1620; --ink-600:#49475B;
+/* Appertivo Custom Styles */
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(230 13% 9%);
+    --primary: hsl(230 67% 51%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(220 14% 96%);
+    --muted: hsl(220 14% 96%);
+    --muted-foreground: hsl(215 16% 47%);
+    --border: hsl(220 13% 91%);
+    --success: hsl(142 76% 36%);
+    --warning: hsl(38 92% 50%);
+    --radius: 0.5rem;
 }
 
-/* Background: subtle dark gradient with low-noise feel */
-.bg-gradient-dark{
-  background: radial-gradient(1200px 600px at 10% 0%, rgba(185,147,214,.18), transparent 55%),
-              radial-gradient(900px 500px at 90% 10%, rgba(88,176,156,.18), transparent 60%),
-              linear-gradient(180deg, var(--ink-900), #0d0a10 65%);
-  min-height:100vh;
+body {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
-/* Utility borders */
-.border-ink-700{border-color:var(--ink-700)!important}
-.border-ink-800{border-color:var(--ink-800)!important}
-.font-purple{color:var(--purple)!important}
-.font-orange{color:var(--orange)!important}
-.font-teal{color:var(--teal)!important}
-/* Glass card */
-.card-glass{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); backdrop-filter: blur(14px);}
-.backdrop-blur{backdrop-filter:saturate(120%) blur(10px)}
-
-/* Segmented control focus */
-.btn-check:focus + .btn,
-.btn:focus {
-  outline: 2px solid rgba(88,176,156,.35);
-  outline-offset: 1px;
-}
-/* High-contrast outline button for light surfaces */
-.btn-outline-ink {
-  --bs-btn-color: var(--ink-600);
-  --bs-btn-border-color: var(--ink-600);
-  --bs-btn-hover-bg: var(--ink-600);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-border-color: var(--ink-600);
-  --bs-btn-active-bg: var(--ink-600);
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-border-color: var(--ink-600);
+.gradient-primary {
+    background: linear-gradient(135deg, hsl(230 67% 51%), hsl(234 89% 74%));
 }
 
-/* Dropzone subtle hover */
-#image-dropzone { transition: border-color .2s ease, background-color .2s ease; }
-#image-dropzone:hover { background-color: rgba(255,255,255,.03); }
-
-/* Use the form partial inside a page without its own header/footer */
-.special-form-embedded .card-header,
-.special-form-embedded .card-footer {
-  display: none !important;
+.gradient-hero {
+    background: linear-gradient(135deg, hsl(234 89% 74%) 0%, hsl(230 67% 51%) 100%);
 }
 
-/* Gradient text for hero */
-.gradient-text{
-  background: linear-gradient(90deg, var(--purple), var(--teal));
-  -webkit-background-clip:text; background-clip:text; color:transparent;
+.stripe-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Buttons with brand pops */
-.btn-orange{ --bs-btn-bg:var(--orange); --bs-btn-border-color:var(--orange); --bs-btn-hover-bg:#ff9122; --bs-btn-hover-border-color:#ff9122; --bs-btn-color:#14080E; }
-.btn-teal{ --bs-btn-bg:var(--teal); --bs-btn-border-color:var(--teal); --bs-btn-hover-bg:#69c6af; --bs-btn-hover-border-color:#69c6af; --bs-btn-color:#14080E; }
-.btn-purple{ --bs-btn-bg:var(--purple); --bs-btn-border-color:var(--purple); --bs-btn-hover-bg:#c7a5e1; --bs-btn-hover-border-color:#c7a5e1; --bs-btn-color:#14080E; }
-
-/* Feature cards */
-.feature-card{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);} 
-.icon-dot{width:12px;height:12px;border-radius:50%}
-.bg-purple{background:var(--purple)!important}
-.bg-teal{background:var(--teal)!important}
-.bg-orange{background:var(--orange)!important}
-
-.form-check-input:checked{
-  background-color: var(--teal);
-  border-color: var(--teal);
-}
-/* Widget frame */
-.widget-frame{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08)}
-
-/* Simple helpers */
-.object-cover{object-fit:cover}
-.fw-extrabold{font-weight: 800}
-.py-6{padding-top:4.5rem!important;padding-bottom:4.5rem!important}
-.pb-6{padding-bottom:4.5rem!important}
-
-/* Animations (reduced-motion safe) */
-@media (prefers-reduced-motion:no-preference){
-  [data-animate="reveal"]{opacity:0; transform:translateY(12px); transition:opacity .6s ease, transform .6s ease}
-  [data-animate="lift"]{opacity:0; transform:translateY(8px); transition:opacity .6s ease, transform .6s ease}
-  [data-animate="pop"]{transform:translateY(0)}
-  [data-animate="float"]{opacity:0; transform:translateY(10px)}
-.inview{opacity:1!important; transform:none!important}
+.stripe-shadow {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* Active specials */
-.special-live{box-shadow:0 0 0 2px var(--teal),0 0 8px var(--teal);}
-        
-        .integration-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .integration-header h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 0 0 1rem 0;
-        }
-        
-        .integration-header p {
-            color: #6c757d;
-            font-size: 1.1rem;
-            margin: 0;
-        }
-        
-        .integration-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .integration-card {
-            background: white;
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .integration-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--brand-color);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .integration-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .integration-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-        }
-        
-        .integration-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2d3748;
-            margin: 0 0 1.5rem 0;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .integration-title i {
-            font-size: 1.5rem;
-            color: var(--brand-color);
-        }
-        
-        .integration-details {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            border-left: 4px solid var(--brand-color);
-            display: none;
-        }
-        
-        .integration-details.active {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .integration-details p {
-            margin: 0;
-            color: #4a5568;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-        
-        .integration-details strong {
-            color: #2d3748;
-        }
-        
-        .integration-button {
-            background: var(--brand-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .integration-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .integration-button:active {
-            transform: translateY(0);
-        }
-        
-        /* Brand-specific colors */
-        .doordash {
-            --brand-color: #FF3008;
-        }
-        
-        .grubhub {
-            --brand-color: #F6613A;
-        }
-        
-        .wix {
-            --brand-color: #FFCB00;
-        }
-        
-        .wix .integration-icon {
-            color: #333;
-        }
-        
-        .ubereats {
-            --brand-color: #06C167;
-        }
-        
-        .wordpress {
-            --brand-color: #21759B;
-        }
-        
-        .squarespace {
-            --brand-color: #000000;
-        }
-        
-        .webflow {
-            --brand-color: #4353FF;
-        }
-        
-        .cta-section {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 2rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        
-        .cta-section h3 {
-            color: #2d3748;
-            margin: 0 0 1rem 0;
-        }
-        
-        .cta-section p {
-            color: #4a5568;
-            margin: 0;
-        }
-        
-        @media (max-width: 768px) {
-            .integration-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .integration-header h2 {
-                font-size: 2rem;
-            }
-        }
+.stripe-shadow-lg {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
+}
 
-/* ================================ */
-/* /static/js/appertivo.js          */
-/* ================================ */
-// Vanilla JS: intersection observers, counters, and minor UX niceties.
-(function(){
-  // Guard reduced motion
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+.btn-primary {
+    background: linear-gradient(135deg, hsl(230 67% 51%), hsl(234 89% 74%));
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
 
-  // Reveal on scroll
-  if(!prefersReduced){
-    const io = new IntersectionObserver((entries)=>{
-      for(const e of entries){ if(e.isIntersecting){ e.target.classList.add('inview'); io.unobserve(e.target); } }
-    },{threshold:0.15});
-    document.querySelectorAll('[data-animate]')?.forEach(el=>io.observe(el));
-  }
+.btn-primary:hover {
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
 
-  // Description counter (delegated; works after HTMX swaps)
-  function bindCounters(root){
-    const desc = root.querySelector('#id_description');
-    const out = root.querySelector('#desc-count');
-    if(desc && out){
-      const update=()=>{ out.textContent = (desc.value||'').length; };
-      desc.addEventListener('input', update); update();
+.btn-outline {
+    border: 1px solid hsl(220 13% 91%);
+    color: hsl(230 13% 9%);
+    background: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-outline:hover {
+    background: hsl(220 14% 96%);
+    border-color: hsl(215 16% 47%);
+}
+
+.card {
+    background: white;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(220 13% 91%);
+}
+
+.gradient-bg {
+    background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 96%) 100%);
+}
+
+/* Form Styles */
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid hsl(220 13% 91%);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: hsl(230 67% 51%);
+    box-shadow: 0 0 0 3px hsla(230 67% 51% / 0.1);
+}
+
+.form-label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: hsl(230 13% 9%);
+}
+
+/* Widget Styles for Embeddable Components */
+.appertivo-widget {
+    max-width: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0 auto;
+}
+
+.appertivo-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px;
+    text-align: center;
+}
+
+.appertivo-content {
+    padding: 20px;
+}
+
+.appertivo-special {
+    text-align: center;
+}
+
+.appertivo-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.appertivo-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #1f2937;
+}
+
+.appertivo-description {
+    color: #6b7280;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.appertivo-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #059669;
+    margin-bottom: 16px;
+}
+
+.appertivo-cta {
+    display: inline-block;
+    background: #3b82f6;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.appertivo-signup {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+.appertivo-signup-form {
+    display: flex;
+    gap: 8px;
+}
+
+.appertivo-email {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.appertivo-subscribe {
+    background: #059669;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.appertivo-demo-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #f59e0b;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .btn-primary, .btn-outline {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.875rem;
     }
-  }
-  bindCounters(document);
-
-  // Rebind behaviors after HTMX swaps
-  document.body.addEventListener('htmx:afterSwap', (ev)=>{
-    bindCounters(ev.target || document);
-    // Re-attach observers for any new nodes
-    if(!prefersReduced){
-      document.querySelectorAll('[data-animate]:not(.inview)')?.forEach(el=>{
-        el.style.willChange = 'opacity, transform';
-      });
+    
+    .appertivo-widget {
+        margin: 0 16px;
     }
-  });
+    
+    .appertivo-signup-form {
+        flex-direction: column;
+    }
+    
+    .appertivo-email {
+        margin-bottom: 8px;
+    }
+}
 
-  // Minor button press pop (accessible, non-essential)
-  document.addEventListener('click', (e)=>{
-    const b = e.target.closest('.btn');
-    if(!b) return; b.animate([{transform:'translateY(0)'},{transform:'translateY(1px)'},{transform:'translateY(0)'}],{duration:120});
-  });
-})();
+/* Print Styles */
+@media print {
+    .btn-primary, .btn-outline {
+        background: none !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+    }
+    
+    .stripe-shadow, .stripe-shadow-lg {
+        box-shadow: none !important;
+    }
+}

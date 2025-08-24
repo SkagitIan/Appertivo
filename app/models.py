@@ -1,85 +1,113 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
-from profiles.models import UserProfile  # Adjust import path if needed
+from django.core.validators import RegexValidator
+import uuid
 
-class Special(models.Model):
-    user_profile = models.ForeignKey(
-        UserProfile,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='specials',
-        help_text="Owner of this special"
-    )
-    title = models.CharField(max_length=60)
-    description = models.TextField(max_length=250, blank=True)
-    image = models.URLField(blank=True, null=True)
-    price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    published = models.BooleanField(default=False)
-
-    # Store CTAs as a JSON list of strings
-    cta_choices = models.JSONField(default=list, blank=True)
-
-    order_url = models.URLField(blank=True, null=True)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    mobile_order_url = models.URLField(blank=True, null=True)
-    enable_email_signup = models.BooleanField(default=True)
-
+class Restaurant(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='restaurant')
+    name = models.CharField(max_length=255)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    cuisine_type = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title
-     
-    @property
-    def is_expired(self):
-        """Return True if the special's end date has passed."""
-        return bool(self.end_date and self.end_date < timezone.now().date())
+        return self.name
 
+class Special(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('active', 'Active'),
+        ('expired', 'Expired'),
+    ]
+    
+    CTA_CHOICES = [
+        ('call', 'Call to Order'),
+        ('web', 'Web Order'),
+    ]
 
-class SpecialAnalytics(models.Model):
-    """Aggregate interaction counts for a Special."""
-    special = models.OneToOneField(Special, on_delete=models.CASCADE, related_name='analytics')
-    opens = models.PositiveIntegerField(default=0)
-    cta_clicks = models.PositiveIntegerField(default=0)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='specials')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    original_description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='specials/', blank=True, null=True)
+    image_public_id = models.CharField(max_length=255, blank=True, null=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    cta_type = models.CharField(max_length=10, choices=CTA_CHOICES, default='web')
+    cta_url = models.URLField(blank=True, null=True)
+    cta_phone = models.CharField(
+        max_length=20, 
+        blank=True, 
+        null=True,
+        validators=[RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")]
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+    views = models.PositiveIntegerField(default=0)
+    clicks = models.PositiveIntegerField(default=0)
+    shares = models.PositiveIntegerField(default=0)
     email_signups = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Analytics for {self.special}"
-
-class EmailSignup(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='email_signups')
-    special = models.ForeignKey(Special, on_delete=models.CASCADE, related_name='email_signups', null=True, blank=True)
-    email = models.EmailField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.email} - {self.user_profile}"
-
-
-class Integration(models.Model):
-    """External service connection (e.g., Google, Doordash)."""
-    PROVIDER_CHOICES = [
-        ("google", "Google Business Profile"),
-    ]
-
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="integrations")
-    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES)
-    enabled = models.BooleanField(default=False)
-    access_token = models.CharField(max_length=255, blank=True)
-    refresh_token = models.CharField(max_length=255, blank=True)
-    token_expires = models.DateTimeField(null=True, blank=True)
-    account_id = models.CharField(max_length=100, blank=True)
-    location_id = models.CharField(max_length=100, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+        return f"{self.title} - {self.user.username}"
 
     class Meta:
-        unique_together = ("user_profile", "provider")
+        ordering = ['-created_at']
+
+class Connection(models.Model):
+    PLATFORM_CHOICES = [
+        ('website', 'Website'),
+        ('google_business', 'Google My Business'),
+        ('pos', 'POS System'),
+        ('delivery', 'Delivery Platform'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='connections')
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    is_connected = models.BooleanField(default=False)
+    settings = models.JSONField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user_profile} - {self.provider}"
+        return f"{self.user.username} - {self.platform}"
+
+    class Meta:
+        unique_together = ['user', 'platform']
+
+# Extend User model
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    restaurant_name = models.CharField(max_length=255)
+    is_email_verified = models.BooleanField(default=False)
+    verification_token = models.UUIDField(default=uuid.uuid4, blank=True, null=True)
+    subscription_tier = models.CharField(
+        max_length=20, 
+        choices=[('free', 'Free'), ('pro', 'Pro'), ('enterprise', 'Enterprise')],
+        default='free'
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.restaurant_name}"
+
+class EmailSignup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    restaurant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_signups')
+    email = models.EmailField()
+    special = models.ForeignKey(Special, on_delete=models.SET_NULL, null=True, blank=True, related_name='signups')
+    signed_up_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ['restaurant', 'email']
+
+    def __str__(self):
+        return f"{self.email} - {self.restaurant.username}"

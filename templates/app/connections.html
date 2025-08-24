@@ -1,0 +1,289 @@
+{% extends 'base/base.html' %} {% block title %}Connections - Appertivo{%endblock %} {% block content %}
+<div class="min-h-screen bg-slate-50">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div
+                            class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center"
+                        >
+                            <svg
+                                class="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                                ></path>
+                            </svg>
+                        </div>
+                        <span class="ml-3 text-xl font-semibold text-slate-900"
+                            >Appertivo</span
+                        >
+                    </div>
+
+                    <div class="hidden md:flex ml-10 space-x-8">
+                        <a
+                            href="{% url 'dashboard' %}"
+                            class="text-slate-600 hover:text-slate-900 font-medium py-4"
+                            >Dashboard</a
+                        >
+                        <a
+                            href="{% url 'specials_list' %}"
+                            class="text-slate-600 hover:text-slate-900 font-medium py-4"
+                            >Specials</a
+                        >
+                        <a
+                            href="{% url 'connections' %}"
+                            class="text-blue-600 font-medium border-b-2 border-blue-600 py-4"
+                            >Connections</a
+                        >
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-slate-600">
+                        Welcome, {{
+                        user.profile.restaurant_name|default:user.username }}
+                    </div>
+                    <a
+                        href="{% url 'logout' %}"
+                        class="text-slate-600 hover:text-slate-900 font-medium"
+                        >Sign out</a
+                    >
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-slate-900">
+                Platform Connections
+            </h1>
+            <p class="mt-2 text-slate-600">
+                Connect your accounts to automatically publish specials across
+                all platforms.
+            </p>
+        </div>
+
+        <div class="space-y-6">
+            {% for connection in connections %}
+            <div
+                class="card stripe-shadow p-6"
+                data-testid="card-connection-{{ connection.platform }}"
+            >
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div
+                            class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mr-4"
+                        >
+                            {% if connection.platform == 'website' %}
+                            <svg
+                                class="w-6 h-6 text-slate-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                                ></path>
+                            </svg>
+                            {% elif connection.platform == 'google_business' %}
+                            <svg
+                                class="w-6 h-6 text-slate-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                ></path>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                ></path>
+                            </svg>
+                            {% elif connection.platform == 'pos' %}
+                            <svg
+                                class="w-6 h-6 text-slate-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                ></path>
+                            </svg>
+                            {% else %}
+                            <svg
+                                class="w-6 h-6 text-slate-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                ></path>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg font-medium text-slate-900"
+                                data-testid="text-platform-name"
+                            >
+                                {{ connection.get_platform_display }}
+                            </h3>
+                            <p class="text-sm text-slate-500">
+                                {% if connection.platform == 'website' %} Embed
+                                specials directly on your website {% elif
+                                connection.platform == 'google_business' %} Post
+                                specials to your Google My Business listing {%
+                                elif connection.platform == 'pos' %} Sync with
+                                your point-of-sale system {% else %} Distribute
+                                to delivery platforms {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        {% if connection.is_connected %}
+                        <div class="flex items-center text-green-600">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 13l4 4L19 7"
+                                ></path>
+                            </svg>
+                            <span
+                                class="text-sm font-medium"
+                                data-testid="status-connected"
+                                >Connected</span
+                            >
+                        </div>
+                        <button
+                            class="btn-outline text-sm py-2 px-4"
+                            data-testid="button-disconnect"
+                        >
+                            Disconnect
+                        </button>
+                        {% else %}
+                        <div class="flex items-center text-slate-400">
+                            <svg
+                                class="w-5 h-5 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                ></path>
+                            </svg>
+                            <span
+                                class="text-sm font-medium"
+                                data-testid="status-disconnected"
+                                >Not connected</span
+                            >
+                        </div>
+                        <button
+                            class="btn-primary text-sm py-2 px-4"
+                            data-testid="button-connect"
+                        >
+                            Connect
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if connection.is_connected and connection.platform == 'website' %}
+                <div class="mt-4 p-4 bg-slate-50 rounded-lg">
+                    <h4 class="text-sm font-medium text-slate-900 mb-2">
+                        Website Widget Code
+                    </h4>
+                    <div
+                        class="bg-slate-800 text-green-400 p-3 rounded font-mono text-sm"
+                    >
+                        &lt;script src="https://appertivo.com/widget.js"
+                        data-restaurant-id="{{ user.id }}"&gt;&lt;/script&gt;
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        Copy this code and paste it into your website where you
+                        want specials to appear.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Integration Guide -->
+        <div class="mt-12 card stripe-shadow p-6">
+            <h3 class="text-lg font-medium text-slate-900 mb-4">
+                Integration Guide
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-sm font-medium text-slate-900 mb-2">
+                        Website Integration
+                    </h4>
+                    <p class="text-sm text-slate-600 mb-3">
+                        Add our widget to display specials on your website
+                        automatically.
+                    </p>
+                    <a
+                        href="#"
+                        class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                        >View documentation →</a
+                    >
+                </div>
+                <div>
+                    <h4 class="text-sm font-medium text-slate-900 mb-2">
+                        Google My Business
+                    </h4>
+                    <p class="text-sm text-slate-600 mb-3">
+                        Automatically post specials as updates on your Google
+                        listing.
+                    </p>
+                    <a
+                        href="#"
+                        class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                        >Setup guide →</a
+                    >
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

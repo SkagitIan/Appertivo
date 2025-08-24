@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Sign in - Appertivo{% endblock %}
+{% block title %}Create account - Appertivo{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -13,10 +13,10 @@
                 </svg>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900">
-                Sign in to your account
+                Create your account
             </h2>
             <p class="mt-2 text-center text-sm text-slate-600">
-                Or <a href="{% url 'register' %}" class="font-medium text-blue-600 hover:text-blue-500">start your free trial</a>
+                Already have an account? <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">Sign in</a>
             </p>
         </div>
 
@@ -24,14 +24,29 @@
         <div class="card stripe-shadow-lg p-8">
             {% if messages %}
                 {% for message in messages %}
-                    <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
-                        <p class="text-red-700">{{ message }}</p>
+                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200{% else %}bg-green-50 border border-green-200{% endif %}">
+                        <p class="{% if message.tags == 'error' %}text-red-700{% else %}text-green-700{% endif %}">{{ message }}</p>
                     </div>
                 {% endfor %}
             {% endif %}
 
             <form method="post" class="space-y-6">
                 {% csrf_token %}
+                <div>
+                    <label for="restaurant_name" class="block text-sm font-medium text-slate-700 mb-2">
+                        Restaurant name
+                    </label>
+                    <input 
+                        id="restaurant_name" 
+                        name="restaurant_name" 
+                        type="text" 
+                        required 
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your restaurant name"
+                        data-testid="input-restaurant-name"
+                    >
+                </div>
+
                 <div>
                     <label for="email" class="block text-sm font-medium text-slate-700 mb-2">
                         Email address
@@ -57,37 +72,31 @@
                         type="password" 
                         required 
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your password"
+                        placeholder="Create a password"
                         data-testid="input-password"
                     >
+                    <p class="mt-1 text-sm text-slate-500">Must be at least 8 characters long</p>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            id="remember-me" 
-                            name="remember-me" 
-                            type="checkbox" 
-                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                        >
-                        <label for="remember-me" class="ml-2 block text-sm text-slate-900">
-                            Remember me
-                        </label>
-                    </div>
-
-                    <div class="text-sm">
-                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
-                            Forgot your password?
-                        </a>
-                    </div>
+                <div class="flex items-center">
+                    <input 
+                        id="agree-terms" 
+                        name="agree-terms" 
+                        type="checkbox" 
+                        required
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+                    >
+                    <label for="agree-terms" class="ml-2 block text-sm text-slate-900">
+                        I agree to the <a href="#" class="text-blue-600 hover:text-blue-500">Terms of Service</a> and <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+                    </label>
                 </div>
 
                 <button 
                     type="submit" 
                     class="w-full btn-primary"
-                    data-testid="button-signin"
+                    data-testid="button-create-account"
                 >
-                    Sign in
+                    Create account
                 </button>
             </form>
 
@@ -97,17 +106,17 @@
                         <div class="w-full border-t border-slate-300"></div>
                     </div>
                     <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-slate-500">New to Appertivo?</span>
+                        <span class="px-2 bg-white text-slate-500">Already have an account?</span>
                     </div>
                 </div>
 
                 <div class="mt-6">
                     <a 
-                        href="{% url 'register' %}" 
+                        href="{% url 'login' %}" 
                         class="w-full btn-outline block text-center"
-                        data-testid="link-register"
+                        data-testid="link-signin"
                     >
-                        Create account
+                        Sign in instead
                     </a>
                 </div>
             </div>
