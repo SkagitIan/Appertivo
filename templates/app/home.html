@@ -2,36 +2,7 @@
 
 {% block content %}
 <div class="min-h-screen bg-white">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white/80 backdrop-blur-lg border-b border-slate-200/50 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0 flex items-center">
-                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                            </svg>
-                        </div>
-                        <span class="ml-3 text-xl font-semibold text-slate-900">Appertivo</span>
-                    </div>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#products" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Products</a>
-                    <a href="#solutions" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Solutions</a>
-                    <a href="#developers" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Developers</a>
-                    <a href="#resources" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Resources</a>
-                    <a href="#pricing" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Pricing</a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <a href="{% url 'login' %}" class="text-slate-600 hover:text-slate-900 font-medium">Sign in</a>
-                    <a href="{% url 'register' %}" class="btn-primary text-white">Contact sales</a>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% include 'base/public_nav.html' %}
     
     <!-- Hero Section -->
     <section class="relative pt-20 pb-32 overflow-hidden">
