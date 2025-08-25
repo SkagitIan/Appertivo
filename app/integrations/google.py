@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth"
 SCOPES = ["https://www.googleapis.com/auth/business.manage"]
 API_BASE_URL = "https://mybusiness.googleapis.com/v4"
+TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 
 def get_authorization_url(state: str | None = None) -> str:
     """Return the URL to begin the Google OAuth flow."""
@@ -94,9 +95,6 @@ def publish_special(special: Any) -> None:
     except Exception as exc:  # pragma: no cover - network failure shouldn't crash
         logger.exception("Failed to publish special to Google: %s", exc)
         return
-
-
-TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token"
 
 
 def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
