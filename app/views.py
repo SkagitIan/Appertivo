@@ -202,6 +202,12 @@ def connections(request):
         location_id = request.POST.get('location_id')
         if location_id:
             settings_data['location_id'] = location_id
+            for loc in settings_data.get('locations', []):
+                if loc.get('id') == location_id:
+                    settings_data['location_name'] = loc.get('name')
+                    if 'address' in loc:
+                        settings_data['location_address'] = loc['address']
+                    break
         settings_data['delete_when_expired'] = request.POST.get('delete_when_expired') == 'on'
         conn.settings = settings_data
         conn.save()
@@ -227,7 +233,7 @@ def google_callback(request):
     token_data = google.exchange_code_for_tokens(code)
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
-    account_id, locations = google.get_accounts_and_locations(access_token)
+    account_id, account_name, locations = google.get_accounts_and_locations(access_token)
     connection, _ = Connection.objects.get_or_create(
         user=request.user, platform="google_business"
     )
@@ -236,6 +242,7 @@ def google_callback(request):
         "access_token": access_token,
         "refresh_token": refresh_token,
         "account_id": account_id,
+        "account_name": account_name,
         "locations": locations,
         "delete_when_expired": True,
     }

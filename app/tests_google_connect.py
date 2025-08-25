@@ -16,7 +16,11 @@ class GoogleConnectionFlowTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("accounts.google.com", response["Location"])
 
-    @override_settings(GOOGLE_CLIENT_ID="cid", GOOGLE_CLIENT_SECRET="sec", GOOGLE_REDIRECT_URI="https://redir")
+    @override_settings(
+        GOOGLE_CLIENT_ID="cid",
+        GOOGLE_CLIENT_SECRET="sec",
+        GOOGLE_REDIRECT_URI="https://redir",
+    )
     @patch("app.integrations.google.requests.get")
     @patch("app.integrations.google.requests.post")
     def test_callback_stores_tokens_and_locations(self, mock_post, mock_get):
@@ -25,12 +29,26 @@ class GoogleConnectionFlowTests(TestCase):
             "refresh_token": "ref",
         }
         mock_get.side_effect = [
-            Mock(json=lambda: {"accounts": [{"name": "accounts/123"}]}),
+            Mock(
+                json=lambda: {
+                    "accounts": [
+                        {"name": "accounts/123", "accountName": "Test Account"}
+                    ]
+                }
+            ),
             Mock(
                 json=lambda: {
                     "locations": [
-                        {"name": "accounts/123/locations/456", "title": "Loc A"},
-                        {"name": "accounts/123/locations/789", "title": "Loc B"},
+                        {
+                            "name": "accounts/123/locations/456",
+                            "title": "Loc A",
+                            "address": {"line1": "123 St"},
+                        },
+                        {
+                            "name": "accounts/123/locations/789",
+                            "title": "Loc B",
+                            "address": {"line1": "456 Ave"},
+                        },
                     ]
                 }
             ),
@@ -41,9 +59,13 @@ class GoogleConnectionFlowTests(TestCase):
         conn = Connection.objects.get(user=self.user, platform="google_business")
         self.assertTrue(conn.is_connected)
         self.assertEqual(conn.settings["account_id"], "123")
+        self.assertEqual(conn.settings["account_name"], "Test Account")
         self.assertEqual(
             conn.settings["locations"],
-            [{"id": "456", "name": "Loc A"}, {"id": "789", "name": "Loc B"}],
+            [
+                {"id": "456", "name": "Loc A", "address": {"line1": "123 St"}},
+                {"id": "789", "name": "Loc B", "address": {"line1": "456 Ave"}},
+            ],
         )
         self.assertTrue(conn.settings["delete_when_expired"])
         self.assertNotIn("location_id", conn.settings)
@@ -54,7 +76,8 @@ class GoogleConnectionFlowTests(TestCase):
         conn.settings = {
             "access_token": "tok",
             "account_id": "acc",
-            "locations": [{"id": "456", "name": "Loc A"}],
+            "account_name": "Account",
+            "locations": [{"id": "456", "name": "Loc A", "address": {}}],
             "delete_when_expired": True,
         }
         conn.save()
@@ -70,6 +93,7 @@ class GoogleConnectionFlowTests(TestCase):
         self.assertEqual(response.status_code, 302)
         conn.refresh_from_db()
         self.assertEqual(conn.settings["location_id"], "456")
+        self.assertEqual(conn.settings["location_name"], "Loc A")
         self.assertFalse(conn.settings["delete_when_expired"])
     @override_settings(GOOGLE_API_KEY="key")
     @patch("app.integrations.google.requests.post")

@@ -110,24 +110,33 @@ def exchange_code_for_tokens(code: str) -> Dict[str, Any]:
     return response.json()
 
 
-def get_accounts_and_locations(access_token: str) -> Tuple[str, List[Dict[str, str]]]:
-    """Return account ID and all available locations for the authenticated user."""
+def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[str, Any]]]:
+    """Return account and location details for the authenticated user."""
     logger.info("Fetching Google accounts and locations")
     headers = {"Authorization": f"Bearer {access_token}"}
     accounts = requests.get(
         f"{API_BASE_URL}/accounts", headers=headers, timeout=10
     ).json()
-    account_name = accounts["accounts"][0]["name"]
-    account_id = account_name.split("/")[1]
+    account = accounts["accounts"][0]
+    account_resource_name = account["name"]
+    account_id = account_resource_name.split("/")[1]
+    account_name = account.get("accountName", "")
     locations_resp = requests.get(
-        f"{API_BASE_URL}/{account_name}/locations", headers=headers, timeout=10
+        f"{API_BASE_URL}/{account_resource_name}/locations", headers=headers, timeout=10
     ).json()
-    locations: List[Dict[str, str]] = []
+    locations: List[Dict[str, Any]] = []
     for loc in locations_resp.get("locations", []):
         loc_name = loc["name"]
         loc_id = loc_name.split("/")[-1]
-        locations.append({"id": loc_id, "name": loc.get("title", loc_id)})
+        locations.append(
+            {
+                "id": loc_id,
+                "name": loc.get("title", loc_id),
+                "address": loc.get("address", {}),
+                "primaryPhone": loc.get("primaryPhone", ""),
+            }
+        )
     logger.info("Found %d Google locations for account %s", len(locations), account_id)
     if not locations:
         logger.warning("No Google locations found for account %s", account_id)
-    return account_id, locations
+    return account_id, account_name, locations
