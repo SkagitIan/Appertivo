@@ -1,64 +1,16 @@
 {% extends 'specialwidget/base.html' %}
 {% load static %}
 {% load widget_tweaks %}
-{% load crispy_forms_tags%}
+{% load crispy_forms_tags %}
 {% block title %}
-
 {% endblock %}
-
 {% block content %}
 {% include 'specialwidget/sidebar.html' %}
 
-
-  <div id="main" class="col py-3">
-
+<div id="main" class="col py-3">
     <h4 class="display-4 text-white ms-4">Google Connect</h4>
-
-<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
-<div  id="" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
- 
-{% if not membership.gmb_credentials %}
-<div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
-  <div  id="connect_google" class="border row bg-light p-3 w-100 rounded shadow" style="position:relative;">
-  Connect your Google account
-  <a href="{{ gmb }}" class="btn btn-sm w-100 outline shadow">Connect your Google Account</a>
-  {% endif %}
-
-  {% if accounts and not locations %}
-  Which Google Business Account is Yours?<br/>
-  {% for a in accounts %}
-  <form hx-post="{% url 'gmb' %}" hx-target="#connect_google" >
-  <input type="hidden" value="{{a.name}}" name="account_id">
-<button type="submit"class="btn btn-sm w-100 bg-light border">{{ a.accountName }}</button></form>
-  {% endfor %}
-  {% endif %}
-
-  {% if locations and not membership.gmb_location_name %}
-  {% include 'gmb/locations.html' %}
-
-    {% endif %}  
-
-    {% if membership.gmb_location_name %}
-    <img src="https://res.cloudinary.com/dfz4bhlzs/image/upload/v1675197360/icons8-google-48_fpsdrp.png" style="width:45px;"> Currently Conntected to: {{ membership.gmb_location }}
-      {% endif %}  
-      <button class="btn btn-sm w-100 border mt-3 mb-2 p-1 text-white" style="background-color:#e04a4a; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
-      background-size: 8px 8px;" role="button">Disconnect</button>
-
-<a href="{{ gmb}}" class="btn btn-lg w-100 border mt-3 p-1 text-white" style="background-color:#b5aee4; background-image: repeating-linear-gradient(-45deg, rgba(255,255,255, 0.25), rgba(255,255,255, 0.25) 1px, transparent 1px, transparent 6px);
-background-size: 8px 8px;" role="button">Re-Connect</a>
-
+    <div class="d-flex align-items-center justify-content-center mx-auto" style="width: 21rem;margin-top:20px;margin-bottom: 20px;">
+        {% include 'ajax/gmb.html' %}
+    </div>
 </div>
-</div>
-
-
-
-</div>
-</div>
-
-
-
-
-
-
-</div></div>
 {% endblock %}

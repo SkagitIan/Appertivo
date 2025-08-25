@@ -165,10 +165,23 @@ def dashboard_billing(request):
 
 def dashboard_google(request):
     gmb = getGMBAuthURI()
-    membership = Membership.objects.filter(user=request.user).values()[0]
-    try:
-        title = GMBLocations.objects.get(name=membership['gmb_location_name'])
-        membership['gmb_location'] = title.title
-    except:
-        pass
-    return render (request, "specialwidget/google.html", {'membership':membership,'gmb':gmb})
+    membership = Membership.objects.get(user=request.user)
+    accounts = GMBAccounts.objects.filter(membership=membership)
+    locations = GMBLocations.objects.filter(membership=membership)
+    selected_location = None
+    if membership.gmb_location_name:
+        try:
+            selected_location = GMBLocations.objects.get(name=membership.gmb_location_name).title
+        except GMBLocations.DoesNotExist:
+            pass
+    return render(
+        request,
+        "specialwidget/google.html",
+        {
+            "membership": membership,
+            "gmb": gmb,
+            "accounts": accounts,
+            "locations": locations,
+            "selected_location": selected_location,
+        },
+    )

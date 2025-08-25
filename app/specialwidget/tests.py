@@ -1,5 +1,6 @@
 from django.test import TestCase
-from specialwidget.help import *
 
-# Create your tests here.
-class
+
+class DummyTest(TestCase):
+    def test_placeholder(self):
+        self.assertTrue(True)
