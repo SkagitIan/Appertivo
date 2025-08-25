@@ -214,37 +214,52 @@ def gmb(request,*args,**kwargs):
         return render(request, 'gmb/complete.html')
     ## HTMX Locations
     if request.method == "POST" and "account_id" in request.POST:
-        print('yes')
         member = Membership.objects.get(user=request.user)
         member.gmb_account_name = request.POST.get('account_id')
         member.save()
-        locations = getGMBLocations(request,member.id,request.POST.get('account_id'))
-        return render(request, 'gmb/locations.html',{'locations':locations})
+        locations = getGMBLocations(member, request.POST.get('account_id'))
+        return render(request, 'gmb/locations.html', {'locations': locations})
 
     if request.method == "GET" and "code" in request.GET:
         refresh_token = getGMBToken(request.GET.get('code'))
         member = Membership.objects.get(user=request.user)
         member.gmb_refresh_token = refresh_token
-        member.gmb_account_list = getGMBAccounts(member)
+        get_accounts_and_locations(member)
         member.save()
-        print('saved member')
-        form = AddSpecialForm(initial={'membership':member})
-        return render(request, 'specialwidget/dashboard.html',{'form':form,'member':member})
+        return redirect('dashboard_google')
 
-def getGMBLocations(request,id,account):
+def getGMBLocations(member, account):
+    locations = []
     try:
-        member = Membership.objects.get(id=id)
-        h = {"client_id": os.environ['GOOGLE_CLIENT_ID'],
-                    "client_secret":os.environ['GOOGLE_CLIENT_SECRET'],}
-        readMask="name,title"
-        get_locations_url = "https://mybusinessaccountmanagement.googleapis.com/v1/"+account+"/locations"
-        locations = requests.get(get_locations_url,headers=h,params={"readMask":readMask,"access_token":refreshGoogleAccessToken(member.id)}).json()
-        for l in locations['locations']:
-            n = GMBLocations(membership=member,name=l['name'],title=l['title'])
-            n.save()
+        h = {
+            "client_id": os.environ['GOOGLE_CLIENT_ID'],
+            "client_secret": os.environ['GOOGLE_CLIENT_SECRET'],
+        }
+        readMask = "name,title"
+        get_locations_url = f"https://mybusinessaccountmanagement.googleapis.com/v1/{account}/locations"
+        response = requests.get(
+            get_locations_url,
+            headers=h,
+            params={"readMask": readMask, "access_token": refreshGoogleAccessToken(member.id)},
+        ).json()
+        locations = response.get("locations", [])
+        for l in locations:
+            GMBLocations.objects.update_or_create(
+                membership=member,
+                name=l["name"],
+                defaults={"title": l["title"]},
+            )
     except HTTPError as e:
         print(e.response.text)
-    return render(request,'gmb/final.html',{'locations':locations})
+    return locations
+
+
+def get_accounts_and_locations(member):
+    accounts = getGMBAccounts(member)
+    if len(accounts) == 1:
+        member.gmb_account_name = accounts[0]["name"]
+        getGMBLocations(member, accounts[0]["name"])
+    return accounts
 
 def getGMBToken(code):
         data = {'grant_type':'authorization_code',
