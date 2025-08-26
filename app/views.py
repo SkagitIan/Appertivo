@@ -164,7 +164,7 @@ def billing(request):
 def subscribe(request):
     """Subscribe the user to a plan using Stripe."""
     plan = request.POST.get("plan")
-    stripe.api_key = settings.STRIPE_API_KEY
+    stripe.api_key = getenv('STRIPE_API_KEY')
     try:
         stripe.Subscription.create(customer=request.user.email, items=[{"price": plan}])
         profile = request.user.profile
