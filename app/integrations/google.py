@@ -284,9 +284,6 @@ def publish_special(special: Any, location_id: Optional[str] = None) -> None:
     except Exception as exc:
         logger.exception("Failed to publish special to Google: %s", exc)
 
-<<<<<<< HEAD
-=======
-
 def remove_special(special: Any, connection: Optional[Connection] = None) -> None:
     """Delete a previously published special from Google Business Profile."""
     try:
@@ -313,4 +310,4 @@ def remove_special(special: Any, connection: Optional[Connection] = None) -> Non
             logger.info("Removed Google post %s", post_name)
     except Exception as exc:
         logger.exception("Failed to remove special from Google: %s", exc)
->>>>>>> ab66825a2a1ac99335d10c8a103203825ceae349
+

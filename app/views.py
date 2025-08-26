@@ -21,6 +21,11 @@ def home(request):
     """Home page view"""
     return render(request, 'app/home.html')
 
+
+def resources(request):
+    """Resources page view."""
+    return render(request, 'app/resources.html')
+
 def register_view(request):
     """Registration page"""
     if request.method == 'POST':
