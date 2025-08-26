@@ -15,6 +15,7 @@ import json
 import openai
 import requests
 from .models import Special, Restaurant, Connection, UserProfile, EmailSignup
+from .forms import SpecialForm
 from app.integrations.google import *
 
 def home(request):
@@ -126,6 +127,46 @@ def specials_list(request):
     """List all specials"""
     specials = Special.objects.filter(user=request.user)
     return render(request, 'app/list.html', {'specials': specials})
+
+
+@login_required
+@require_http_methods(["POST"])
+def special_unpublish(request, special_id):
+    """Mark a special as expired."""
+    special = get_object_or_404(Special, id=special_id, user=request.user)
+    special.status = "expired"
+    special.save(update_fields=["status"])
+    return redirect("specials_list")
+
+
+@login_required
+@require_http_methods(["POST"])
+def special_publish(request, special_id):
+    """Republish an expired special."""
+    special = get_object_or_404(Special, id=special_id, user=request.user)
+    special.status = "active"
+    special.save(update_fields=["status"])
+    return redirect("specials_list")
+
+
+@login_required
+@require_http_methods(["POST"])
+def special_delete(request, special_id):
+    """Permanently delete a special."""
+    special = get_object_or_404(Special, id=special_id, user=request.user)
+    special.delete()
+    return redirect("specials_list")
+
+
+@login_required
+@require_http_methods(["POST"])
+def special_edit(request, special_id):
+    """Update a special's fields."""
+    special = get_object_or_404(Special, id=special_id, user=request.user)
+    form = SpecialForm(request.POST, request.FILES, instance=special)
+    if form.is_valid():
+        form.save()
+    return redirect("specials_list")
 
 @login_required
 def create_special(request):

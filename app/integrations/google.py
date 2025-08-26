@@ -310,4 +310,3 @@ def remove_special(special: Any, connection: Optional[Connection] = None) -> Non
             logger.info("Removed Google post %s", post_name)
     except Exception as exc:
         logger.exception("Failed to remove special from Google: %s", exc)
-
