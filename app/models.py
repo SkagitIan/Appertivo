@@ -75,6 +75,7 @@ class Connection(models.Model):
     platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
     is_connected = models.BooleanField(default=False)
     settings = models.JSONField(blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

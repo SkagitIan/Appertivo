@@ -15,7 +15,7 @@ import json
 import openai
 import requests
 from .models import Special, Restaurant, Connection, UserProfile, EmailSignup
-from app.integrations import google
+from app.integrations.google import *
 
 def home(request):
     """Home page view"""
@@ -74,6 +74,16 @@ def login_view(request):
 
 @login_required
 def dashboard(request):
+    code = request.GET.get("code")
+    if code:
+        # call our helper and save connection
+        conn = complete_google_auth(request.user, code)
+        if conn:
+            logger.info("Google connection established for %s", request.user)
+        else:
+            logger.error("Google connection failed for %s", request.user)
+        # after processing, you might want to redirect to clean the URL
+        return redirect("dashboard")  
     """Dashboard view"""
     specials = Special.objects.filter(user=request.user)
     active_specials = specials.filter(status='active')
@@ -130,7 +140,7 @@ def create_special(request):
         # Send email notifications to subscribers
         send_special_notification(special)
         # Publish to Google if connected
-        google.publish_special(special)
+        publish_special(special)
         
         messages.success(request, 'Special created successfully!')
         return redirect('specials_list')
@@ -220,7 +230,7 @@ def connections(request):
 @login_required
 def google_connect(request):
     """Start the Google OAuth flow."""
-    auth_url = google.get_authorization_url()
+    auth_url = get_authorization_url()
     return HttpResponseRedirect(auth_url)
 
 
