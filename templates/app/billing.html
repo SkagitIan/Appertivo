@@ -19,11 +19,11 @@
             {% endif %}
 
             {% if profile.subscription_tier != 'free' %}
-            <form method="post" action="{% url 'cancel_subscription' %}" class="mt-2">
-                {% csrf_token %}
-                <button type="submit" class="btn-outline">Cancel Subscription</button>
-            </form>
-            {% endif %}
+  <form method="get" action="{% url 'billing_portal' %}" class="mt-2">
+    <button type="submit" class="btn-outline">Manage Billing</button>
+  </form>
+{% endif %}
+
         </div>
 
         {% if profile.subscription_tier == 'free' %}

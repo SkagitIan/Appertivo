@@ -31,6 +31,14 @@ from .models import (
 )
 from .forms import SpecialForm
 from app.integrations.google import *
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods, require_POST
+
 
 def home(request):
     """Home page view"""
@@ -149,105 +157,146 @@ from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
 
+stripe.api_key = os.getenv("STRIPE_API_KEY")
+
+PRICE_IDS = {
+    "pro": os.getenv("STRIPE_PRICE_PRO"),           # e.g. price_123
+    "enterprise": os.getenv("STRIPE_PRICE_ENTERPRISE"),
+}
+
 @login_required
-@require_http_methods(["POST"])
+@require_POST
 def subscribe(request):
+    """Create a Stripe Checkout Session for a subscription."""
     plan = request.POST.get("plan")
-    price_lookup = {
-        "pro": os.getenv("STRIPE_PRICE_PRO"),
-        "enterprise": os.getenv("STRIPE_PRICE_ENTERPRISE"),
-    }
-    price_id = price_lookup.get(plan)
+    price_id = PRICE_IDS.get(plan)
     if not price_id:
         messages.error(request, "Invalid plan selected.")
         return redirect("billing")
 
-    stripe.api_key = os.getenv("STRIPE_API_KEY")
-
-    # Ensure (or create) a Stripe Customer and persist the ID
     profile = request.user.profile
+
+    # Ensure a Stripe Customer; never pass email as 'customer' — Stripe needs a customer ID.
     if not profile.stripe_customer_id:
         customer = stripe.Customer.create(
             email=request.user.email,
-            name=request.user.get_full_name() or request.user.username,
-            metadata={"django_user_id": str(request.user.id)}
+            name=(request.user.get_full_name() or request.user.username),
+            metadata={"django_user_id": str(request.user.id)},
         )
         profile.stripe_customer_id = customer.id
         profile.save(update_fields=["stripe_customer_id"])
+
+    # Put metadata on BOTH the session and the eventual subscription
+    success_url = request.build_absolute_uri(reverse("billing")) + "?status=success"
+    cancel_url = request.build_absolute_uri(reverse("billing")) + "?status=cancelled"
 
     session = stripe.checkout.Session.create(
         customer=profile.stripe_customer_id,
         mode="subscription",
         line_items=[{"price": price_id, "quantity": 1}],
         allow_promotion_codes=True,
-        success_url=request.build_absolute_uri(reverse("billing")) + "?status=success",
-        cancel_url=request.build_absolute_uri(reverse("billing")) + "?status=cancelled",
-        subscription_data={
-            "metadata": {"plan": plan, "django_user_id": request.user.id},
-        },
         billing_address_collection="auto",
+        client_reference_id=str(request.user.id),
+        metadata={"plan": plan, "django_user_id": str(request.user.id)},
+        subscription_data={
+            "metadata": {"plan": plan, "django_user_id": str(request.user.id)},
+        },
+        success_url=success_url,
+        cancel_url=cancel_url,
+        # Optional safety if users double-click:
+        idempotency_key=f"checkout_{request.user.id}_{plan}",
     )
-    return redirect(session.url)
 
-# views.py
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, JsonResponse
+    return redirect(session.url, permanent=False)
+
+@login_required
+def billing_portal(request):
+    profile = request.user.profile
+    if not profile.stripe_customer_id:
+        messages.error(request, "No Stripe customer found for your account.")
+        return redirect("billing")
+
+    portal = stripe.billing_portal.Session.create(
+        customer=profile.stripe_customer_id,
+        return_url=request.build_absolute_uri(reverse("billing")),
+    )
+    return redirect(portal.url, permanent=False)
+
 
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
-    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE', '')
-    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
+    endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
 
-    # 1) Checkout completed -> has subscription + customer
-    if event['type'] == 'checkout.session.completed':
-        sess = event['data']['object']
-        customer_id = sess.get('customer')
-        subscription_id = sess.get('subscription')
-        plan = (sess.get('metadata') or {}).get('plan')
+    etype = event["type"]
+    data = event["data"]["object"]
 
-        # Find the user by customer_id (or by sess.metadata.django_user_id)
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        profile = Profile.objects.filter(stripe_customer_id=customer_id).select_related("user").first()
-        if profile and plan and subscription_id:
-            profile.subscription_tier = plan
-            profile.save(update_fields=["subscription_tier"])
+    # 1) Checkout completed -> record subscription locally
+    if etype == "checkout.session.completed":
+        sess = data
+        customer_id = sess.get("customer")
+        subscription_id = sess.get("subscription")
+        meta = (sess.get("metadata") or {})
+        plan = meta.get("plan")
+
+        profile = Profile.objects.filter(
+            stripe_customer_id=customer_id
+        ).select_related("user").first()
+
+        if profile and subscription_id:
+            # Mark tier; rely on invoice events for payments
+            if plan:
+                profile.subscription_tier = plan
+                profile.save(update_fields=["subscription_tier"])
+
             Subscription.objects.update_or_create(
                 user=profile.user,
                 defaults={
                     "stripe_subscription_id": subscription_id,
-                    "plan": plan,
+                    "stripe_customer_id": customer_id,
+                    "plan": plan or profile.subscription_tier,
                     "started_at": timezone.now(),
                     "canceled_at": None,
                 },
             )
 
     # 2) Invoice paid -> book a Transaction
-    if event['type'] == 'invoice.paid':
-        inv = event['data']['object']
-        customer_id = inv.get('customer')
-        amount = (inv.get('amount_paid') or 0) / 100.0
-        profile = Profile.objects.filter(stripe_customer_id=customer_id).select_related("user").first()
+    elif etype == "invoice.paid":
+        inv = data
+        customer_id = inv.get("customer")
+        amount = (inv.get("amount_paid") or 0) / 100.0
+        currency = (inv.get("currency") or "usd").upper()
+
+        profile = Profile.objects.filter(
+            stripe_customer_id=customer_id
+        ).select_related("user").first()
+
         if profile and hasattr(profile.user, "subscription"):
+            sub = profile.user.subscription
             Transaction.objects.create(
-                subscription=profile.user.subscription,
-                plan=profile.subscription.plan,
+                subscription=sub,
+                plan=sub.plan,  # ✅ fix: use user's subscription plan
                 amount=amount,
                 status="paid",
                 occurred_at=timezone.now(),
+                # optionally store currency if your model has it
+                # currency=currency,
             )
 
-    # 3) Subscription cancelled at Stripe side
-    if event['type'] == 'customer.subscription.deleted':
-        sub = event['data']['object']
-        subscription_id = sub.get('id')
-        s = Subscription.objects.filter(stripe_subscription_id=subscription_id).select_related("user").first()
+    # 3) Subscription canceled at Stripe
+    elif etype == "customer.subscription.deleted":
+        sub_obj = data
+        subscription_id = sub_obj.get("id")
+        s = Subscription.objects.filter(
+            stripe_subscription_id=subscription_id
+        ).select_related("user").first()
+
         if s:
             s.canceled_at = timezone.now()
             s.save(update_fields=["canceled_at"])
@@ -356,7 +405,7 @@ def cancel_subscription(request):
     profile = request.user.profile
     subscription = getattr(request.user, "subscription", None)
     if subscription:
-        stripe.api_key = settings.STRIPE_API_KEY
+        stripe.api_key = os.getenv("STRIPE_API_KEY")
         try:
             stripe.Subscription.delete(subscription.stripe_subscription_id)
         except Exception:
@@ -462,11 +511,11 @@ def enhance_description(request):
         description = data.get('description')
         price = data.get('price')
         
-        if not settings.OPENAI_API_KEY:
+        if not os.getenv("OPENAI_API_KEY"):
             return JsonResponse({'error': 'OpenAI API key not configured'})
         
         try:
-            client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[

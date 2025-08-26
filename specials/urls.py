@@ -17,8 +17,10 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('billing/', views.billing, name='billing'),
-    path('billing/subscribe/', views.subscribe, name='subscribe'),
-    path('billing/cancel/', views.cancel_subscription, name='cancel_subscription'),
+    path("billing/subscribe/", views.subscribe, name="subscribe"),
+    path("billing/portal/", views.billing_portal, name="billing_portal"),
+    path("billing/cancel/", views.cancel_subscription, name="cancel_subscription"),
+    path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
     path('specials/', views.specials_list, name='specials_list'),
     path('specials/create/', views.create_special, name='create_special'),
     path('specials/<uuid:special_id>/unpublish/', views.special_unpublish, name='special_unpublish'),
@@ -38,6 +40,9 @@ urlpatterns = [
     path('widget/', views.widget_setup, name='widget_setup'),
     path('analytics/email/', views.email_analytics, name='email_analytics'),
     
+    
+
+
     # Demo widget endpoints
     path('demo-widget/special/', views.demo_widget, name='demo_widget'),
     path('demo-widget/signup/', views.demo_widget_signup, name='demo_widget_signup'),
