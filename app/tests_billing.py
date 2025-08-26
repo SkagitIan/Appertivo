@@ -1,7 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
 from unittest.mock import patch
+import stripe
 
 from app.models import UserProfile, Subscription, Transaction
 
@@ -24,13 +26,24 @@ class BillingTests(TestCase):
 
     @patch("app.views.stripe.Price.list")
     @patch("app.views.stripe.Customer.create")
+    @patch("app.views.stripe.Customer.modify")
+    @patch("app.views.stripe.PaymentMethod.attach")
     @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_creates_subscription_and_transaction(self, mock_sub_create, mock_customer_create, mock_price_list):
+    def test_subscribe_creates_subscription_and_transaction(
+        self,
+        mock_sub_create,
+        mock_pm_attach,
+        mock_cust_modify,
+        mock_customer_create,
+        mock_price_list,
+    ):
         mock_sub_create.return_value = {"id": "sub_123"}
         mock_customer_create.return_value = {"id": "cus_123"}
         mock_price_list.return_value = {"data": [{"id": "price_123"}]}
         self.client.login(username="test@example.com", password="pass")
-        response = self.client.post(reverse("subscribe"), {"plan": "pro"})
+        response = self.client.post(
+            reverse("subscribe"), {"plan": "pro", "payment_method": "pm_123"}
+        )
         self.assertRedirects(response, reverse("dashboard"))
         profile = UserProfile.objects.get(user=self.user)
         self.assertEqual(profile.subscription_tier, "pro")
@@ -41,22 +54,76 @@ class BillingTests(TestCase):
         tx = Transaction.objects.get(subscription=sub)
         self.assertEqual(tx.amount, 99)
         self.assertEqual(tx.plan, "pro")
+        mock_pm_attach.assert_called_once_with("pm_123", customer="cus_123")
+        mock_cust_modify.assert_called_once_with(
+            "cus_123", invoice_settings={"default_payment_method": "pm_123"}
+        )
+        mock_sub_create.assert_called_once_with(
+            customer="cus_123",
+            items=[{"price": "price_123"}],
+            default_payment_method="pm_123",
+        )
 
     @patch("app.views.stripe.Price.list")
     @patch("app.views.stripe.Customer.create")
+    @patch("app.views.stripe.Customer.modify")
+    @patch("app.views.stripe.PaymentMethod.attach")
     @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_uses_stripe_customer_id(self, mock_sub_create, mock_customer_create, mock_price_list):
+    def test_subscribe_uses_stripe_customer_id(
+        self,
+        mock_sub_create,
+        mock_pm_attach,
+        mock_cust_modify,
+        mock_customer_create,
+        mock_price_list,
+    ):
         mock_price_list.return_value = {"data": [{"id": "price_123"}]}
         mock_customer_create.return_value = {"id": "cus_123"}
         mock_sub_create.return_value = {"id": "sub_123"}
 
         self.client.login(username="test@example.com", password="pass")
-        self.client.post(reverse("subscribe"), {"plan": "pro"})
+        self.client.post(reverse("subscribe"), {"plan": "pro", "payment_method": "pm_123"})
 
         mock_customer_create.assert_called_once_with(email="test@example.com")
-        mock_sub_create.assert_called_once_with(customer="cus_123", items=[{"price": "price_123"}])
+        mock_pm_attach.assert_called_once_with("pm_123", customer="cus_123")
+        mock_cust_modify.assert_called_once_with(
+            "cus_123", invoice_settings={"default_payment_method": "pm_123"}
+        )
+        mock_sub_create.assert_called_once_with(
+            customer="cus_123",
+            items=[{"price": "price_123"}],
+            default_payment_method="pm_123",
+        )
         subscription = Subscription.objects.get(user=self.user)
         self.assertEqual(subscription.stripe_customer_id, "cus_123")
+
+    @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.Customer.create")
+    @patch("app.views.stripe.Customer.modify")
+    @patch("app.views.stripe.PaymentMethod.attach")
+    @patch("app.views.stripe.Subscription.create")
+    def test_subscribe_handles_invalid_request_error(
+        self,
+        mock_sub_create,
+        mock_pm_attach,
+        mock_cust_modify,
+        mock_customer_create,
+        mock_price_list,
+    ):
+        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
+        mock_customer_create.return_value = {"id": "cus_123"}
+        mock_sub_create.side_effect = stripe.error.InvalidRequestError(
+            "Invalid payment method", param="pm"
+        )
+        self.client.login(username="test@example.com", password="pass")
+        response = self.client.post(
+            reverse("subscribe"), {"plan": "pro", "payment_method": "pm_bad"}, follow=True
+        )
+        self.assertRedirects(response, reverse("billing"))
+        messages = list(get_messages(response.wsgi_request))
+        self.assertTrue(any("Invalid payment method" in m.message for m in messages))
+        profile = UserProfile.objects.get(user=self.user)
+        self.assertEqual(profile.subscription_tier, "free")
 
     @patch("app.views.stripe.Subscription.delete")
     def test_cancel_subscription_sets_free_tier_and_records_cancel(self, mock_delete):

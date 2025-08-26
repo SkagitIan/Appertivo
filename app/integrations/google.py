@@ -11,7 +11,12 @@ import requests
 
 from django.conf import settings
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:  # pragma: no cover - dotenv is optional for tests
+    def load_dotenv():
+        return None
+
 load_dotenv()
 
 from app.models import Connection
