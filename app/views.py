@@ -12,17 +12,13 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.urls import reverse
 import json
-try:
-    import openai
-except ModuleNotFoundError:  # pragma: no cover - openai is optional
-    openai = None
+import openai
+import os
+
 import requests
 import stripe
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - dotenv is optional
-    def load_dotenv():
-        return None
+
+from dotenv import load_dotenv
 load_dotenv()
 
 from django.utils import timezone
@@ -344,6 +340,78 @@ def billing(request):
     }
 
     return render(request, "app/billing.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def subscribe(request):
+    """Subscribe the user to a plan using Stripe."""
+    plan = request.POST.get("plan")
+    payment_method = request.POST.get("payment_method")
+    plan_map = {
+        "pro": {"product": "prod_SwKSitSvRgmuru", "price": 99},
+        "enterprise": {"product": "prod_SwKTg5ev69mlPD", "price": 299},
+    }
+    if plan not in plan_map:
+        messages.error(request, "Invalid plan selected.")
+        return redirect("billing")
+    if not payment_method:
+        messages.error(request, "Payment method required.")
+        return redirect("billing")
+
+    stripe.api_key = os.getenv("STRIPE_API_KEY")
+    try:
+        price_data = stripe.Price.list(product=plan_map[plan]["product"], limit=1)
+        price_id = price_data["data"][0]["id"]
+
+        existing_sub = getattr(request.user, "subscription", None)
+        stripe_customer_id = (
+            existing_sub.stripe_customer_id if existing_sub and existing_sub.stripe_customer_id else None
+        )
+        if not stripe_customer_id:
+            customer = stripe.Customer.create(email=request.user.email)
+            stripe_customer_id = customer["id"]
+
+        stripe.PaymentMethod.attach(payment_method, customer=stripe_customer_id)
+        stripe.Customer.modify(
+            stripe_customer_id,
+            invoice_settings={"default_payment_method": payment_method},
+        )
+
+        sub = stripe.Subscription.create(
+            customer=stripe_customer_id,
+            items=[{"price": price_id}],
+            default_payment_method=payment_method,
+        )
+
+        profile = request.user.profile
+        profile.subscription_tier = plan
+        profile.save(update_fields=["subscription_tier"])
+
+        subscription, _ = Subscription.objects.update_or_create(
+            user=request.user,
+            defaults={
+                "stripe_subscription_id": sub["id"],
+                "stripe_customer_id": stripe_customer_id,
+                "plan": plan,
+                "started_at": timezone.now(),
+                "canceled_at": None,
+            },
+        )
+        Transaction.objects.create(
+            subscription=subscription,
+            plan=plan,
+            amount=plan_map[plan]["price"],
+            status="paid",
+        )
+
+        messages.success(request, "Subscription updated successfully.")
+        return redirect("dashboard")
+    except stripe.error.InvalidRequestError as e:
+        messages.error(request, str(getattr(e, "user_message", e)))
+    except Exception:
+        messages.error(request, "Unable to process your subscription.")
+    return redirect("billing")
 
 
 @login_required
