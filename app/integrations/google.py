@@ -10,7 +10,11 @@ import os
 import requests
 
 from django.conf import settings
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    def load_dotenv(*args, **kwargs):
+        return False
 
 from app.models import Connection
 
@@ -252,6 +256,42 @@ def publish_special(special: Any, location_id: Optional[str] = None) -> None:
         if response.status_code >= 400:
             logger.error("Google publish failed %s: %s", response.status_code, response.text)
         else:
-            logger.info("Successfully published special to Google: %s", response.json())
+            data = response.json()
+            logger.info("Successfully published special to Google: %s", data)
+            post_name = data.get("name")
+            if post_name and hasattr(special, "google_post_name"):
+                setattr(special, "google_post_name", post_name)
+                try:
+                    special.save(update_fields=["google_post_name"])
+                except Exception:
+                    logger.exception("Unable to save google_post_name for %s", special)
     except Exception as exc:
         logger.exception("Failed to publish special to Google: %s", exc)
+
+
+def remove_special(special: Any, connection: Optional[Connection] = None) -> None:
+    """Delete a previously published special from Google Business Profile."""
+    try:
+        if connection is None:
+            connection = Connection.objects.get(user=special.user, platform="google_business", is_connected=True)
+    except Connection.DoesNotExist:
+        logger.warning("No Google connection found for user %s", special.user)
+        return
+
+    settings_data = connection.settings or {}
+    access_token = settings_data.get("access_token")
+    post_name = getattr(special, "google_post_name", None)
+    if not (access_token and post_name):
+        logger.warning("Missing Google data; cannot remove special for user %s", special.user)
+        return
+
+    url = f"{API_BASE_URL}/{post_name}"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    try:
+        response = requests.delete(url, headers=headers, timeout=10)
+        if response.status_code >= 400:
+            logger.error("Google removal failed %s: %s", response.status_code, response.text)
+        else:
+            logger.info("Removed Google post %s", post_name)
+    except Exception as exc:
+        logger.exception("Failed to remove special from Google: %s", exc)
