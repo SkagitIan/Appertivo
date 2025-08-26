@@ -310,7 +310,16 @@ def subscribe(request):
     try:
         price_data = stripe.Price.list(product=plan_map[plan]["product"], limit=1)
         price_id = price_data["data"][0]["id"]
-        sub = stripe.Subscription.create(customer=request.user.email, items=[{"price": price_id}])
+
+        existing_sub = getattr(request.user, "subscription", None)
+        stripe_customer_id = (
+            existing_sub.stripe_customer_id if existing_sub and existing_sub.stripe_customer_id else None
+        )
+        if not stripe_customer_id:
+            customer = stripe.Customer.create(email=request.user.email)
+            stripe_customer_id = customer["id"]
+
+        sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"price": price_id}])
 
         profile = request.user.profile
         profile.subscription_tier = plan
@@ -320,6 +329,7 @@ def subscribe(request):
             user=request.user,
             defaults={
                 "stripe_subscription_id": sub["id"],
+                "stripe_customer_id": stripe_customer_id,
                 "plan": plan,
                 "started_at": timezone.now(),
                 "canceled_at": None,
@@ -331,7 +341,6 @@ def subscribe(request):
             amount=plan_map[plan]["price"],
             status="paid",
         )
-
 
         messages.success(request, "Subscription updated successfully.")
         return redirect("dashboard")

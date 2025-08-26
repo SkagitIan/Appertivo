@@ -10,7 +10,7 @@ class BillingTests(TestCase):
     """Tests for the billing page and subscription flow."""
 
     def setUp(self):
-        self.user = User.objects.create_user(username="test@example.com", password="pass")
+        self.user = User.objects.create_user(username="test@example.com", email="test@example.com", password="pass")
         UserProfile.objects.create(user=self.user, restaurant_name="Testaurant")
 
     def test_billing_page_shows_subscription_and_transactions(self):
@@ -23,9 +23,11 @@ class BillingTests(TestCase):
         self.assertContains(response, "$99")
 
     @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.Customer.create")
     @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_creates_subscription_and_transaction(self, mock_create, mock_price_list):
-        mock_create.return_value = {"id": "sub_123"}
+    def test_subscribe_creates_subscription_and_transaction(self, mock_sub_create, mock_customer_create, mock_price_list):
+        mock_sub_create.return_value = {"id": "sub_123"}
+        mock_customer_create.return_value = {"id": "cus_123"}
         mock_price_list.return_value = {"data": [{"id": "price_123"}]}
         self.client.login(username="test@example.com", password="pass")
         response = self.client.post(reverse("subscribe"), {"plan": "pro"})
@@ -34,10 +36,27 @@ class BillingTests(TestCase):
         self.assertEqual(profile.subscription_tier, "pro")
         sub = Subscription.objects.get(user=self.user)
         self.assertEqual(sub.plan, "pro")
+        self.assertEqual(sub.stripe_customer_id, "cus_123")
         self.assertIsNone(sub.canceled_at)
         tx = Transaction.objects.get(subscription=sub)
         self.assertEqual(tx.amount, 99)
         self.assertEqual(tx.plan, "pro")
+
+    @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.Customer.create")
+    @patch("app.views.stripe.Subscription.create")
+    def test_subscribe_uses_stripe_customer_id(self, mock_sub_create, mock_customer_create, mock_price_list):
+        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
+        mock_customer_create.return_value = {"id": "cus_123"}
+        mock_sub_create.return_value = {"id": "sub_123"}
+
+        self.client.login(username="test@example.com", password="pass")
+        self.client.post(reverse("subscribe"), {"plan": "pro"})
+
+        mock_customer_create.assert_called_once_with(email="test@example.com")
+        mock_sub_create.assert_called_once_with(customer="cus_123", items=[{"price": "price_123"}])
+        subscription = Subscription.objects.get(user=self.user)
+        self.assertEqual(subscription.stripe_customer_id, "cus_123")
 
     @patch("app.views.stripe.Subscription.delete")
     def test_cancel_subscription_sets_free_tier_and_records_cancel(self, mock_delete):
