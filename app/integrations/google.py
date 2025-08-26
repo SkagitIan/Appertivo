@@ -189,12 +189,11 @@ def complete_google_auth(user, code: str) -> Optional[Connection]:
     logger.info("Saved Google connection for user=%s account=%s", user, account_id)
     return conn
 
-
 # ------------------------------------------------------------------------------
-# Posting specials
+# Posting specials (using legacy v4 localPosts API)
 # ------------------------------------------------------------------------------
 def publish_special(special: Any, location_id: Optional[str] = None) -> None:
-    """Post a special to Google Business Profile as an Offer post."""
+    """Post a special to Google Business Profile as an Offer post (v4 API)."""
     try:
         connection = Connection.objects.get(
             user=special.user, platform="google_business", is_connected=True
@@ -224,27 +223,44 @@ def publish_special(special: Any, location_id: Optional[str] = None) -> None:
             connection.save(update_fields=["settings"])
 
     parent = f"accounts/{account_id}/locations/{location_id}"
-    url = f"https://mybusinessbusinessinformation.googleapis.com/v1/{parent}/localPosts"
-    logger.info("Posting special to Google for location %s", location_id)
+    url = f"https://mybusiness.googleapis.com/v4/{parent}/localPosts"
+    logger.info("Posting special to Google (v4) for location %s", location_id)
 
+    # --- Build payload ---
     payload: Dict[str, Any] = {
-        "summary": special.description or special.title,
-        "languageCode": "en-US",
-        "topicType": "OFFER",
-        "callToAction": {
-            "actionType": "LEARN_MORE",
-            "url": getattr(special, "cta_url", ""),
-        },
-        "offer": {
-            "couponCode": "",
-            "redeemOnlineUrl": getattr(special, "cta_url", ""),
-            "termsConditions": "",
-        },
+    "summary": special.description or special.title,
+    "languageCode": "en-US",
+    "callToAction": {
+        "actionType": "ORDER" if getattr(special, "cta_type", "").upper() == "ORDER" else "LEARN_MORE",
+        "url": getattr(special, "cta_url", ""),
+    },
     }
-    if getattr(special, "start_date", None):
-        payload["offer"]["startDate"] = _date_dict(special.start_date)
-    if getattr(special, "end_date", None):
-        payload["offer"]["endDate"] = _date_dict(special.end_date)
+
+    if getattr(special, "start_date", None) and getattr(special, "end_date", None):
+        # Treat as EVENT post
+        payload["topicType"] = "EVENT"
+        payload["event"] = {
+            "title": special.title,
+            "schedule": {
+                "startDate": _date_dict(special.start_date),
+                "endDate": _date_dict(special.end_date),
+            },
+        }
+    else:
+        # Default to OFFER post
+        payload["topicType"] = "OFFER"
+        payload["offer"] = {
+            "couponCode": getattr(special, "coupon_code", ""),
+            "redeemOnlineUrl": getattr(special, "cta_url", ""),
+            "termsConditions": getattr(special, "terms_conditions", ""),
+        }
+
+    # Optional image
+    if getattr(special, "image_url", None):
+        payload["media"] = [
+            {"mediaFormat": "PHOTO", "sourceUrl": special.image_url}
+        ]
+
 
     headers = {"Authorization": f"Bearer {access_token}"}
     try:
@@ -255,3 +271,4 @@ def publish_special(special: Any, location_id: Optional[str] = None) -> None:
             logger.info("Successfully published special to Google: %s", response.json())
     except Exception as exc:
         logger.exception("Failed to publish special to Google: %s", exc)
+
