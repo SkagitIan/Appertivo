@@ -22,41 +22,28 @@ class BillingTests(TestCase):
         self.assertContains(response, "Pro")
         self.assertContains(response, "$99")
 
-    @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.checkout.Session.create")
     @patch("app.views.stripe.Customer.create")
-    @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_creates_subscription_and_transaction(self, mock_sub_create, mock_customer_create, mock_price_list):
-        mock_sub_create.return_value = {"id": "sub_123"}
+    def test_subscribe_creates_checkout_session_and_redirects(self, mock_customer_create, mock_session_create):
+        """Successful subscribe should create a Stripe Checkout session and redirect."""
         mock_customer_create.return_value = {"id": "cus_123"}
-        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
+        mock_session_create.return_value = type("obj", (), {"url": "https://stripe.test/session"})()
         self.client.login(username="test@example.com", password="pass")
-        response = self.client.post(reverse("subscribe"), {"plan": "pro"})
-        self.assertRedirects(response, reverse("dashboard"))
-        profile = UserProfile.objects.get(user=self.user)
-        self.assertEqual(profile.subscription_tier, "pro")
-        sub = Subscription.objects.get(user=self.user)
-        self.assertEqual(sub.plan, "pro")
-        self.assertEqual(sub.stripe_customer_id, "cus_123")
-        self.assertIsNone(sub.canceled_at)
-        tx = Transaction.objects.get(subscription=sub)
-        self.assertEqual(tx.amount, 99)
-        self.assertEqual(tx.plan, "pro")
+        with patch("app.views.PRICE_IDS", {"pro": "price_123"}):
+            response = self.client.post(reverse("subscribe"), {"plan": "pro"})
 
-    @patch("app.views.stripe.Price.list")
-    @patch("app.views.stripe.Customer.create")
-    @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_uses_stripe_customer_id(self, mock_sub_create, mock_customer_create, mock_price_list):
-        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
-        mock_customer_create.return_value = {"id": "cus_123"}
-        mock_sub_create.return_value = {"id": "sub_123"}
+        mock_session_create.assert_called_once()
+        args, kwargs = mock_session_create.call_args
+        self.assertEqual(kwargs["customer"], "cus_123")
+        self.assertEqual(kwargs["mode"], "subscription")
+        self.assertEqual(kwargs["line_items"], [{"price": "price_123", "quantity": 1}])
+        self.assertRedirects(response, "https://stripe.test/session", fetch_redirect_response=False)
 
+    def test_subscribe_with_invalid_plan_redirects_to_billing(self):
+        """Posting an invalid plan should redirect back to billing."""
         self.client.login(username="test@example.com", password="pass")
-        self.client.post(reverse("subscribe"), {"plan": "pro"})
-
-        mock_customer_create.assert_called_once_with(email="test@example.com")
-        mock_sub_create.assert_called_once_with(customer="cus_123", items=[{"price": "price_123"}])
-        subscription = Subscription.objects.get(user=self.user)
-        self.assertEqual(subscription.stripe_customer_id, "cus_123")
+        response = self.client.post(reverse("subscribe"), {"plan": "invalid"})
+        self.assertRedirects(response, reverse("billing"))
 
     @patch("app.views.stripe.Subscription.delete")
     def test_cancel_subscription_sets_free_tier_and_records_cancel(self, mock_delete):

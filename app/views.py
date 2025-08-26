@@ -12,10 +12,17 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.urls import reverse
 import json
-import openai
+try:
+    import openai
+except ModuleNotFoundError:  # pragma: no cover - openai is optional
+    openai = None
 import requests
 import stripe
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:  # pragma: no cover - dotenv is optional
+    def load_dotenv():
+        return None
 load_dotenv()
 
 from django.utils import timezone
@@ -176,22 +183,19 @@ def subscribe(request):
 
     profile = request.user.profile
 
-    # Ensure a Stripe Customer; never pass email as 'customer' — Stripe needs a customer ID.
-    if not profile.stripe_customer_id:
-        customer = stripe.Customer.create(
-            email=request.user.email,
-            name=(request.user.get_full_name() or request.user.username),
-            metadata={"django_user_id": str(request.user.id)},
-        )
-        profile.stripe_customer_id = customer.id
-        profile.save(update_fields=["stripe_customer_id"])
+    # Create a Stripe Customer for this user
+    customer = stripe.Customer.create(
+        email=request.user.email,
+        name=(request.user.get_full_name() or request.user.username),
+        metadata={"django_user_id": str(request.user.id)},
+    )
+    customer_id = customer["id"]
 
-    # Put metadata on BOTH the session and the eventual subscription
     success_url = request.build_absolute_uri(reverse("billing")) + "?status=success"
     cancel_url = request.build_absolute_uri(reverse("billing")) + "?status=cancelled"
 
     session = stripe.checkout.Session.create(
-        customer=profile.stripe_customer_id,
+        customer=customer_id,
         mode="subscription",
         line_items=[{"price": price_id, "quantity": 1}],
         allow_promotion_codes=True,
@@ -340,62 +344,6 @@ def billing(request):
     }
 
     return render(request, "app/billing.html", context)
-
-
-@login_required
-@require_http_methods(["POST"])
-def subscribe(request):
-    """Subscribe the user to a plan using Stripe."""
-    plan = request.POST.get("plan")
-    plan_map = {
-        "pro": {"product": "prod_SwKSitSvRgmuru", "price": 99},
-        "enterprise": {"product": "prod_SwKTg5ev69mlPD", "price": 299},
-    }
-    if plan not in plan_map:
-        messages.error(request, "Invalid plan selected.")
-        return redirect("billing")
-
-    stripe.api_key = os.getenv('STRIPE_API_KEY')
-    try:
-        price_data = stripe.Price.list(product=plan_map[plan]["product"], limit=1)
-        price_id = price_data["data"][0]["id"]
-
-        existing_sub = getattr(request.user, "subscription", None)
-        stripe_customer_id = (
-            existing_sub.stripe_customer_id if existing_sub and existing_sub.stripe_customer_id else None
-        )
-        if not stripe_customer_id:
-            customer = stripe.Customer.create(email=request.user.email)
-            stripe_customer_id = customer["id"]
-
-        sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"price": price_id}])
-
-        profile = request.user.profile
-        profile.subscription_tier = plan
-        profile.save(update_fields=["subscription_tier"])
-
-        subscription, _ = Subscription.objects.update_or_create(
-            user=request.user,
-            defaults={
-                "stripe_subscription_id": sub["id"],
-                "stripe_customer_id": stripe_customer_id,
-                "plan": plan,
-                "started_at": timezone.now(),
-                "canceled_at": None,
-            },
-        )
-        Transaction.objects.create(
-            subscription=subscription,
-            plan=plan,
-            amount=plan_map[plan]["price"],
-            status="paid",
-        )
-
-        messages.success(request, "Subscription updated successfully.")
-        return redirect("dashboard")
-    except Exception:
-        messages.error(request, "Unable to process your subscription.")
-        return redirect("billing")
 
 
 @login_required
