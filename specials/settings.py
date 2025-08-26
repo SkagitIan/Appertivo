@@ -12,12 +12,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv, find_dotenv
+except ModuleNotFoundError:
+    def load_dotenv(*args, **kwargs):
+        return False
+    def find_dotenv(*args, **kwargs):
+        return ""
 
 load_dotenv()
 from django.contrib.messages import constants as message_constants
 
-from dotenv import find_dotenv
 print(find_dotenv())
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
@@ -53,6 +58,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'django_extensions',
     'corsheaders',
+    'django_crontab',
     'app.apps.AppConfig',
     'anymail',
 ]
@@ -227,3 +233,15 @@ print(f"BREVO_API_KEY: {BREVO_API_KEY}")  # Debugging line to check if the key i
 EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'
 ANYMAIL = {'BREVO_API_KEY': BREVO_API_KEY}
 
+
+CRONJOBS = [("0 * * * *", "app.cron.unpublish_expired_specials")]
+
+for _app in ['django_extensions', 'corsheaders', 'anymail', 'cloudinary', 'django_crontab']:
+    try:
+        __import__(_app)
+    except ModuleNotFoundError:
+        if _app in INSTALLED_APPS:
+            INSTALLED_APPS.remove(_app)
+
+if "corsheaders" not in INSTALLED_APPS and "corsheaders.middleware.CorsMiddleware" in MIDDLEWARE:
+    MIDDLEWARE.remove("corsheaders.middleware.CorsMiddleware")

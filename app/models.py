@@ -38,6 +38,7 @@ class Special(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='specials/', blank=True, null=True)
     image_public_id = models.CharField(max_length=255, blank=True, null=True)
+    google_post_name = models.CharField(max_length=255, blank=True, null=True)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     cta_type = models.CharField(max_length=10, choices=CTA_CHOICES, default='web')
