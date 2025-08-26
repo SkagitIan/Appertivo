@@ -102,8 +102,9 @@ class UserProfile(models.Model):
     restaurant_name = models.CharField(max_length=255)
     is_email_verified = models.BooleanField(default=False)
     verification_token = models.UUIDField(default=uuid.uuid4, blank=True, null=True)
+    stripe_customer_id = models.CharField(max_length=64, blank=True, null=True)
     subscription_tier = models.CharField(
-        max_length=20, 
+        max_length=20,
         choices=[('free', 'Free'), ('pro', 'Pro'), ('enterprise', 'Enterprise')],
         default='free'
     )
