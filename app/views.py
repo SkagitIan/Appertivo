@@ -360,19 +360,17 @@ def subscribe(request):
         price_data = stripe.Price.list(product=plan_map[plan]["product"], limit=1)
         price_id = price_data["data"][0]["id"]
 
-        existing_sub = getattr(request.user, "subscription", None)
-        stripe_customer_id = (
-            existing_sub.stripe_customer_id if existing_sub and existing_sub.stripe_customer_id else None
-        )
+        profile = request.user.profile
+        stripe_customer_id = profile.stripe_customer_id
         if not stripe_customer_id:
             customer = stripe.Customer.create(email=request.user.email)
             stripe_customer_id = customer["id"]
 
         sub = stripe.Subscription.create(customer=stripe_customer_id, items=[{"price": price_id}])
 
-        profile = request.user.profile
         profile.subscription_tier = plan
-        profile.save(update_fields=["subscription_tier"])
+        profile.stripe_customer_id = stripe_customer_id
+        profile.save(update_fields=["subscription_tier", "stripe_customer_id"])
 
         subscription, _ = Subscription.objects.update_or_create(
             user=request.user,

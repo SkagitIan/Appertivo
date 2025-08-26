@@ -34,9 +34,9 @@ class BillingTests(TestCase):
         self.assertRedirects(response, reverse("dashboard"))
         profile = UserProfile.objects.get(user=self.user)
         self.assertEqual(profile.subscription_tier, "pro")
+        self.assertEqual(profile.stripe_customer_id, "cus_123")
         sub = Subscription.objects.get(user=self.user)
         self.assertEqual(sub.plan, "pro")
-        self.assertEqual(sub.stripe_customer_id, "cus_123")
         self.assertIsNone(sub.canceled_at)
         tx = Transaction.objects.get(subscription=sub)
         self.assertEqual(tx.amount, 99)
@@ -55,8 +55,8 @@ class BillingTests(TestCase):
 
         mock_customer_create.assert_called_once_with(email="test@example.com")
         mock_sub_create.assert_called_once_with(customer="cus_123", items=[{"price": "price_123"}])
-        subscription = Subscription.objects.get(user=self.user)
-        self.assertEqual(subscription.stripe_customer_id, "cus_123")
+        profile = UserProfile.objects.get(user=self.user)
+        self.assertEqual(profile.stripe_customer_id, "cus_123")
 
     @patch("app.views.stripe.Subscription.delete")
     def test_cancel_subscription_sets_free_tier_and_records_cancel(self, mock_delete):
