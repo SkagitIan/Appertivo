@@ -31,10 +31,16 @@
         </section>
 
         <section>
-            <h2 class="text-2xl font-semibold mb-4">Future Articles</h2>
+            <h2 class="text-2xl font-semibold mb-4">Articles</h2>
             <ul class="list-disc ml-6 space-y-2">
-                <li class="searchable text-slate-600">Getting started with Appertivo (coming soon)</li>
-                <li class="searchable text-slate-600">Promoting specials effectively (coming soon)</li>
+                {% for article in articles %}
+                <li class="searchable">
+                    <a href="{{ article.get_absolute_url }}" class="text-blue-600 hover:underline">{{ article.title }}</a>
+                    <span class="text-sm text-slate-500">{{ article.published_at|date:"F j, Y" }}</span>
+                </li>
+                {% empty %}
+                <li class="text-slate-600">No articles available.</li>
+                {% endfor %}
             </ul>
         </section>
     </main>

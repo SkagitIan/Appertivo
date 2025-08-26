@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.text import slugify
+from django.urls import reverse
 from django.core.validators import RegexValidator
 import uuid
+import json
 
 class Restaurant(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -121,3 +124,58 @@ class EmailSignup(models.Model):
 
     def __str__(self):
         return f"{self.email} - {self.restaurant.username}"
+
+
+class Article(models.Model):
+    """SEO-optimized article for resources section."""
+
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    description = models.TextField(help_text="SEO description")
+    content = models.TextField()
+    published_at = models.DateTimeField(default=timezone.now)
+    tags = models.CharField(
+        max_length=255, blank=True, help_text="Comma-separated list of tags"
+    )
+
+    class Meta:
+        ordering = ["-published_at"]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Article.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("article_detail", args=[self.slug])
+
+
+def publish_article_from_json(payload):
+    """Create and publish an :class:`Article` from a JSON payload."""
+
+    if isinstance(payload, str):
+        data = json.loads(payload)
+    else:
+        data = payload
+
+    tags = data.get("tags", [])
+    if isinstance(tags, list):
+        tags = ",".join(tags)
+
+    article = Article.objects.create(
+        title=data["title"],
+        description=data.get("description", ""),
+        content=data.get("content", ""),
+        published_at=data.get("published_at", timezone.now()),
+        tags=tags,
+    )
+    return article
