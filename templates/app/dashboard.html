@@ -5,7 +5,13 @@
 {% block content %}
 <div class="min-h-screen bg-slate-50">
 {% include 'base/dashboard_nav.html' %}
-
+{% if messages %}
+    <div class="fixed top-4 right-4 space-y-2">
+        {% for message in messages %}
+        <div class="bg-green-100 text-green-800 px-4 py-2 rounded shadow">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

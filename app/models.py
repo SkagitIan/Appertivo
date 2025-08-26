@@ -111,6 +111,34 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.restaurant_name}"
 
+
+class Subscription(models.Model):
+    """Stores a user's subscription details."""
+
+    PLAN_CHOICES = [('pro', 'Pro'), ('enterprise', 'Enterprise')]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
+    stripe_subscription_id = models.CharField(max_length=100)
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    started_at = models.DateTimeField(default=timezone.now)
+    canceled_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.plan}"
+
+
+class Transaction(models.Model):
+    """Individual subscription transactions."""
+
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='transactions')
+    plan = models.CharField(max_length=20, choices=Subscription.PLAN_CHOICES)
+    amount = models.DecimalField(max_digits=7, decimal_places=2)
+    status = models.CharField(max_length=20)
+    occurred_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.subscription.user.username} - {self.amount}"
+
 class EmailSignup(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     restaurant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_signups')

@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Billing - Appertivo{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+{% include 'base/dashboard_nav.html' %}
+
+    <main class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h1 class="text-2xl font-bold text-slate-900 mb-6">Billing</h1>
+        <div class="mb-6">
+            <p class="text-slate-700">Current Plan: {{ profile.subscription_tier|capfirst }}</p>
+            {% if subscription %}
+            <p class="text-sm text-slate-500">
+                Started: {{ subscription.started_at|date:"Y-m-d" }}
+                {% if subscription.canceled_at %}| Cancelled: {{ subscription.canceled_at|date:"Y-m-d" }}{% endif %}
+            </p>
+            {% endif %}
+            {% if profile.subscription_tier != 'free' %}
+            <form method="post" action="{% url 'cancel_subscription' %}" class="mt-2">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline">Cancel Subscription</button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% if profile.subscription_tier == 'free' %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            {% for plan in plans %}
+            <div class="card border-2 {{ plan.border }} p-6">
+                <h2 class="text-xl font-semibold mb-2">{{ plan.name }}</h2>
+                <p class="text-2xl font-bold mb-4">${{ plan.price }}<span class="text-sm font-medium text-slate-500">/mo</span></p>
+                <ul class="mb-4 list-disc list-inside text-slate-700">
+                    {% for feat in plan.features %}
+                    <li>{{ feat }}</li>
+                    {% endfor %}
+                </ul>
+                <form method="post" action="{% url 'subscribe' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="plan" value="{{ plan.tier }}" />
+                    <button type="submit" class="btn-primary w-full">Choose {{ plan.name }}</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h2 class="text-lg font-semibold mb-4">Transaction History</h2>
+        <div class="bg-white stripe-shadow rounded-lg p-4">
+            <table class="w-full text-left">
+                <thead>
+                    <tr><th class="py-2">Date</th><th>Plan</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                    <tr class="border-t">
+                        <td class="py-2">{{ tx.occurred_at|date:"Y-m-d" }}</td>
+                        <td>{{ tx.plan|capfirst }}</td>
+                        <td>${{ tx.amount }}</td>
+                        <td>{{ tx.status|capfirst }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr class="border-t">
+                        <td colspan="4" class="py-2 text-center text-slate-500">No transactions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+{% endblock %}
