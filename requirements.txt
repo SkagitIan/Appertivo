@@ -9,3 +9,4 @@ django-cors-headers # for handling CORS in development
 django-anymail[brevo]
 openai
 django-allauth
+django-crontab
