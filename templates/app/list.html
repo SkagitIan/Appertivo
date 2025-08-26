@@ -27,7 +27,7 @@
                 {% for special in specials %}
                     <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200" data-testid="card-special-{{ special.id }}">
                         {% if special.image %}
-                            <div class="h-48 bg-slate-200 rounded-t-lg"></div>
+                            <img src="{{ special.image.url }}" alt="{{ special.title }}" class="h-48 w-full object-cover rounded-t-lg">
                         {% endif %}
                         <div class="p-6">
                             <div class="flex items-center justify-between mb-4">
@@ -63,17 +63,37 @@
                             </div>
                             
                             <div class="flex space-x-2">
-                                <button class="flex-1 btn-outline text-sm py-2" data-testid="button-edit-special">
+                                <button class="flex-1 btn-outline text-sm py-2" data-testid="button-edit-special"
+                                    data-id="{{ special.id }}"
+                                    data-title="{{ special.title }}"
+                                    data-description="{{ special.description }}"
+                                    data-price="{{ special.price }}"
+                                    data-start-date="{{ special.start_date|date:'Y-m-d\TH:i' }}"
+                                    data-end-date="{{ special.end_date|date:'Y-m-d\TH:i' }}"
+                                    data-cta-type="{{ special.cta_type }}"
+                                    data-cta-url="{{ special.cta_url }}"
+                                    data-cta-phone="{{ special.cta_phone }}">
                                     Edit
                                 </button>
-                                <button class="flex-1 btn-primary text-sm py-2" data-testid="button-view-special">
-                                    View
-                                </button>
-                                <button class="px-3 py-2 text-slate-400 hover:text-slate-600" data-testid="button-more-options">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                                    </svg>
-                                </button>
+                                {% if special.status == 'active' %}
+                                <form method="post" action="{% url 'special_unpublish' special.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button class="w-full btn-primary text-sm py-2" data-testid="button-unpublish-special">Sold Out</button>
+                                </form>
+                                {% else %}
+                                <form method="post" action="{% url 'special_publish' special.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button class="w-full btn-primary text-sm py-2" data-testid="button-publish-special">Publish</button>
+                                </form>
+                                {% endif %}
+                                <form method="post" action="{% url 'special_delete' special.id %}">
+                                    {% csrf_token %}
+                                    <button class="px-3 py-2 text-slate-400 hover:text-slate-600" data-testid="button-delete-special">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7v10m6-10v10M4 7h16l-1 12a2 2 0 01-2 2H7a2 2 0 01-2-2L4 7zm3-3h10a1 1 0 011 1v2H6V5a1 1 0 011-1z" />
+                                        </svg>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -97,5 +117,49 @@
             </div>
         {% endif %}
     </main>
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-lg">
+            <form id="edit-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="space-y-3">
+                    <input type="text" name="title" id="edit-title" class="w-full border rounded p-2" />
+                    <textarea name="description" id="edit-description" class="w-full border rounded p-2"></textarea>
+                    <input type="text" name="price" id="edit-price" class="w-full border rounded p-2" />
+                    <input type="datetime-local" name="start_date" id="edit-start_date" class="w-full border rounded p-2" />
+                    <input type="datetime-local" name="end_date" id="edit_end_date" class="w-full border rounded p-2" />
+                    <select name="cta_type" id="edit-cta_type" class="w-full border rounded p-2">
+                        <option value="web">Web Order</option>
+                        <option value="call">Call to Order</option>
+                    </select>
+                    <input type="url" name="cta_url" id="edit-cta_url" class="w-full border rounded p-2" />
+                    <input type="text" name="cta_phone" id="edit-cta_phone" class="w-full border rounded p-2" />
+                    <input type="file" name="image" id="edit-image" class="w-full" />
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button type="button" id="edit-cancel" class="btn-outline">Cancel</button>
+                    <button type="submit" class="btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+<script>
+const modal=document.getElementById('edit-modal');
+const form=document.getElementById('edit-form');
+document.querySelectorAll('[data-testid="button-edit-special"]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    form.action=`/specials/${btn.dataset.id}/edit/`;
+    document.getElementById('edit-title').value=btn.dataset.title;
+    document.getElementById('edit-description').value=btn.dataset.description;
+    document.getElementById('edit-price').value=btn.dataset.price;
+    document.getElementById('edit-start_date').value=btn.dataset.startDate;
+    document.getElementById('edit_end_date').value=btn.dataset.endDate;
+    document.getElementById('edit-cta_type').value=btn.dataset.ctaType;
+    document.getElementById('edit-cta_url').value=btn.dataset.ctaUrl;
+    document.getElementById('edit-cta_phone').value=btn.dataset.ctaPhone;
+    modal.classList.remove('hidden');
+  });
+});
+document.getElementById('edit-cancel').addEventListener('click',()=>modal.classList.add('hidden'));
+</script>
 {% endblock %}
