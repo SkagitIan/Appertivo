@@ -170,5 +170,23 @@
             {% endif %}
         </div>
     </main>
+ </div>
+{% if show_location_modal %}
+<div id="location-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96">
+        <h2 class="text-lg font-semibold mb-4">Select a Location</h2>
+        <form method="post" action="{% url 'select_google_location' %}">
+            {% csrf_token %}
+            <select name="location_id" class="mt-1 block w-full border-slate-300 rounded mb-4">
+                {% for loc in google_locations %}
+                <option value="{{ loc.id }}">{{ loc.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="text-right">
+                <button type="submit" class="btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
 </div>
+{% endif %}
 {% endblock %}

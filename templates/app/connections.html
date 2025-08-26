@@ -183,21 +183,16 @@
                 <form method="post" class="mt-4 space-y-4">
                     {% csrf_token %}
                     <input type="hidden" name="platform" value="google_business" />
-                    {% if connection.settings.locations %}
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Location</label>
-                        <select
-                            name="location_id"
-                            class="mt-1 block w-full border-slate-300 rounded"
-                        >
-                            {% for loc in connection.settings.locations %}
-                            <option value="{{ loc.id }}" {% if loc.id == connection.settings.location_id %}selected{% endif %}>
-                                {{ loc.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
+                        {% if connection.settings.location_name %}
+                        <p class="mt-1 text-sm text-slate-900">
+                            {{ connection.settings.location_name }}
+                        </p>
+                        {% else %}
+                        <p class="mt-1 text-sm text-slate-500">No location selected</p>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     <div class="flex items-center">
                         <input
                             type="checkbox"
