@@ -24,22 +24,10 @@ class BillingTests(TestCase):
         self.assertContains(response, "Pro")
         self.assertContains(response, "$99")
 
-    @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.checkout.Session.create")
     @patch("app.views.stripe.Customer.create")
-    @patch("app.views.stripe.Customer.modify")
-    @patch("app.views.stripe.PaymentMethod.attach")
-    @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_creates_subscription_and_transaction(
-        self,
-        mock_sub_create,
-        mock_pm_attach,
-        mock_cust_modify,
-        mock_customer_create,
-        mock_price_list,
-    ):
-        mock_sub_create.return_value = {"id": "sub_123"}
         mock_customer_create.return_value = {"id": "cus_123"}
-        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
+        mock_session_create.return_value = type("obj", (), {"url": "https://stripe.test/session"})()
         self.client.login(username="test@example.com", password="pass")
         response = self.client.post(
             reverse("subscribe"), {"plan": "pro", "payment_method": "pm_123"}
@@ -47,9 +35,9 @@ class BillingTests(TestCase):
         self.assertRedirects(response, reverse("dashboard"))
         profile = UserProfile.objects.get(user=self.user)
         self.assertEqual(profile.subscription_tier, "pro")
+        self.assertEqual(profile.stripe_customer_id, "cus_123")
         sub = Subscription.objects.get(user=self.user)
         self.assertEqual(sub.plan, "pro")
-        self.assertEqual(sub.stripe_customer_id, "cus_123")
         self.assertIsNone(sub.canceled_at)
         tx = Transaction.objects.get(subscription=sub)
         self.assertEqual(tx.amount, 99)
@@ -85,17 +73,6 @@ class BillingTests(TestCase):
         self.client.post(reverse("subscribe"), {"plan": "pro", "payment_method": "pm_123"})
 
         mock_customer_create.assert_called_once_with(email="test@example.com")
-        mock_pm_attach.assert_called_once_with("pm_123", customer="cus_123")
-        mock_cust_modify.assert_called_once_with(
-            "cus_123", invoice_settings={"default_payment_method": "pm_123"}
-        )
-        mock_sub_create.assert_called_once_with(
-            customer="cus_123",
-            items=[{"price": "price_123"}],
-            default_payment_method="pm_123",
-        )
-        subscription = Subscription.objects.get(user=self.user)
-        self.assertEqual(subscription.stripe_customer_id, "cus_123")
 
     @patch("app.views.stripe.Price.list")
     @patch("app.views.stripe.Customer.create")

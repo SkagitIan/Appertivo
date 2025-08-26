@@ -12,20 +12,13 @@ from django.utils.html import strip_tags
 from django.conf import settings
 from django.urls import reverse
 import json
+import openai
 import os
+
 import requests
 import stripe
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - dotenv is optional for tests
-    def load_dotenv():
-        return None
 
-try:
-    import openai
-except ModuleNotFoundError:  # pragma: no cover - openai is optional for tests
-    openai = None
-
+from dotenv import load_dotenv
 load_dotenv()
 
 from django.utils import timezone
@@ -186,22 +179,19 @@ def subscribe(request):
 
     profile = request.user.profile
 
-    # Ensure a Stripe Customer; never pass email as 'customer' — Stripe needs a customer ID.
-    if not profile.stripe_customer_id:
-        customer = stripe.Customer.create(
-            email=request.user.email,
-            name=(request.user.get_full_name() or request.user.username),
-            metadata={"django_user_id": str(request.user.id)},
-        )
-        profile.stripe_customer_id = customer.id
-        profile.save(update_fields=["stripe_customer_id"])
+    # Create a Stripe Customer for this user
+    customer = stripe.Customer.create(
+        email=request.user.email,
+        name=(request.user.get_full_name() or request.user.username),
+        metadata={"django_user_id": str(request.user.id)},
+    )
+    customer_id = customer["id"]
 
-    # Put metadata on BOTH the session and the eventual subscription
     success_url = request.build_absolute_uri(reverse("billing")) + "?status=success"
     cancel_url = request.build_absolute_uri(reverse("billing")) + "?status=cancelled"
 
     session = stripe.checkout.Session.create(
-        customer=profile.stripe_customer_id,
+        customer=customer_id,
         mode="subscription",
         line_items=[{"price": price_id, "quantity": 1}],
         allow_promotion_codes=True,
