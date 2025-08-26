@@ -11,7 +11,7 @@ class ResourcesPageTests(TestCase):
         self.assertContains(response, 'id="searchInput"', html=False)
         self.assertContains(response, 'id="searchResults"', html=False)
         self.assertContains(response, 'FAQs')
-        self.assertContains(response, 'Future Articles')
+        self.assertContains(response, 'Articles')
 
     def test_home_page_links_to_resources(self):
         response = self.client.get(reverse('home'))

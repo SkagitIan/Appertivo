@@ -14,7 +14,7 @@ from django.urls import reverse
 import json
 import openai
 import requests
-from .models import Special, Restaurant, Connection, UserProfile, EmailSignup
+from .models import Special, Restaurant, Connection, UserProfile, EmailSignup, Article
 from .forms import SpecialForm
 from app.integrations.google import *
 
@@ -25,7 +25,14 @@ def home(request):
 
 def resources(request):
     """Resources page view."""
-    return render(request, 'app/resources.html')
+    articles = Article.objects.all()
+    return render(request, 'app/resources.html', {"articles": articles})
+
+
+def article_detail(request, slug):
+    """Display a single article."""
+    article = get_object_or_404(Article, slug=slug)
+    return render(request, "app/article_detail.html", {"article": article})
 
 def register_view(request):
     """Registration page"""

@@ -1,0 +1,24 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ article.title }} | Appertivo{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="{{ article.description }}">
+<meta property="og:title" content="{{ article.title }}">
+<meta property="og:description" content="{{ article.description }}">
+<meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white">
+    {% include 'base/public_nav.html' %}
+    <main class="max-w-4xl mx-auto px-4 py-24">
+        <article>
+            <h1 class="text-4xl font-bold mb-4">{{ article.title }}</h1>
+            <p class="text-sm text-slate-500 mb-8">{{ article.published_at|date:"F j, Y" }}</p>
+            <div class="prose max-w-none">{{ article.content|safe }}</div>
+        </article>
+    </main>
+</div>
+{% endblock %}
+
