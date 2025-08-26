@@ -22,13 +22,12 @@ class BillingTests(TestCase):
         self.assertContains(response, "Pro")
         self.assertContains(response, "$99")
 
-    @patch("app.views.stripe.Price.list")
+    @patch("app.views.stripe.checkout.Session.create")
     @patch("app.views.stripe.Customer.create")
-    @patch("app.views.stripe.Subscription.create")
-    def test_subscribe_creates_subscription_and_transaction(self, mock_sub_create, mock_customer_create, mock_price_list):
-        mock_sub_create.return_value = {"id": "sub_123"}
+    def test_subscribe_creates_checkout_session_and_redirects(self, mock_customer_create, mock_session_create):
+        """Successful subscribe should create a Stripe Checkout session and redirect."""
         mock_customer_create.return_value = {"id": "cus_123"}
-        mock_price_list.return_value = {"data": [{"id": "price_123"}]}
+        mock_session_create.return_value = type("obj", (), {"url": "https://stripe.test/session"})()
         self.client.login(username="test@example.com", password="pass")
         response = self.client.post(reverse("subscribe"), {"plan": "pro"})
         self.assertRedirects(response, reverse("dashboard"))
@@ -57,6 +56,7 @@ class BillingTests(TestCase):
         mock_sub_create.assert_called_once_with(customer="cus_123", items=[{"price": "price_123"}])
         profile = UserProfile.objects.get(user=self.user)
         self.assertEqual(profile.stripe_customer_id, "cus_123")
+
 
     @patch("app.views.stripe.Subscription.delete")
     def test_cancel_subscription_sets_free_tier_and_records_cancel(self, mock_delete):
