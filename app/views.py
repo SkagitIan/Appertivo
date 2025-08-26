@@ -14,6 +14,7 @@ from django.urls import reverse
 import json
 import openai
 import requests
+import stripe
 from .models import Special, Restaurant, Connection, UserProfile, EmailSignup, Article
 from .forms import SpecialForm
 from app.integrations.google import *
@@ -128,6 +129,63 @@ def dashboard(request):
         'google_locations': locations,
     }
     return render(request, 'app/dashboard.html', context)
+
+
+@login_required
+def billing(request):
+    """Display billing details and subscription options."""
+    profile = request.user.profile
+    transactions = [
+        {"date": "2024-01-01", "amount": "$99.00", "status": "paid", "plan": "Pro"},
+        {"date": "2024-02-01", "amount": "$99.00", "status": "paid", "plan": "Pro"},
+    ]
+    plans = [
+        {
+            "tier": "pro",
+            "name": "Pro",
+            "price": 99,
+            "features": ["Unlimited specials", "Priority support"],
+            "border": "border-blue-500",
+        },
+        {
+            "tier": "enterprise",
+            "name": "Enterprise",
+            "price": 299,
+            "features": ["Unlimited specials", "Dedicated support", "Custom integrations"],
+            "border": "border-green-500",
+        },
+    ]
+    context = {"profile": profile, "plans": plans, "transactions": transactions}
+    return render(request, "app/billing.html", context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def subscribe(request):
+    """Subscribe the user to a plan using Stripe."""
+    plan = request.POST.get("plan")
+    stripe.api_key = settings.STRIPE_API_KEY
+    try:
+        stripe.Subscription.create(customer=request.user.email, items=[{"price": plan}])
+        profile = request.user.profile
+        profile.subscription_tier = plan
+        profile.save(update_fields=["subscription_tier"])
+        messages.success(request, "Subscription updated successfully.")
+        return redirect("dashboard")
+    except Exception:
+        messages.error(request, "Unable to process your subscription.")
+        return redirect("billing")
+
+
+@login_required
+@require_http_methods(["POST"])
+def cancel_subscription(request):
+    """Cancel the user's subscription and revert to free tier."""
+    profile = request.user.profile
+    profile.subscription_tier = "free"
+    profile.save(update_fields=["subscription_tier"])
+    messages.success(request, "Subscription cancelled.")
+    return redirect("billing")
 
 @login_required
 def specials_list(request):
