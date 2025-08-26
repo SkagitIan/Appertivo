@@ -10,15 +10,13 @@ import os
 import requests
 
 from django.conf import settings
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError:
-    def load_dotenv(*args, **kwargs):
-        return False
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from app.models import Connection
 
-load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 # --- OAuth and API constants ---
