@@ -1,0 +1,72 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-white">
+    {% include 'base/public_nav.html' %}
+    <main class="max-w-4xl mx-auto px-4 py-24">
+        <h1 class="text-4xl font-bold mb-8">Resources</h1>
+        <div class="mb-8">
+            <input id="searchInput" type="text" placeholder="Search resources..." class="w-full border rounded-md p-2" />
+        </div>
+        <div id="searchResults" class="mb-12"></div>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold mb-4">FAQs</h2>
+            <div class="space-y-4">
+                <div class="border rounded-md p-4 searchable">
+                    <button class="faq-question w-full text-left flex justify-between items-center font-medium">
+                        <span>What is Appertivo?</span>
+                        <span>+</span>
+                    </button>
+                    <div class="faq-answer mt-2 text-slate-600 hidden">Appertivo helps restaurants manage daily specials.</div>
+                </div>
+                <div class="border rounded-md p-4 searchable">
+                    <button class="faq-question w-full text-left flex justify-between items-center font-medium">
+                        <span>How do I create a special?</span>
+                        <span>+</span>
+                    </button>
+                    <div class="faq-answer mt-2 text-slate-600 hidden">Use the dashboard to create and publish specials.</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-2xl font-semibold mb-4">Future Articles</h2>
+            <ul class="list-disc ml-6 space-y-2">
+                <li class="searchable text-slate-600">Getting started with Appertivo (coming soon)</li>
+                <li class="searchable text-slate-600">Promoting specials effectively (coming soon)</li>
+            </ul>
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        answer.classList.toggle('hidden');
+    });
+});
+
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+const searchables = document.querySelectorAll('.searchable');
+
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    searchResults.innerHTML = '';
+    if (!query) {
+        return;
+    }
+    searchables.forEach(item => {
+        if (item.textContent.toLowerCase().includes(query)) {
+            const clone = item.cloneNode(true);
+            clone.classList.remove('hidden');
+            searchResults.appendChild(clone);
+        }
+    });
+});
+</script>
+{% endblock %}

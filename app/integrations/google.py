@@ -284,7 +284,6 @@ def publish_special(special: Any, location_id: Optional[str] = None) -> None:
     except Exception as exc:
         logger.exception("Failed to publish special to Google: %s", exc)
 
-
 def remove_special(special: Any, connection: Optional[Connection] = None) -> None:
     """Delete a previously published special from Google Business Profile."""
     try:
