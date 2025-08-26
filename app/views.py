@@ -15,7 +15,18 @@ import json
 import openai
 import requests
 import stripe
-from .models import Special, Restaurant, Connection, UserProfile, EmailSignup, Article
+
+from django.utils import timezone
+from .models import (
+    Special,
+    Restaurant,
+    Connection,
+    UserProfile,
+    EmailSignup,
+    Article,
+    Subscription,
+    Transaction,
+
 from .forms import SpecialForm
 from app.integrations.google import *
 
@@ -135,10 +146,10 @@ def dashboard(request):
 def billing(request):
     """Display billing details and subscription options."""
     profile = request.user.profile
-    transactions = [
-        {"date": "2024-01-01", "amount": "$99.00", "status": "paid", "plan": "Pro"},
-        {"date": "2024-02-01", "amount": "$99.00", "status": "paid", "plan": "Pro"},
-    ]
+
+    subscription = getattr(request.user, "subscription", None)
+    transactions = subscription.transactions.order_by("-occurred_at") if subscription else []
+
     plans = [
         {
             "tier": "pro",
@@ -155,7 +166,14 @@ def billing(request):
             "border": "border-green-500",
         },
     ]
-    context = {"profile": profile, "plans": plans, "transactions": transactions}
+
+    context = {
+        "profile": profile,
+        "subscription": subscription,
+        "plans": plans,
+        "transactions": transactions,
+    }
+
     return render(request, "app/billing.html", context)
 
 
@@ -164,12 +182,41 @@ def billing(request):
 def subscribe(request):
     """Subscribe the user to a plan using Stripe."""
     plan = request.POST.get("plan")
-    stripe.api_key = getenv('STRIPE_API_KEY')
+    plan_map = {
+        "pro": {"product": "prod_SwKSitSvRgmuru", "price": 99},
+        "enterprise": {"product": "prod_SwKTg5ev69mlPD", "price": 299},
+    }
+    if plan not in plan_map:
+        messages.error(request, "Invalid plan selected.")
+        return redirect("billing")
+
+    stripe.api_key = settings.STRIPE_API_KEY
     try:
-        stripe.Subscription.create(customer=request.user.email, items=[{"price": plan}])
+        price_data = stripe.Price.list(product=plan_map[plan]["product"], limit=1)
+        price_id = price_data["data"][0]["id"]
+        sub = stripe.Subscription.create(customer=request.user.email, items=[{"price": price_id}])
+
         profile = request.user.profile
         profile.subscription_tier = plan
         profile.save(update_fields=["subscription_tier"])
+
+        subscription, _ = Subscription.objects.update_or_create(
+            user=request.user,
+            defaults={
+                "stripe_subscription_id": sub["id"],
+                "plan": plan,
+                "started_at": timezone.now(),
+                "canceled_at": None,
+            },
+        )
+        Transaction.objects.create(
+            subscription=subscription,
+            plan=plan,
+            amount=plan_map[plan]["price"],
+            status="paid",
+        )
+
+
         messages.success(request, "Subscription updated successfully.")
         return redirect("dashboard")
     except Exception:
@@ -182,6 +229,16 @@ def subscribe(request):
 def cancel_subscription(request):
     """Cancel the user's subscription and revert to free tier."""
     profile = request.user.profile
+    subscription = getattr(request.user, "subscription", None)
+    if subscription:
+        stripe.api_key = settings.STRIPE_API_KEY
+        try:
+            stripe.Subscription.delete(subscription.stripe_subscription_id)
+        except Exception:
+            pass
+        subscription.canceled_at = timezone.now()
+        subscription.save(update_fields=["canceled_at"])
+
     profile.subscription_tier = "free"
     profile.save(update_fields=["subscription_tier"])
     messages.success(request, "Subscription cancelled.")
