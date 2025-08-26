@@ -83,24 +83,36 @@ def dashboard(request):
         else:
             logger.error("Google connection failed for %s", request.user)
         # after processing, you might want to redirect to clean the URL
-        return redirect("dashboard")  
-    """Dashboard view"""
+        return redirect("dashboard")
+    conn = Connection.objects.filter(
+        user=request.user, platform="google_business", is_connected=True
+    ).first()
+    show_location_modal = False
+    locations = []
+    if conn:
+        settings_data = conn.settings or {}
+        if not settings_data.get("location_id"):
+            show_location_modal = True
+            locations = settings_data.get("locations", [])
+
     specials = Special.objects.filter(user=request.user)
     active_specials = specials.filter(status='active')
-    
+
     total_email_signups = EmailSignup.objects.filter(restaurant=request.user).count()
     total_email_signups_from_specials = sum(special.email_signups for special in active_specials)
-    
+
     stats = {
         'active': active_specials.count(),
         'views': sum(special.views for special in active_specials),
         'clicks': sum(special.clicks for special in active_specials),
         'email_signups': total_email_signups,
     }
-    
+
     context = {
         'specials': specials[:3],  # Latest 3 for overview
         'stats': stats,
+        'show_location_modal': show_location_modal,
+        'google_locations': locations,
     }
     return render(request, 'app/dashboard.html', context)
 
@@ -240,10 +252,10 @@ def google_callback(request):
     code = request.GET.get("code")
     if not code:
         return redirect("connections")
-    token_data = google.exchange_code_for_tokens(code)
+    token_data = exchange_code_for_tokens(code)
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
-    account_id, account_name, locations = google.get_accounts_and_locations(access_token)
+    account_id, account_name, locations, raw_locations = get_accounts_and_locations(access_token)
     connection, _ = Connection.objects.get_or_create(
         user=request.user, platform="google_business"
     )
@@ -254,10 +266,31 @@ def google_callback(request):
         "account_id": account_id,
         "account_name": account_name,
         "locations": locations,
+        "locations_raw": raw_locations,
         "delete_when_expired": True,
     }
     connection.save()
     return redirect("connections")
+
+
+@login_required
+@require_http_methods(["POST"])
+def select_google_location(request):
+    """Persist the user's chosen Google location."""
+    conn = Connection.objects.get(user=request.user, platform="google_business")
+    settings_data = conn.settings or {}
+    location_id = request.POST.get("location_id")
+    if location_id:
+        settings_data["location_id"] = location_id
+        for loc in settings_data.get("locations", []):
+            if loc.get("id") == location_id:
+                settings_data["location_name"] = loc.get("name")
+                if "address" in loc:
+                    settings_data["location_address"] = loc["address"]
+                break
+    conn.settings = settings_data
+    conn.save()
+    return redirect("dashboard")
 
 def logout_view(request):
     """Logout view"""

@@ -32,4 +32,4 @@ class GoogleLoggingTests(TestCase):
         with self.assertLogs("app.integrations.google", level="INFO") as cm:
             publish_special(special)
         self.assertTrue(any("Posting special to Google" in m for m in cm.output))
-        self.assertTrue(any("Google response 200" in m for m in cm.output))
+        self.assertTrue(any("Successfully published special to Google" in m for m in cm.output))

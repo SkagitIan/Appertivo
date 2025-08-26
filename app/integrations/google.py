@@ -97,7 +97,7 @@ def _date_dict(dt) -> Dict[str, int]:
 
 ACCOUNT_MGMT_URL = "https://mybusinessaccountmanagement.googleapis.com/v1"
 BUSINESS_INFO_URL = "https://mybusinessbusinessinformation.googleapis.com/v1"
-def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[str, Any]]]:
+def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[str, Any]], Dict[str, Any]]:
     """Return account and location details for the authenticated user."""
     headers = {"Authorization": f"Bearer {access_token}"}
 
@@ -108,13 +108,13 @@ def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[s
 
         if resp.status_code != 200:
             logger.error("Failed to fetch accounts: %s", resp.text)
-            return "", "", []
+            return "", "", [], {}
 
         accounts_resp = resp.json()
         accounts = accounts_resp.get("accounts", [])
         if not accounts:
             logger.warning("No Google accounts found for this user")
-            return "", "", []
+            return "", "", [], {}
 
         account = accounts[0]
         account_resource_name = account["name"]   # e.g. "accounts/123456"
@@ -130,7 +130,7 @@ def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[s
 
         if loc_resp.status_code != 200:
             logger.error("Failed to fetch locations for %s: %s", account_id, loc_resp.text)
-            return account_id, account_name, []
+            return account_id, account_name, [], {}
 
         locations_resp = loc_resp.json()
         locations: List[Dict[str, Any]] = []
@@ -147,11 +147,11 @@ def get_accounts_and_locations(access_token: str) -> Tuple[str, str, List[Dict[s
             )
 
         logger.info("Found %d Google locations for account %s", len(locations), account_id)
-        return account_id, account_name, locations
+        return account_id, account_name, locations, locations_resp
 
     except Exception as exc:
         logger.exception("Exception while fetching accounts/locations: %s", exc)
-        return "", "", []
+        return "", "", [], {}
 
 
 # ------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ def complete_google_auth(user, code: str) -> Optional[Connection]:
         logger.error("Google token exchange failed: %s", tokens)
         return None
 
-    account_id, account_name, locations = get_accounts_and_locations(access_token)
+    account_id, account_name, locations, raw_locations = get_accounts_and_locations(access_token)
 
     conn, _ = Connection.objects.update_or_create(
         user=user,
@@ -181,6 +181,7 @@ def complete_google_auth(user, code: str) -> Optional[Connection]:
                 "account_id": account_id,
                 "account_name": account_name,
                 "locations": locations,  # persist all locations
+                "locations_raw": raw_locations,
                 "location_id": None,
             },
         },

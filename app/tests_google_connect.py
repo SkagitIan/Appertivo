@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from app.models import Connection
 from unittest.mock import patch, Mock
+from app.integrations.google import complete_google_auth
 
 class GoogleConnectionFlowTests(TestCase):
     def setUp(self):
@@ -30,13 +31,17 @@ class GoogleConnectionFlowTests(TestCase):
         }
         mock_get.side_effect = [
             Mock(
+                status_code=200,
+                text="{}",
                 json=lambda: {
                     "accounts": [
                         {"name": "accounts/123", "accountName": "Test Account"}
                     ]
-                }
+                },
             ),
             Mock(
+                status_code=200,
+                text="{}",
                 json=lambda: {
                     "locations": [
                         {
@@ -50,7 +55,7 @@ class GoogleConnectionFlowTests(TestCase):
                             "address": {"line1": "456 Ave"},
                         },
                     ]
-                }
+                },
             ),
         ]
         self.client.force_login(self.user)
@@ -63,8 +68,18 @@ class GoogleConnectionFlowTests(TestCase):
         self.assertEqual(
             conn.settings["locations"],
             [
-                {"id": "456", "name": "Loc A", "address": {"line1": "123 St"}},
-                {"id": "789", "name": "Loc B", "address": {"line1": "456 Ave"}},
+                {
+                    "id": "456",
+                    "name": "Loc A",
+                    "address": {"line1": "123 St"},
+                    "primaryPhone": "",
+                },
+                {
+                    "id": "789",
+                    "name": "Loc B",
+                    "address": {"line1": "456 Ave"},
+                    "primaryPhone": "",
+                },
             ],
         )
         self.assertTrue(conn.settings["delete_when_expired"])
@@ -95,6 +110,31 @@ class GoogleConnectionFlowTests(TestCase):
         self.assertEqual(conn.settings["location_id"], "456")
         self.assertEqual(conn.settings["location_name"], "Loc A")
         self.assertFalse(conn.settings["delete_when_expired"])
+
+    @patch("app.integrations.google.get_accounts_and_locations")
+    @patch("app.integrations.google.exchange_code_for_tokens")
+    def test_complete_google_auth_stores_raw_locations(self, mock_exchange, mock_get):
+        mock_exchange.return_value = {"access_token": "tok", "refresh_token": "ref"}
+        raw_locs = {"locations": [{"name": "accounts/acc/locations/1", "title": "Loc"}]}
+        mock_get.return_value = ("acc", "Account", [{"id": "1", "name": "Loc"}], raw_locs)
+        conn = complete_google_auth(self.user, "code123")
+        self.assertEqual(conn.settings["locations_raw"], raw_locs)
+
+    def test_connections_page_shows_selected_location_only(self):
+        conn = Connection.objects.get(user=self.user, platform="google_business")
+        conn.is_connected = True
+        conn.settings = {
+            "access_token": "tok",
+            "account_id": "acc",
+            "location_id": "456",
+            "location_name": "Loc A",
+            "locations": [{"id": "456", "name": "Loc A"}],
+        }
+        conn.save()
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("connections"))
+        self.assertContains(response, "Loc A")
+        self.assertNotContains(response, 'name="location_id"')
     @override_settings(GOOGLE_API_KEY="key")
     @patch("app.integrations.google.requests.post")
     @patch("app.views.send_special_notification")
