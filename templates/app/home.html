@@ -1,50 +1,49 @@
 {% extends 'base/base.html' %}
 
 {% block content %}
-<div class="min-h-screen bg-white">
+<div class="min-h-screen bg-white" id="top">
 {% include 'base/public_nav.html' %}
     
     <!-- Hero Section -->
-    <section class="relative pt-20 pb-32 overflow-hidden">
+    <section class="relative pt-20 pb-32 overflow-hidden" id="hero">
         <div class="absolute inset-0 gradient-hero opacity-5"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-tight tracking-tight">
-                    Financial infrastructure 
+                    Restaurant specials software
                     <br />
                     <span class="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
-                        for restaurants
+                        to publish, promote & track
                     </span>
                 </h1>
                 <p class="mt-8 text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
-                    Snap a photo, write a few details, and publish your daily specials everywhere instantly. 
-                    AI-enhanced descriptions, automated distribution, and zero-friction onboarding.
+                    Snap a photo, add details, and <strong>auto-publish daily specials</strong> to Google, your website, and email—powered by AI copy and zero-friction onboarding.
                 </p>
                 <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{% url 'register' %}" class="btn-primary inline-flex items-center">
-                        Start now
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'register' %}" class="btn-primary inline-flex items-center" data-cta="hero-start">
+                        Start free – no card needed
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                         </svg>
                     </a>
-                    <a href="#contact" class="btn-outline">Contact sales</a>
+                    <a href="#contact" class="btn-outline" data-cta="hero-contact">Contact sales</a>
                 </div>
             </div>
             
             <!-- Dashboard Preview -->
             <div class="mt-20 max-w-4xl mx-auto">
-                <div class="stripe-glass stripe-shadow-lg rounded-2xl p-8 border">
+                <div class="stripe-glass stripe-shadow-lg rounded-2xl p-8 border" aria-label="Appertivo dashboard preview">
                     <div class="bg-white rounded-xl stripe-shadow p-6">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center">
-                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-violet-500 rounded-lg flex items-center justify-center">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-violet-500 rounded-lg flex items-center justify-center" aria-hidden="true">
                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <h3 class="text-lg font-semibold text-slate-900">Today's Special</h3>
-                                    <p class="text-sm text-slate-500">Active campaign</p>
+                                    <h3 class="text-lg font-semibold text-slate-900">Today’s Special</h3>
+                                    <p class="text-sm text-slate-500">Active across Google, website & email</p>
                                 </div>
                             </div>
                             <div class="flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
@@ -56,16 +55,16 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-2">
                                 <h4 class="text-xl font-semibold text-slate-900 mb-2">Truffle Mushroom Risotto</h4>
-                                <p class="text-slate-600 mb-4">Creamy arborio rice with wild mushrooms, finished with truffle oil and aged parmesan</p>
+                                <p class="text-slate-600 mb-4">AI-optimized description: creamy arborio rice with wild mushrooms, finished with truffle oil and aged parmesan.</p>
                                 <div class="flex items-center space-x-6 text-sm text-slate-500">
                                     <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                         </svg>
-                                        1,247 views
+                                        1,247 views (last 7 days)
                                     </div>
                                     <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                                         </svg>
                                         89% engagement
@@ -77,7 +76,7 @@
                                     <div class="text-3xl font-bold text-slate-900">$24</div>
                                     <div class="text-sm text-slate-500">Limited time</div>
                                 </div>
-                                <button class="mt-4 btn-primary">
+                                <button class="mt-4 btn-primary" data-cta="dashboard-order">
                                     Order now
                                 </button>
                             </div>
@@ -89,21 +88,21 @@
     </section>
 
     <!-- Widget Demo Section -->
-    <section class="py-24 bg-slate-50">
+    <section class="py-24 bg-slate-50" id="widget">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold text-slate-900 mb-4">
-                    See the Widget in Action
+                    See the Specials Widget in Action
                 </h2>
                 <p class="text-xl text-slate-600 max-w-3xl mx-auto">
-                    This is how your restaurant's daily special will appear on your website. Try the email signup to see the viral component in action.
+                    Embed live specials on your site, <strong>capture emails</strong>, and attribute subscribers to the special that won them over.
                 </p>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <!-- Demo Widget -->
                 <div class="order-2 lg:order-1">
-                    <div id="appertivo-demo-widget" class="bg-white rounded-xl shadow-xl p-8">
+                    <div id="appertivo-demo-widget" class="bg-white rounded-xl shadow-xl p-8" aria-live="polite">
                         <div class="text-center py-8 text-slate-500">
                             Loading demo widget...
                         </div>
@@ -119,7 +118,7 @@
                         <div class="space-y-4">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center" aria-hidden="true">
                                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                                         </svg>
@@ -127,12 +126,12 @@
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="text-lg font-medium text-slate-900">Automatic Updates</h4>
-                                    <p class="text-slate-600">Shows today's active special automatically. No manual updates needed.</p>
+                                    <p class="text-slate-600">Shows today’s active special automatically on your site and <strong>Google Business Profile</strong>.</p>
                                 </div>
                             </div>
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center" aria-hidden="true">
                                         <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
                                         </svg>
@@ -140,12 +139,12 @@
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="text-lg font-medium text-slate-900">Email Capture</h4>
-                                    <p class="text-slate-600">Built-in email signup captures customer interest and builds your mailing list.</p>
+                                    <p class="text-slate-600">Built-in opt-in grows your list; each subscriber is tagged to the special they saw.</p>
                                 </div>
                             </div>
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center" aria-hidden="true">
                                         <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
@@ -153,12 +152,12 @@
                                 </div>
                                 <div class="ml-4">
                                     <h4 class="text-lg font-medium text-slate-900">One-Click Orders</h4>
-                                    <p class="text-slate-600">Direct links to your ordering system or phone number for immediate action.</p>
+                                    <p class="text-slate-600">Send guests straight to online ordering or tap-to-call from your special.</p>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-8">
-                            <a href="{% url 'register' %}" class="btn-primary">
+                            <a href="{% url 'register' %}" class="btn-primary" data-cta="widget-create">
                                 Create Your Widget Now
                             </a>
                         </div>
@@ -169,35 +168,35 @@
     </section>
 
     <!-- Features Section -->
-    <section class="py-24 bg-white">
+    <section class="py-24 bg-white" id="features">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold text-slate-900 mb-4">
                     Everything you need to grow revenue
                 </h2>
                 <p class="text-xl text-slate-600 max-w-2xl mx-auto">
-                    From creation to distribution, we handle the complex parts so you can focus on what matters most.
+                    Create once, <strong>distribute everywhere</strong>, and measure what works with built-in analytics.
                 </p>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold text-slate-900 mb-3">AI-Enhanced Creation</h3>
-                    <p class="text-slate-600 mb-4">Upload a photo and get professionally written descriptions that make your dishes irresistible.</p>
+                    <p class="text-slate-600 mb-4">Upload a photo; get <strong>SEO-friendly</strong>, appetizing copy that sells.</p>
                     <ul class="space-y-2">
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             Smart photo analysis
                         </li>
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             Appetizing descriptions
@@ -206,46 +205,46 @@
                 </div>
                 
                 <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center mb-6">
+                    <div class="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
                         <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold text-slate-900 mb-3">Multi-Platform Distribution</h3>
-                    <p class="text-slate-600 mb-4">Publish once, distribute everywhere. Your specials automatically appear across all your channels.</p>
+                    <p class="text-slate-600 mb-4"><strong>Publish once</strong>: website widget, automated emails, and Google Business Profile updates.</p>
                     <ul class="space-y-2">
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             Website widgets
                         </li>
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Social media posts
+                            Automated email sends
                         </li>
                     </ul>
                 </div>
                 
                 <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                         </svg>
                     </div>
                     <h3 class="text-xl font-semibold text-slate-900 mb-3">Real-Time Analytics</h3>
-                    <p class="text-slate-600 mb-4">Track performance and optimize your specials with detailed insights and engagement metrics.</p>
+                    <p class="text-slate-600 mb-4">Track views, clicks, and subscriber growth to optimize each promotion.</p>
                     <ul class="space-y-2">
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             View tracking
                         </li>
                         <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             Conversion metrics
@@ -257,11 +256,11 @@
     </section>
 
     <!-- Pricing Section -->
-    <section class="py-24 bg-slate-50">
+    <section class="py-24 bg-slate-50" id="pricing">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold text-slate-900 mb-4">Pricing</h2>
-                <p class="text-xl text-slate-600">Choose the plan that's right for you.</p>
+                <p class="text-xl text-slate-600">Choose the plan that’s right for your restaurant.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="card stripe-shadow p-8">
@@ -276,8 +275,8 @@
                     <h3 class="text-2xl font-semibold text-slate-900 mb-2">Pro</h3>
                     <p class="text-sm text-slate-500 mb-4">Coming soon</p>
                     <ul class="space-y-2 text-slate-600">
-                        <li>Delivery App Integration</li>
-                        <li>POS Integrations</li>
+                        <li>Delivery app integrations</li>
+                        <li>POS integrations</li>
                     </ul>
                 </div>
                 <div class="card stripe-shadow p-8 opacity-60">
@@ -292,7 +291,7 @@
     </section>
 
     <!-- Company Logos -->
-    <section class="py-16 bg-white border-t border-slate-200">
+    <section class="py-16 bg-white border-t border-slate-200" id="logos">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <p class="text-slate-500 font-medium">Trusted by restaurants using</p>
@@ -322,7 +321,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-slate-800 text-slate-200 py-12">
+    <footer class="bg-slate-800 text-slate-200 py-12" id="contact">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
                 <h3 class="text-lg font-semibold mb-4">Pages</h3>
@@ -345,6 +344,7 @@
             <div>
                 <h3 class="text-lg font-semibold mb-4">Company</h3>
                 <p>Appertivo Inc.<br>123 Food St<br>Flavor Town, USA</p>
+                <p class="mt-4 text-slate-400 text-sm">Serving restaurants in Washington &amp; beyond.</p>
             </div>
             <div>
                 <h3 class="text-lg font-semibold mb-4">Follow Us</h3>
@@ -360,4 +360,33 @@
 
 <!-- Demo Widget Script -->
 <script src="{% url 'demo_widget_js' %}"></script>
+
+<!-- SEO JSON-LD (invisible, safe to keep here) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Appertivo",
+  "url": "https://appertivo.com",
+  "logo": "https://appertivo.com/static/img/logo.png",
+  "sameAs": [
+    "https://www.facebook.com/appertivo",
+    "https://www.instagram.com/appertivo",
+    "https://x.com/appertivo"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://appertivo.com/",
+  "name": "Appertivo",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://appertivo.com/search?q={query}",
+    "query-input": "required name=query"
+  }
+}
+</script>
 {% endblock %}

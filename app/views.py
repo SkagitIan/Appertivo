@@ -15,6 +15,7 @@ import json
 import openai
 import requests
 import stripe
+
 from django.utils import timezone
 from .models import (
     Special,
@@ -25,7 +26,7 @@ from .models import (
     Article,
     Subscription,
     Transaction,
-)
+
 from .forms import SpecialForm
 from app.integrations.google import *
 
@@ -145,8 +146,10 @@ def dashboard(request):
 def billing(request):
     """Display billing details and subscription options."""
     profile = request.user.profile
+
     subscription = getattr(request.user, "subscription", None)
     transactions = subscription.transactions.order_by("-occurred_at") if subscription else []
+
     plans = [
         {
             "tier": "pro",
@@ -163,12 +166,14 @@ def billing(request):
             "border": "border-green-500",
         },
     ]
+
     context = {
         "profile": profile,
         "subscription": subscription,
         "plans": plans,
         "transactions": transactions,
     }
+
     return render(request, "app/billing.html", context)
 
 
@@ -210,6 +215,7 @@ def subscribe(request):
             amount=plan_map[plan]["price"],
             status="paid",
         )
+
 
         messages.success(request, "Subscription updated successfully.")
         return redirect("dashboard")

@@ -186,24 +186,3 @@ class Article(models.Model):
     def get_absolute_url(self):
         return reverse("article_detail", args=[self.slug])
 
-
-def publish_article_from_json(payload):
-    """Create and publish an :class:`Article` from a JSON payload."""
-
-    if isinstance(payload, str):
-        data = json.loads(payload)
-    else:
-        data = payload
-
-    tags = data.get("tags", [])
-    if isinstance(tags, list):
-        tags = ",".join(tags)
-
-    article = Article.objects.create(
-        title=data["title"],
-        description=data.get("description", ""),
-        content=data.get("content", ""),
-        published_at=data.get("published_at", timezone.now()),
-        tags=tags,
-    )
-    return article
