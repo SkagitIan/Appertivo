@@ -25,78 +25,7 @@
         {% if specials %}
             <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {% for special in specials %}
-                    <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200" data-testid="card-special-{{ special.id }}">
-                        {% if special.image %}
-                            <img src="{{ special.image.url }}" alt="{{ special.title }}" class="h-48 w-full object-cover rounded-t-lg">
-                        {% endif %}
-                        <div class="p-6">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-semibold text-slate-900" data-testid="text-special-title">{{ special.title }}</h3>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    {% if special.status == 'active' %}bg-green-100 text-green-800{% elif special.status == 'draft' %}bg-yellow-100 text-yellow-800{% else %}bg-slate-100 text-slate-800{% endif %}">
-                                    {{ special.get_status_display }}
-                                </span>
-                            </div>
-                            
-                            <p class="text-slate-600 mb-4" data-testid="text-special-description">{{ special.description|truncatewords:20 }}</p>
-                            
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="text-2xl font-bold text-slate-900" data-testid="text-special-price">${{ special.price }}</div>
-                                <div class="text-sm text-slate-500">
-                                    Ends {{ special.end_date|date:"M d, Y" }}
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-3 gap-4 text-center text-sm text-slate-500 mb-4">
-                                <div>
-                                    <div class="font-medium text-slate-900" data-testid="stat-views">{{ special.views }}</div>
-                                    <div>Views</div>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-slate-900" data-testid="stat-clicks">{{ special.clicks }}</div>
-                                    <div>Clicks</div>
-                                </div>
-                                <div>
-                                    <div class="font-medium text-slate-900" data-testid="stat-shares">{{ special.shares }}</div>
-                                    <div>Shares</div>
-                                </div>
-                            </div>
-                            
-                            <div class="flex space-x-2">
-                                <button class="flex-1 btn-outline text-sm py-2" data-testid="button-edit-special"
-                                    data-id="{{ special.id }}"
-                                    data-title="{{ special.title }}"
-                                    data-description="{{ special.description }}"
-                                    data-price="{{ special.price }}"
-                                    data-start-date="{{ special.start_date|date:'Y-m-d\TH:i' }}"
-                                    data-end-date="{{ special.end_date|date:'Y-m-d\TH:i' }}"
-                                    data-cta-type="{{ special.cta_type }}"
-                                    data-cta-url="{{ special.cta_url }}"
-                                    data-cta-phone="{{ special.cta_phone }}">
-                                    Edit
-                                </button>
-                                {% if special.status == 'active' %}
-                                <form method="post" action="{% url 'special_unpublish' special.id %}" class="flex-1">
-                                    {% csrf_token %}
-                                    <button class="w-full btn-primary text-sm py-2" data-testid="button-unpublish-special">Sold Out</button>
-                                </form>
-                                {% else %}
-                                <form method="post" action="{% url 'special_publish' special.id %}" class="flex-1">
-                                    {% csrf_token %}
-                                    <button class="w-full btn-primary text-sm py-2" data-testid="button-publish-special">Publish</button>
-                                </form>
-                                {% endif %}
-                                <form method="post" action="{% url 'special_delete' special.id %}">
-                                    {% csrf_token %}
-                                    <button class="px-3 py-2 text-slate-400 hover:text-slate-600" data-testid="button-delete-special">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 7h12M9 7v10m6-10v10M4 7h16l-1 12a2 2 0 01-2 2H7a2 2 0 01-2-2L4 7zm3-3h10a1 1 0 011 1v2H6V5a1 1 0 011-1z" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    {% include 'app/partials/special_card.html' %}
                 {% endfor %}
             </div>
         {% else %}
