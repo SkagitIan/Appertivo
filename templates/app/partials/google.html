@@ -1,8 +1,104 @@
-<div class="platform-preview platform-google" data-platform="google">
-    <div class="platform-header">Google Post</div>
-    <div class="p-4 text-sm">
-        <h4 class="font-semibold mb-2">Truffle Mushroom Risotto</h4>
-        <p class="text-slate-600 mb-2">Creamy arborio rice with wild mushrooms, finished with truffle oil and aged parmesan.</p>
-        <div class="text-right font-bold">$24</div>
+<style>
+  .gpost-card {
+  width: 100%;
+  margin: 0;
+  padding: 20px 10px;
+  background: #fff;
+  border: 0px solid #dadce0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-family: Roboto, Arial, sans-serif;
+  color: #202124;
+  font-size: 14px;
+}
+
+.gpost-header {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+}
+
+.gpost-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.gpost-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gpost-name {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.gpost-date {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.gpost-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-top: 1px solid #dadce0;
+  border-bottom: 1px solid #dadce0;
+}
+
+.gpost-content {
+  padding: 12px;
+  line-height: 1.4;
+}
+
+.gpost-cta {
+  padding: 12px;
+  border-top: 1px solid #dadce0;
+  text-align: right;
+}
+
+.gpost-button {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #1a73e8;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.gpost-button:hover {
+  background: #1558b0;
+}
+
+</style>
+<div class="gpost-card">
+  <!-- Business Header -->
+  <div class="gpost-header">
+    <img class="gpost-avatar" src="https://i.pravatar.cc/60?img=32" alt="Business Logo">
+    <div class="gpost-info">
+      <span class="gpost-name">Fried Chicken Shack</span>
+      <span class="gpost-date">Posted Aug 28</span>
     </div>
+  </div>
+
+  <!-- Post Image -->
+  <div class="gpost-image">
+    <img src="https://appertivo.com/media/specials/post3_GwVKh2O.jpg" alt="Fried Chicken Special">
+  </div>
+
+  <!-- Post Content -->
+  <div class="gpost-content">
+    <p><strong>Today’s Special:</strong> 🍗 Crispy Fried Chicken</p>
+    <p>Hot, golden, and fresh. Stop by today before it’s gone!</p>
+  </div>
+
+  <!-- Call-to-Action -->
+  <div class="gpost-cta">
+    <a href="#" class="gpost-button">Order Online</a>
+  </div>
 </div>
+

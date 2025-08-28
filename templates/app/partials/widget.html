@@ -1,8 +1,120 @@
-<div class="platform-preview platform-widget" data-platform="widget">
-    <div class="platform-header">Widget</div>
-    <div class="p-4 text-sm">
-        <h4 class="font-semibold mb-2">Truffle Mushroom Risotto</h4>
-        <p class="text-slate-600 mb-2">Creamy arborio rice with wild mushrooms, finished with truffle oil and aged parmesan.</p>
-        <div class="text-right font-bold">$24</div>
+<style>
+  .appertivo-widget {
+  width: 100%;
+  margin: 0;
+  padding: 20px 10px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.appertivo-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  text-align: center;
+}
+
+.appertivo-content {
+  padding: 20px;
+}
+
+.appertivo-special {
+  text-align: center;
+}
+
+.appertivo-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.appertivo-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.appertivo-description {
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.appertivo-price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #059669;
+  margin-bottom: 16px;
+}
+
+.appertivo-cta {
+  display: inline-block;
+  background: #3b82f6;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.appertivo-signup {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.appertivo-signup-form {
+  display: flex;
+  gap: 8px;
+}
+
+.appertivo-email {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.appertivo-subscribe {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+</style>
+<div class="appertivo-widget">
+  <div class="appertivo-header">
+    <h3>Today's Special at Fried Chicken Shack</h3>
+  </div>
+  <div class="appertivo-content">
+    <div class="appertivo-special">
+      <img src="https://appertivo.com/media/specials/post3_GwVKh2O.jpg" alt="Fried Chicken" class="appertivo-image">
+      <div class="appertivo-title">Fried Chicken</div>
+      <div class="appertivo-description">Crispy, golden, and fresh out of the fryer. Limited servings daily!</div>
+      <div class="appertivo-price">$12.99</div>
+      <a href="#" class="appertivo-cta" target="_blank">Order Online</a>
     </div>
+
+    <div class="appertivo-signup">
+      <p style="margin-bottom: 8px; font-size: 14px; color: #6b7280;">
+        Get notified about future specials:
+      </p>
+      <form class="appertivo-signup-form">
+        <input type="email" class="appertivo-email" placeholder="Enter your email" required>
+        <button type="submit" class="appertivo-subscribe">Subscribe</button>
+      </form>
+    </div>
+  </div>
 </div>

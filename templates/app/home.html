@@ -3,13 +3,13 @@
 {% block content %}
 <div class="min-h-screen bg-white" id="top">
 {% include 'base/public_nav.html' %}
-    
     <!-- Hero Section -->
     <section class="relative pt-20 pb-32 overflow-hidden" id="hero">
         <div class="absolute inset-0 gradient-hero opacity-5"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-tight tracking-tight">
+                <h1
+                    class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-slate-900 leading-tight tracking-tight mt-5">
                     Restaurant specials software
                     <br />
                     <span class="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
@@ -17,234 +17,245 @@
                     </span>
                 </h1>
                 <p class="mt-8 text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
-                    Snap a photo, add details, and <strong>auto-publish daily specials</strong> to Google, your website, and email—powered by AI copy and zero-friction onboarding.
+                    Snap a photo, add details, and <strong>auto-publish daily specials</strong> to Google, your website, and
+                    email—powered by AI copy and zero-friction onboarding.
                 </p>
                 <div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{% url 'register' %}" class="btn-primary inline-flex items-center" data-cta="hero-start">
+                    <a href="{% url 'register' %}"
+                        class="inline-flex items-center px-6 py-3 rounded-md text-white font-semibold bg-[#f08000] hover:bg-orange-600 transition-colors duration-200 shadow-md text-3xl"
+                        data-cta="hero-start">
                         Start free – no card needed
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                        </svg>
                     </a>
-                    <a href="#contact" class="btn-outline" data-cta="hero-contact">Contact sales</a>
-                </div>
-            </div>
-            
-            <!-- Special Distribution Preview -->
-            <div class="mt-20">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {% include 'app/partials/widget.html' %}
-                    {% include 'app/partials/google.html' %}
-                    {% include 'app/partials/instagram.html' %}
-                    {% include 'app/partials/facebook.html' %}
-                    {% include 'app/partials/x.html' %}
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Widget Demo Section -->
-    <section class="py-24 bg-slate-50" id="widget">
+                </div>
+
+            </div>
+    </div>
+    </section>
+<!-- Distribution Preview Section -->
+<section id="distribution" class="py-5 bg-light">
+  <div class="container text-center">
+    <h2 class="fw-bold fs-2">One Post, Everywhere</h2>
+    <p class="text-muted fs-4 mb-4">Click for platform preview</p>
+
+    <!-- Logo row -->
+    <div class="d-flex justify-content-center flex-wrap gap-5">
+
+      <!-- Widget -->
+      <a href="#" data-bs-toggle="modal" data-bs-target="#widgetModal" class="p-3 rounded-circle bg-light shadow-sm">
+        <!-- Simple Appertivo circle logo placeholder -->
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="#B993D6" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="32"/>
+          <text x="50%" y="65%" text-anchor="middle" fill="white" font-size="32" font-family="sans-serif" font-weight="bold">A</text>
+        </svg>
+      </a>
+
+      <!-- Google -->
+      <a href="#" data-bs-toggle="modal" data-bs-target="#googleModal" class="p-3 rounded-circle bg-light shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 48 48">
+          <path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C36.12 2.3 30.46 0 24 0 14.64 0 6.64 5.5 2.69 13.5l7.98 6.19C12.33 13.33 17.73 9.5 24 9.5z"/>
+          <path fill="#34A853" d="M46.14 24.5c0-1.57-.14-3.07-.41-4.5H24v9h12.65c-.55 2.91-2.22 5.37-4.7 7.04l7.33 5.69c4.28-3.95 6.86-9.75 6.86-17.23z"/>
+          <path fill="#FBBC05" d="M10.67 28.31a14.5 14.5 0 010-8.62l-7.98-6.19A23.9 23.9 0 000 24c0 3.91.93 7.61 2.69 10.5l7.98-6.19z"/>
+          <path fill="#EA4335" d="M24 48c6.48 0 11.91-2.13 15.87-5.77l-7.33-5.69c-2.04 1.37-4.66 2.18-8.54 2.18-6.27 0-11.67-3.83-13.33-9.19l-7.98 6.19C6.64 42.5 14.64 48 24 48z"/>
+        </svg>
+      </a>
+
+      <!-- Instagram -->
+      <a href="#" data-bs-toggle="modal" data-bs-target="#instagramModal" class="p-3 rounded-circle bg-light shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+          <linearGradient id="ig" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#F58529"/>
+            <stop offset="30%" stop-color="#DD2A7B"/>
+            <stop offset="60%" stop-color="#8134AF"/>
+            <stop offset="100%" stop-color="#515BD4"/>
+          </linearGradient>
+          <rect width="24" height="24" rx="6" fill="url(#ig)"/>
+          <path fill="white" d="M12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4zm5.5-8.7a1.2 1.2 0 11-2.4 0 1.2 1.2 0 012.4 0z"/>
+        </svg>
+      </a>
+
+      <!-- Facebook -->
+      <a href="#" data-bs-toggle="modal" data-bs-target="#facebookModal" class="p-3 rounded-circle bg-light shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="#1877F2">
+          <circle cx="12" cy="12" r="12"/>
+          <path fill="white" d="M13 12h2.3l.4-3H13V7.7c0-.9.3-1.5 1.6-1.5h1.2V3.2C15.4 3.1 14.5 3 13.4 3c-2.4 0-4 1.4-4 4v2H7v3h2.4v9h3.6v-9z"/>
+        </svg>
+      </a>
+
+      <!-- X -->
+      <a href="#" data-bs-toggle="modal" data-bs-target="#xModal" class="p-3 rounded-circle bg-light shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="black">
+          <rect width="24" height="24" rx="6" fill="black"/>
+          <path fill="white" d="M17 4h2l-5.5 6.5L20 20h-4l-3-4-3 4H6l6.5-7.5L7 4h4l2.5 3.5L16 4h1z"/>
+        </svg>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- Features Section -->
+<section class="py-24 bg-white" id="features">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-slate-900 mb-4">
+        Everything you need to grow revenue
+      </h2>
+      <p class="text-2xl text-slate-600 max-w-2xl mx-auto">
+        Create once, <strong>distribute everywhere</strong>, and measure what works with built-in analytics.
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- AI-Enhanced Creation -->
+      <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8 bg-gradient-to-b from-blue-50 to-white rounded-xl border border-blue-100">
+        <div class="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+          <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <h3 class="text-3xl font-bold text-slate-900 mb-3">AI-Enhanced Creation</h3>
+        <p class="text-slate-600 mb-4 text-1xl">
+          Struggling with writing posts that actually sell? Upload a photo and instantly get <strong>SEO-friendly, crave-inducing copy</strong> that matches your brand’s voice.
+        </p>
+        <ul class="space-y-2 text-slate-700">
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Smart photo analysis that suggests the best headline
+          </li>
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Appetizing descriptions proven to increase clicks
+          </li>
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Solves: wasted time writing posts that fall flat
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Multi-Platform Distribution -->
+      <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8 bg-gradient-to-b from-violet-50 to-white rounded-xl border border-violet-100">
+        <div class="w-14 h-14 bg-violet-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+          <svg class="w-7 h-7 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-900 mb-3">Multi-Platform Distribution</h3>
+        <p class="text-slate-600 mb-4">
+          Tired of posting the same special five different times? Publish <strong>once</strong> and let us push it to your website, Google, socials, and email list — automatically.
+        </p>
+        <ul class="space-y-2 text-slate-700">
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Website widget updates in real-time
+          </li>
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Automated email sends to your subscribers
+          </li>
+          <li class="flex items-center text-mdm">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Solves: juggling multiple logins and wasting staff time
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Real-Time Analytics -->
+      <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8 bg-gradient-to-b from-green-50 to-white rounded-xl border border-green-100">
+        <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
+          <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-900 mb-3">Real-Time Analytics</h3>
+        <p class="text-slate-600 mb-4">
+          Flying blind on whether your specials actually drive sales? See what’s working with <strong>live dashboards</strong> that track every view, click, and subscriber sign-up.
+        </p>
+        <ul class="space-y-2 text-slate-700">
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Track performance across all platforms in one place
+          </li>
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Conversion metrics tied to revenue impact
+          </li>
+          <li class="flex items-center text-md">
+            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Solves: not knowing which promos actually bring customers in
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
+        <!-- Pricing Section -->
+        <section class="py-24 bg-slate-50" id="pricing">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-slate-900 mb-4">
-                    See the Specials Widget in Action
-                </h2>
-                <p class="text-xl text-slate-600 max-w-3xl mx-auto">
-                    Embed live specials on your site, <strong>capture emails</strong>, and attribute subscribers to the special that won them over.
-                </p>
+            <h2 class="text-4xl font-bold text-slate-900 mb-4">Pricing</h2>
+            <p class="text-xl text-slate-600">Choose the plan that’s right for your restaurant.</p>
             </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <!-- Demo Widget -->
-                <div class="order-2 lg:order-1">
-                    <div id="appertivo-demo-widget" class="bg-white rounded-xl shadow-xl p-8" aria-live="polite">
-                        <div class="text-center py-8 text-slate-500">
-                            Loading demo widget...
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Feature Explanation -->
-                <div class="order-1 lg:order-2">
-                    <div class="max-w-lg">
-                        <h3 class="text-2xl font-bold text-slate-900 mb-6">
-                            Embeddable Widget with Viral Growth
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center" aria-hidden="true">
-                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h4 class="text-lg font-medium text-slate-900">Automatic Updates</h4>
-                                    <p class="text-slate-600">Shows today’s active special automatically on your site and <strong>Google Business Profile</strong>.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center" aria-hidden="true">
-                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h4 class="text-lg font-medium text-slate-900">Email Capture</h4>
-                                    <p class="text-slate-600">Built-in opt-in grows your list; each subscriber is tagged to the special they saw.</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center" aria-hidden="true">
-                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="ml-4">
-                                    <h4 class="text-lg font-medium text-slate-900">One-Click Orders</h4>
-                                    <p class="text-slate-600">Send guests straight to online ordering or tap-to-call from your special.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-8">
-                            <a href="{% url 'register' %}" class="btn-primary" data-cta="widget-create">
-                                Create Your Widget Now
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Features Section -->
-    <section class="py-24 bg-white" id="features">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-slate-900 mb-4">
-                    Everything you need to grow revenue
-                </h2>
-                <p class="text-xl text-slate-600 max-w-2xl mx-auto">
-                    Create once, <strong>distribute everywhere</strong>, and measure what works with built-in analytics.
-                </p>
-            </div>
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-slate-900 mb-3">AI-Enhanced Creation</h3>
-                    <p class="text-slate-600 mb-4">Upload a photo; get <strong>SEO-friendly</strong>, appetizing copy that sells.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Smart photo analysis
-                        </li>
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Appetizing descriptions
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
-                        <svg class="w-6 h-6 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-slate-900 mb-3">Multi-Platform Distribution</h3>
-                    <p class="text-slate-600 mb-4"><strong>Publish once</strong>: website widget, automated emails, and Google Business Profile updates.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Website widgets
-                        </li>
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Automated email sends
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="card stripe-shadow hover:stripe-shadow-lg transition-all duration-200 p-8">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6" aria-hidden="true">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold text-slate-900 mb-3">Real-Time Analytics</h3>
-                    <p class="text-slate-600 mb-4">Track views, clicks, and subscriber growth to optimize each promotion.</p>
-                    <ul class="space-y-2">
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            View tracking
-                        </li>
-                        <li class="flex items-center text-sm text-slate-600">
-                            <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            Conversion metrics
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Pricing Section -->
-    <section class="py-24 bg-slate-50" id="pricing">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-slate-900 mb-4">Pricing</h2>
-                <p class="text-xl text-slate-600">Choose the plan that’s right for your restaurant.</p>
+            <!-- Free Plan -->
+            <div class="card stripe-shadow p-8 border-2 border-[#B993D6] rounded-2xl hover:shadow-xl transition">
+                <h3 class="text-2xl font-semibold text-slate-900 mb-4">Free</h3>
+                <p class="text-3xl font-bold text-[#B993D6] mb-6">$0</p>
+                <ul class="space-y-2 text-slate-600 mb-6">
+                <li>AI-enhanced content</li>
+                <li>Website widget with email capture</li>
+                <li>Analytics dashboard</li>
+                <li>Post to Google Business Profile</li>
+                </ul>
+                <button class="w-full bg-[#f08000] text-white py-2 rounded-lg font-medium hover:bg-[#d96f00] transition">
+                Get Started
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="card stripe-shadow p-8">
-                    <h3 class="text-2xl font-semibold text-slate-900 mb-4">Free</h3>
-                    <ul class="space-y-2 text-slate-600">
-                        <li>Website widget</li>
-                        <li>Email capture</li>
-                        <li>Post to Google Business Profile</li>
-                    </ul>
-                </div>
-                <div class="card stripe-shadow p-8 opacity-60">
-                    <h3 class="text-2xl font-semibold text-slate-900 mb-2">Pro</h3>
-                    <p class="text-sm text-slate-500 mb-4">Coming soon</p>
-                    <ul class="space-y-2 text-slate-600">
-                        <li>Delivery app integrations</li>
-                        <li>POS integrations</li>
-                    </ul>
-                </div>
-                <div class="card stripe-shadow p-8 opacity-60">
-                    <h3 class="text-2xl font-semibold text-slate-900 mb-2">Enterprise</h3>
-                    <p class="text-sm text-slate-500 mb-4">Coming soon</p>
-                    <ul class="space-y-2 text-slate-600">
-                        <li>All features for multiple restaurants</li>
-                    </ul>
-                </div>
+
+            <!-- Pro Plan -->
+            <div class="card stripe-shadow p-8 border-2 border-[#58B09C] rounded-2xl hover:shadow-xl transition relative">
+                <div class="absolute -top-4 right-4 bg-[#58B09C] text-white text-xs px-3 py-1 rounded-full">Most Popular</div>
+                <h3 class="text-2xl font-semibold text-slate-900 mb-4">Pro</h3>
+                <p class="text-3xl font-bold text-[#58B09C] mb-6">$99 <span class="text-base font-medium text-slate-500">/month</span></p>
+                <ul class="space-y-2 text-slate-600 mb-6">
+                <li>Everything in Free Plan</li>
+                <li>Content reformatted & shared to Instagram, Facebook, X</li>
+                <li>Delivery platform integrations</li>
+                </ul>
+                <button class="w-full bg-[#f08000] text-white py-2 rounded-lg font-medium hover:bg-[#d96f00] transition">
+                Subscribe with Stripe
+                </button>
             </div>
+
+            <!-- Enterprise Plan -->
+            <div class="card stripe-shadow p-8 border-2 border-[#49475B] rounded-2xl hover:shadow-xl transition">
+                <h3 class="text-2xl font-semibold text-slate-900 mb-4">Enterprise</h3>
+                <p class="text-3xl font-bold text-[#49475B] mb-6">$299 <span class="text-base font-medium text-slate-500">/month</span></p>
+                <ul class="space-y-2 text-slate-600 mb-6">
+                <li>Everything in Pro Plan</li>
+                <li>Multi-location management</li>
+                <li>POS integrations</li>
+                </ul>
+                <button class="w-full bg-[#f08000] text-white py-2 rounded-lg font-medium hover:bg-[#d96f00] transition">
+                Contact Sales
+                </button>
+            </div>
+            </div>
+
+            <p class="text-center mt-12 text-slate-500 text-sm">
+            Secure payments handled by <span class="font-semibold text-slate-700">Stripe</span>.
+            </p>
         </div>
-    </section>
+        </section>
+
 
     <!-- Company Logos -->
     <section class="py-16 bg-white border-t border-slate-200" id="logos">
@@ -314,6 +325,78 @@
     </footer>
 </div>
 
+
+<!-- Widget Modal -->
+<div class="modal fade" id="widgetModal" tabindex="-1" aria-labelledby="widgetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-none">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include "app/partials/widget.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Google Modal -->
+<div class="modal fade" id="googleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-none">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include "app/partials/google.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Instagram Modal -->
+<div class="modal fade" id="instagramModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-none">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include "app/partials/instagram.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Facebook Modal -->
+<div class="modal fade" id="facebookModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-none">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include "app/partials/facebook.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- X Modal -->
+<div class="modal fade" id="xModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-none">
+      <div class="modal-header border-0">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+        {% include "app/partials/x.html" %}
+    </div>
+  </div>
+</div>
+
+
+
+
 <!-- Demo Widget Script -->
 <script src="{% url 'demo_widget_js' %}"></script>
 
@@ -345,4 +428,5 @@
   }
 }
 </script>
+
 {% endblock %}

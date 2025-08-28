@@ -79,21 +79,30 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, hsl(230 67% 51%), hsl(234 89% 74%));
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-block;
+  background: linear-gradient(135deg, #f08000, #ff9b33); /* warm orange gradient */
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(240, 128, 0, 0.3); /* subtle glow */
 }
 
+/* Hover effect */
 .btn-primary:hover {
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(240, 128, 0, 0.45);
+  background: linear-gradient(135deg, #ff922b, #f08000); /* flip gradient on hover */
+}
+
+/* Active (click) effect */
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(240, 128, 0, 0.3);
 }
 
 .btn-outline {
