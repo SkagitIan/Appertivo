@@ -134,8 +134,7 @@ def dashboard(request):
             show_location_modal = True
             locations = settings_data.get("locations", [])
 
-    specials = Special.objects.filter(user=request.user)
-    active_specials = specials.filter(status='active')
+    active_specials = Special.objects.filter(user=request.user, status='active')
 
     total_email_signups = EmailSignup.objects.filter(restaurant=request.user).count()
     total_email_signups_from_specials = sum(special.email_signups for special in active_specials)
@@ -148,7 +147,7 @@ def dashboard(request):
     }
 
     context = {
-        'specials': specials[:3],  # Latest 3 for overview
+        'specials': active_specials[:3],  # Latest 3 active specials
         'stats': stats,
         'show_location_modal': show_location_modal,
         'google_locations': locations,
