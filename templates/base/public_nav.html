@@ -12,17 +12,49 @@
                         <span class="ml-3 text-xl font-semibold text-slate-900">Appertivo</span>
                     </div>
                 </div>
-                
+
                 <div class="hidden md:flex items-center space-x-8">
-                
                     <a href="{% url 'resources' %}" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Resources</a>
                     <a href="#pricing" class="text-slate-600 hover:text-slate-900 transition-colors font-medium">Pricing</a>
                 </div>
-                
-                <div class="flex items-center space-x-4">
-                    <a href="{% url 'login' %}" class="text-slate-600 hover:text-slate-900 font-medium">Sign in</a>
-                    <a href="{% url 'register' %}" class="btn-primary text-white">Register</a>
+
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="text-slate-600 hover:text-slate-900 font-medium">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-slate-600 hover:text-slate-900 font-medium">Sign in</a>
+                        <a href="{% url 'register' %}" class="btn-primary text-white">Register</a>
+                    {% endif %}
                 </div>
+
+                <button id="mobile-menu-button" class="md:hidden text-slate-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
+            <div class="px-4 pt-4 pb-6 space-y-4">
+                <a href="{% url 'resources' %}" class="block text-slate-600 hover:text-slate-900">Resources</a>
+                <a href="#pricing" class="block text-slate-600 hover:text-slate-900">Pricing</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'logout' %}" class="block text-slate-600 hover:text-slate-900">Logout</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="block text-slate-600 hover:text-slate-900">Sign in</a>
+                    <a href="{% url 'register' %}" class="block btn-primary text-white text-center">Start free</a>
+                {% endif %}
             </div>
         </div>
     </nav>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const button = document.getElementById('mobile-menu-button');
+            const menu = document.getElementById('mobile-menu');
+            if (button) {
+                button.addEventListener('click', function () {
+                    menu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
