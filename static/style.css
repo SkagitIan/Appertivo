@@ -39,6 +39,45 @@ body {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
+/* Platform preview cards */
+.platform-preview {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    overflow: hidden;
+}
+
+.platform-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem;
+}
+
+.platform-widget .platform-header {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.platform-google .platform-header {
+    background: #4285F4;
+    color: #fff;
+}
+
+.platform-instagram .platform-header {
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    color: #fff;
+}
+
+.platform-facebook .platform-header {
+    background: #1877F2;
+    color: #fff;
+}
+
+.platform-x .platform-header {
+    background: #000;
+    color: #fff;
+}
+
 .btn-primary {
     background: linear-gradient(135deg, hsl(230 67% 51%), hsl(234 89% 74%));
     color: white;
