@@ -31,9 +31,9 @@
     </div>
   </section>
 
-  <!-- Features Funnel -->
-{% include 'app/partials/idea_partial.html' %}
-    {% include 'app/partials/planning_partial.html' %}
+    <!-- Features Funnel -->
+    {% include 'app/partials/idea_partial.html' with concepts=concepts %}
+      {% include 'app/partials/planning_partial.html' %}
 
 
   <!-- Pricing -->

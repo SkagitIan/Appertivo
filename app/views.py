@@ -46,7 +46,22 @@ logger = logging.getLogger(__name__)
 def home(request):
     """Home page view."""
     articles = Article.objects.all()[:5]
-    return render(request, "app/home.html", {"articles": articles})
+    concepts = [
+        "Italian",
+        "Mexican",
+        "Chinese",
+        "Japanese",
+        "Indian",
+        "Mediterranean",
+        "American",
+        "Thai",
+        "Vegan",
+    ]
+    return render(
+        request,
+        "app/home.html",
+        {"articles": articles, "concepts": concepts},
+    )
 
 
 def resources(request):
@@ -81,6 +96,17 @@ def contact(request):
     else:
         form = ContactForm()
     return render(request, "app/contact.html", {"form": form})
+
+
+def menu_suggestions(request):
+    """Return simple menu suggestions for a given concept."""
+    concept = request.GET.get("concept", "")
+    suggestions = [f"{concept} menu item {i}" for i in range(1, 11)]
+    return render(
+        request,
+        "app/partials/menu_suggestions.html",
+        {"suggestions": suggestions},
+    )
 
 def register_view(request):
     """Registration page"""

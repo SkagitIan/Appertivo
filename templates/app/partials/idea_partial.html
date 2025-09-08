@@ -1,0 +1,11 @@
+<style>
+.idea-card{transition:transform 0.6s;}
+.idea-card.flipped{transform:rotateY(180deg);}
+</style>
+<div id="idea-grid" class="grid grid-cols-3 gap-4">
+  {% for concept in concepts %}
+  <div class="idea-card p-4 bg-white border rounded shadow cursor-pointer text-center" onclick="this.classList.add('flipped')" hx-get="{% url 'menu_suggestions' %}?concept={{ concept }}" hx-target="#idea-grid" hx-swap="outerHTML">
+    {{ concept }}
+  </div>
+  {% endfor %}
+</div>

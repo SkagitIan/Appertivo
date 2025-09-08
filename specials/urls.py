@@ -17,6 +17,7 @@ urlpatterns = [
     path('resources/<slug:slug>/', views.article_detail, name='article_detail'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),
+    path('menu-suggestions/', views.menu_suggestions, name='menu_suggestions'),
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
