@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Appertivo Integrations</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #212529;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    h1 {
+      color: #f08000;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .card h2 {
+      margin-top: 0;
+      color: #b66ec7;
+    }
+    ol {
+      padding-left: 1.2rem;
+    }
+    li {
+      margin-bottom: 0.6rem;
+    }
+    code {
+      background-color: #f1f3f5;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Connect Appertivo to Your Website</h1>
+    <p>Use the instructions below to add the Appertivo widget to your site. Each platform lets you paste the snippet from your dashboard. The snippet looks like:</p>
+    <pre><code>&lt;script src="https://example.com/static/specialwidget/widget.js" memberid="YOUR_ID" id="foodscriptone"&gt;&lt;/script&gt;
+&lt;div id="fooddiv"&gt;&lt;/div&gt;</code></pre>
+    <div class="card">
+      <h2>WordPress</h2>
+      <ol>
+        <li>Sign in to your WordPress admin area.</li>
+        <li>Install a header/footer script plugin such as <em>Insert Headers and Footers</em> if you do not already have a way to add code site‑wide.</li>
+        <li>Navigate to <strong>Settings &gt; Insert Headers and Footers</strong> and locate the footer script box.</li>
+        <li>Paste the Appertivo snippet into the footer box so it appears just before the closing <code>&lt;/body&gt;</code> tag on every page.</li>
+        <li>Save your changes and refresh a page on your site to confirm the widget loads.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>Shopify</h2>
+      <ol>
+        <li>From the Shopify admin, go to <strong>Online Store &gt; Themes</strong>.</li>
+        <li>Next to your active theme, click <strong>Actions &gt; Edit code</strong>.</li>
+        <li>Under the <strong>Layout</strong> section, open <code>theme.liquid</code>.</li>
+        <li>Scroll to the bottom of the file and paste the Appertivo snippet directly above the closing <code>&lt;/body&gt;</code> tag.</li>
+        <li>Click <strong>Save</strong>, then view your storefront to make sure the widget displays.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>Wix</h2>
+      <ol>
+        <li>Log in to Wix and open your site in the Editor.</li>
+        <li>Click the <strong>+</strong> (Add Elements) button, choose <strong>Embed Code</strong>, then select <strong>Embed HTML</strong>.</li>
+        <li>Select <strong>Code</strong>, paste the Appertivo snippet, and press <strong>Update</strong>.</li>
+        <li>Drag the element to where you want the widget to appear or leave it off‑screen if you only need the button.</li>
+        <li>Publish the site and verify the widget appears on the live page.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>Other Sites</h2>
+      <ol>
+        <li>Locate a setting that lets you add custom HTML or scripts (often called <em>Code Injection</em>, <em>Custom Code</em>, or <em>Embed</em>).</li>
+        <li>Paste the Appertivo snippet so it loads before the closing <code>&lt;/body&gt;</code> tag.</li>
+        <li>Save and publish the changes, then reload your site to check the widget.</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>
