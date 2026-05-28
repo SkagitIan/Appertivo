@@ -1,38 +1,341 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Appertivo — Instantly Share Your Restaurant Specials</title>
-  <meta name="description" content="Appertivo is the easiest way for restaurants to post daily specials, engage customers, and boost sales — all without logins or technical hassle." />
-  <meta property="og:title" content="Appertivo — Instantly Share Your Restaurant Specials" />
-  <meta property="og:description" content="Add a special, see it live. Appertivo lets you update and display your daily specials with a simple dashboard, live preview, and a copy-paste widget for your website." />
-  <meta property="og:image" content="https://yourdomain.com/og-image.png" />
+  <title>Today&rsquo;s Specials — What&rsquo;s Good Today?</title>
+  <meta name="description" content="Today&rsquo;s Specials is the local feed for what restaurants are serving right now. Discover daily specials, limited-time dishes, happy hours, and neighborhood favorites in one place." />
+  <meta property="og:title" content="Today&rsquo;s Specials — What&rsquo;s Good Today?" />
+  <meta property="og:description" content="A live local food discovery feed where restaurants post what they are serving today and customers find what is worth eating right now." />
+  <meta property="og:image" content="https://appertivo.com/og-image.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://appertivo.com/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Appertivo — Instantly Share Your Restaurant Specials" />
-  <meta name="twitter:description" content="Let your customers know what’s special today. Easy, mobile-first, and no logins required." />
-  <meta name="twitter:image" content="https://yourdomain.com/og-image.png" />
-  <link rel="stylesheet" href="static/style.css">
+  <meta name="twitter:title" content="Today&rsquo;s Specials — What&rsquo;s Good Today?" />
+  <meta name="twitter:description" content="See today&rsquo;s local restaurant specials in one place." />
+  <meta name="twitter:image" content="https://appertivo.com/og-image.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js" defer></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ember: '#ff4f1f',
+            yolk: '#ffd166',
+            basil: '#3d7a4f',
+            cream: '#fff7ea',
+            ink: '#17120f'
+          },
+          fontFamily: {
+            display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            glow: '0 30px 100px rgba(255, 79, 31, 0.32)',
+            card: '0 24px 70px rgba(23, 18, 15, 0.16)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .grain::before {
+      background-image: radial-gradient(rgba(23, 18, 15, .14) 1px, transparent 1px);
+      background-size: 18px 18px;
+      content: "";
+      inset: 0;
+      opacity: .24;
+      pointer-events: none;
+      position: fixed;
+      z-index: 1;
+    }
+
+    .hero-gradient {
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255, 209, 102, .75), transparent 28%),
+        radial-gradient(circle at 85% 5%, rgba(255, 79, 31, .38), transparent 32%),
+        linear-gradient(135deg, #fff7ea 0%, #ffe9cf 46%, #f8b36a 100%);
+    }
+
+    .marquee-track {
+      animation: marquee 24s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+  </style>
 </head>
-<body class="landing-body">
-  <div class="landing-container" role="main">
-    <h1>Appertivo is Coming Soon</h1>
-    <div class="tagline">Add a Special. See It Live. Delight Your Customers.</div>
-    <ul>
-      <li><strong>Brain-dead simple:</strong> Add today’s special with a photo, short description, and optional dates—right from your phone. No logins required.</li>
-      <li><strong>Live preview:</strong> See exactly how your special will look before publishing.</li>
-      <li><strong>Easy install:</strong> Copy a widget code or send it to your web developer. Works with WordPress, Shopify, Wix, and more.</li>
-      <li><strong>Boost sales:</strong> Customers see your latest special on your site, with a direct link to “Order Now.”</li>
-      <li><strong>Mobile-first dashboard:</strong> Update specials from your phone, on the go—even with QR code access on your counter.</li>
-      <li><strong>Customize your widget:</strong> Match your colors, choose position, and connect your online ordering provider.</li>
-    </ul>
-    <a class="cta" href="mailto:hello@appertivo.com?subject=Early%20Access%20Request">Get Early Access</a>
-    <div class="footer">
-      Thank you for your patience & support.<br>
-      <span class="small-note">Free for early adopters • Powered by Django & HTMX</span>
-    </div>
-  </div>
+<body class="grain bg-cream font-display text-ink antialiased">
+  <main class="relative z-10 overflow-hidden">
+    <section class="hero-gradient relative min-h-screen px-5 py-6 sm:px-8 lg:px-12">
+      <div class="absolute -right-28 top-24 h-72 w-72 rounded-full bg-ember/25 blur-3xl"></div>
+      <div class="absolute -bottom-32 left-1/4 h-96 w-96 rounded-full bg-yolk/50 blur-3xl"></div>
+
+      <nav class="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/60 bg-white/50 px-5 py-3 shadow-sm backdrop-blur-xl">
+        <a href="#top" class="flex items-center gap-3" aria-label="Today&rsquo;s Specials home">
+          <span class="grid h-10 w-10 place-items-center rounded-full bg-ink text-xl text-white shadow-lg">★</span>
+          <span>
+            <span class="block text-sm font-black uppercase tracking-[0.24em] text-ember">Today&rsquo;s</span>
+            <span class="block -mt-1 text-xl font-black tracking-tight">Specials</span>
+          </span>
+        </a>
+        <a href="mailto:hello@appertivo.com?subject=Today%27s%20Specials%20Early%20Access" class="hidden rounded-full bg-ink px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-ember sm:inline-flex">Get early access</a>
+      </nav>
+
+      <div id="top" class="mx-auto grid max-w-7xl items-center gap-12 pb-20 pt-16 lg:grid-cols-[1.02fr_.98fr] lg:pt-24">
+        <div>
+          <p class="eyebrow inline-flex rounded-full border border-ink/10 bg-white/55 px-4 py-2 text-sm font-extrabold uppercase tracking-[0.22em] text-basil shadow-sm backdrop-blur">Prelaunching locally</p>
+          <h1 class="hero-title mt-7 max-w-5xl text-6xl font-black leading-[0.88] tracking-[-0.08em] sm:text-7xl lg:text-8xl">
+            What&rsquo;s good today?
+          </h1>
+          <p class="hero-copy mt-7 max-w-2xl text-xl leading-8 text-ink/75 sm:text-2xl sm:leading-9">
+            A live local food feed for daily specials, happy hours, pop-up dishes, brunch features, and the thing your favorite restaurant is only serving right now.
+          </p>
+          <div class="hero-actions mt-9 flex flex-col gap-3 sm:flex-row">
+            <a href="mailto:hello@appertivo.com?subject=Today%27s%20Specials%20Early%20Access" class="group inline-flex items-center justify-center rounded-full bg-ember px-8 py-4 text-lg font-black text-white shadow-glow transition hover:-translate-y-1 hover:bg-ink">
+              Join the early list
+              <span class="ml-3 transition group-hover:translate-x-1">→</span>
+            </a>
+            <a href="#restaurants" class="inline-flex items-center justify-center rounded-full border border-ink/15 bg-white/60 px-8 py-4 text-lg font-black text-ink backdrop-blur transition hover:-translate-y-1 hover:bg-white">For restaurants</a>
+          </div>
+          <div class="mt-10 grid max-w-2xl grid-cols-3 gap-3 text-center">
+            <div class="stat rounded-3xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur">
+              <strong class="block text-3xl font-black" data-count="1">0</strong>
+              <span class="text-xs font-bold uppercase tracking-widest text-ink/55">Local feed</span>
+            </div>
+            <div class="stat rounded-3xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur">
+              <strong class="block text-3xl font-black" data-count="24">0</strong>
+              <span class="text-xs font-bold uppercase tracking-widest text-ink/55">Hour intent</span>
+            </div>
+            <div class="stat rounded-3xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur">
+              <strong class="block text-3xl font-black" data-count="0">0</strong>
+              <span class="text-xs font-bold uppercase tracking-widest text-ink/55">Extra apps</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative mx-auto w-full max-w-xl">
+          <div class="phone-shell relative rounded-[3rem] border-[14px] border-ink bg-cream p-4 shadow-card">
+            <div class="mb-4 flex items-center justify-between px-2">
+              <div>
+                <p class="text-xs font-black uppercase tracking-[0.22em] text-ember">Near you</p>
+                <h2 class="text-2xl font-black tracking-tight">Today&rsquo;s Feed</h2>
+              </div>
+              <span class="rounded-full bg-basil px-3 py-1 text-xs font-black text-white">LIVE</span>
+            </div>
+
+            <div class="space-y-4">
+              <article class="special-card rounded-[2rem] bg-white p-4 shadow-lg" data-rotate="-2">
+                <div class="flex gap-4">
+                  <div class="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-yolk to-ember text-4xl">🌮</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-black text-ink/55">Harbor Cantina</p>
+                        <h3 class="text-xl font-black leading-6">Halibut tacos</h3>
+                      </div>
+                      <span class="rounded-full bg-cream px-3 py-1 text-sm font-black">$18</span>
+                    </div>
+                    <p class="mt-2 text-sm font-semibold text-ink/60">Starts at 4 PM · seafood · dinner</p>
+                    <div class="mt-3 flex items-center gap-2">
+                      <button class="rounded-full bg-ink px-4 py-2 text-sm font-black text-white">Save</button>
+                      <span class="text-sm font-bold text-ember">2.1 mi away</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="special-card rounded-[2rem] bg-white p-4 shadow-lg" data-rotate="2">
+                <div class="flex gap-4">
+                  <div class="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-basil to-ink text-4xl">🍝</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-black text-ink/55">Little Nonna</p>
+                        <h3 class="text-xl font-black leading-6">Short rib ragu</h3>
+                      </div>
+                      <span class="rounded-full bg-cream px-3 py-1 text-sm font-black">$22</span>
+                    </div>
+                    <p class="mt-2 text-sm font-semibold text-ink/60">Tonight only · pasta · comfort</p>
+                    <div class="mt-3 flex items-center gap-2">
+                      <button class="rounded-full bg-ink px-4 py-2 text-sm font-black text-white">Follow</button>
+                      <span class="text-sm font-bold text-ember">Alert sent</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <article class="special-card rounded-[2rem] bg-white p-4 shadow-lg" data-rotate="-1">
+                <div class="flex gap-4">
+                  <div class="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-pink-300 to-yolk text-4xl">🍹</div>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-black text-ink/55">Market Room</p>
+                        <h3 class="text-xl font-black leading-6">Aperitivo hour</h3>
+                      </div>
+                      <span class="rounded-full bg-cream px-3 py-1 text-sm font-black">$9</span>
+                    </div>
+                    <p class="mt-2 text-sm font-semibold text-ink/60">3–6 PM · cocktails · snacks</p>
+                    <div class="mt-3 flex items-center gap-2">
+                      <button class="rounded-full bg-ink px-4 py-2 text-sm font-black text-white">Share</button>
+                      <span class="text-sm font-bold text-ember">Ends soon</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="float-badge absolute -left-4 top-20 rounded-3xl bg-white px-5 py-4 font-black shadow-card sm:-left-10">AI-cleaned from text ✨</div>
+          <div class="float-badge absolute -right-2 bottom-14 rounded-3xl bg-ink px-5 py-4 font-black text-white shadow-card sm:-right-10">Fresh until it expires</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-y border-ink/10 bg-ink py-5 text-cream">
+      <div class="overflow-hidden whitespace-nowrap">
+        <div class="marquee-track flex gap-8 text-lg font-black uppercase tracking-[0.2em]">
+          <span>Prime rib night</span><span>·</span><span>Taco Tuesday</span><span>·</span><span>Fresh soup</span><span>·</span><span>Brunch feature</span><span>·</span><span>Happy hour</span><span>·</span><span>Chef pop-up</span><span>·</span>
+          <span>Prime rib night</span><span>·</span><span>Taco Tuesday</span><span>·</span><span>Fresh soup</span><span>·</span><span>Brunch feature</span><span>·</span><span>Happy hour</span><span>·</span><span>Chef pop-up</span><span>·</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-cream px-5 py-24 sm:px-8 lg:px-12">
+      <div class="mx-auto max-w-7xl">
+        <div class="max-w-3xl">
+          <p class="section-kicker text-sm font-black uppercase tracking-[0.24em] text-ember">The live layer</p>
+          <h2 class="section-title mt-4 text-4xl font-black tracking-[-0.05em] sm:text-6xl">Not reviews. Not delivery. The thing people check before deciding where to eat.</h2>
+        </div>
+
+        <div class="mt-12 grid gap-5 md:grid-cols-3">
+          <div class="feature-card rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-ink/5">
+            <span class="text-4xl">📍</span>
+            <h3 class="mt-5 text-2xl font-black">One local feed</h3>
+            <p class="mt-3 text-lg leading-7 text-ink/65">Customers see today&rsquo;s specials from nearby restaurants without chasing posts across social, email, websites, and chalkboards.</p>
+          </div>
+          <div class="feature-card rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-ink/5">
+            <span class="text-4xl">💬</span>
+            <h3 class="mt-5 text-2xl font-black">Text or email intake</h3>
+            <p class="mt-3 text-lg leading-7 text-ink/65">Restaurants send messy specials the way they already communicate. We turn them into structured, useful posts.</p>
+          </div>
+          <div class="feature-card rounded-[2rem] bg-white p-8 shadow-sm ring-1 ring-ink/5">
+            <span class="text-4xl">⏱️</span>
+            <h3 class="mt-5 text-2xl font-black">Built for right now</h3>
+            <p class="mt-3 text-lg leading-7 text-ink/65">Every special has timing, price, tags, location, save actions, alerts, and expiration logic so stale promos disappear.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="restaurants" class="bg-white px-5 py-24 sm:px-8 lg:px-12">
+      <div class="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
+        <div>
+          <p class="section-kicker text-sm font-black uppercase tracking-[0.24em] text-basil">For restaurants</p>
+          <h2 class="section-title mt-4 text-4xl font-black tracking-[-0.05em] sm:text-6xl">Don&rsquo;t learn another app. Just send the special.</h2>
+          <p class="mt-6 text-xl leading-8 text-ink/65">Post directly later. For prelaunch, email or text what you are serving today and we will publish it to the local specials feed.</p>
+          <a href="mailto:hello@appertivo.com?subject=Restaurant%20Prelaunch%20Page" class="mt-8 inline-flex rounded-full bg-ink px-8 py-4 text-lg font-black text-white transition hover:-translate-y-1 hover:bg-ember">Claim prelaunch interest</a>
+        </div>
+
+        <div class="rounded-[2.5rem] bg-cream p-6 shadow-card ring-1 ring-ink/5 sm:p-8">
+          <div class="rounded-[2rem] bg-ink p-6 text-white">
+            <p class="font-black uppercase tracking-[0.22em] text-yolk">Incoming text</p>
+            <p class="mt-4 text-2xl font-black leading-tight">Halibut tacos tonight $18 starts at 4.</p>
+          </div>
+          <div class="mx-auto h-10 w-1 bg-ink/20"></div>
+          <div class="parsed-card rounded-[2rem] bg-white p-6 shadow-lg">
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-full bg-yolk px-3 py-1 text-sm font-black">seafood</span>
+              <span class="rounded-full bg-yolk px-3 py-1 text-sm font-black">tacos</span>
+              <span class="rounded-full bg-yolk px-3 py-1 text-sm font-black">dinner</span>
+            </div>
+            <h3 class="mt-5 text-3xl font-black tracking-tight">Halibut tacos</h3>
+            <dl class="mt-5 grid grid-cols-2 gap-4 text-sm font-bold text-ink/65">
+              <div class="rounded-2xl bg-cream p-4"><dt class="uppercase tracking-widest">Price</dt><dd class="mt-1 text-2xl font-black text-ink">$18</dd></div>
+              <div class="rounded-2xl bg-cream p-4"><dt class="uppercase tracking-widest">Window</dt><dd class="mt-1 text-2xl font-black text-ink">4 PM</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-ink px-5 py-24 text-cream sm:px-8 lg:px-12">
+      <div class="mx-auto max-w-4xl text-center">
+        <p class="section-kicker text-sm font-black uppercase tracking-[0.24em] text-yolk">The pitch</p>
+        <h2 class="section-title mt-5 text-5xl font-black leading-none tracking-[-0.06em] sm:text-7xl">Today&rsquo;s Specials owns what is available today.</h2>
+        <p class="mt-7 text-xl leading-8 text-cream/70">Google has listings. Yelp has reviews. DoorDash has ordering. We are building the live local layer for restaurant intent.</p>
+        <div class="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+          <a href="mailto:hello@appertivo.com?subject=Today%27s%20Specials%20Early%20Access" class="rounded-full bg-ember px-8 py-4 text-lg font-black text-white shadow-glow transition hover:-translate-y-1 hover:bg-yolk hover:text-ink">Get early access</a>
+          <a href="mailto:hello@appertivo.com?subject=I%20have%20a%20restaurant%20special" class="rounded-full border border-cream/20 px-8 py-4 text-lg font-black transition hover:-translate-y-1 hover:bg-cream hover:text-ink">Send a special</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.addEventListener('load', () => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion || !window.anime) {
+        document.querySelectorAll('[data-count]').forEach((item) => {
+          item.textContent = item.dataset.count;
+        });
+        return;
+      }
+
+      anime.timeline({ easing: 'easeOutExpo' })
+        .add({ targets: 'nav', translateY: [-24, 0], opacity: [0, 1], duration: 800 })
+        .add({ targets: '.eyebrow', translateY: [18, 0], opacity: [0, 1], duration: 650 }, '-=450')
+        .add({ targets: '.hero-title', translateY: [46, 0], opacity: [0, 1], duration: 900 }, '-=450')
+        .add({ targets: '.hero-copy, .hero-actions', translateY: [26, 0], opacity: [0, 1], delay: anime.stagger(90), duration: 700 }, '-=520')
+        .add({ targets: '.phone-shell', scale: [0.92, 1], rotate: [-3, 0], opacity: [0, 1], duration: 900 }, '-=750')
+        .add({ targets: '.special-card', translateY: [38, 0], rotate: (el) => el.dataset.rotate, opacity: [0, 1], delay: anime.stagger(120), duration: 700 }, '-=550')
+        .add({ targets: '.stat', translateY: [18, 0], opacity: [0, 1], delay: anime.stagger(80), duration: 520 }, '-=620');
+
+      document.querySelectorAll('[data-count]').forEach((item) => {
+        anime({
+          targets: item,
+          innerHTML: [0, Number(item.dataset.count)],
+          round: 1,
+          duration: 1100,
+          easing: 'easeOutCubic',
+          update: () => {
+            item.textContent = item.dataset.count === '0' ? '0' : item.textContent;
+          }
+        });
+      });
+
+      anime({
+        targets: '.float-badge',
+        translateY: [-8, 8],
+        direction: 'alternate',
+        duration: 1800,
+        delay: anime.stagger(250),
+        easing: 'easeInOutSine',
+        loop: true
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          anime({
+            targets: entry.target,
+            translateY: [30, 0],
+            opacity: [0, 1],
+            duration: 800,
+            easing: 'easeOutExpo'
+          });
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll('.section-kicker, .section-title, .feature-card, .parsed-card').forEach((item) => {
+        item.style.opacity = 0;
+        observer.observe(item);
+      });
+    });
+  </script>
 </body>
 </html>
